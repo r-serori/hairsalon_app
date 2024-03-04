@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -13,8 +14,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('customers', function (Blueprint $table) {
+        Schema::create('options', function (Blueprint $table) {
             $table->id();
+            $table->string('option_name',100)->nullable();// オプション名
+            $table->integer('price')->nullable(); // 金額
             $table->timestamps();
         });
     }
@@ -26,6 +29,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('customers');
+        Schema::dropIfExists('options');
     }
 };
+
+

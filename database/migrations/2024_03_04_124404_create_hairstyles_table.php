@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('hairstyles', function (Blueprint $table) {
             $table->id();
+            $table->string('hairstyle_name',100)->nullable();// ヘアスタイル名
             $table->timestamps();
         });
     }
@@ -29,3 +30,4 @@ return new class extends Migration
         Schema::dropIfExists('hairstyles');
     }
 };
+

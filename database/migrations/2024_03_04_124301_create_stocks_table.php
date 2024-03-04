@@ -13,8 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('sales', function (Blueprint $table) {
+        Schema::create('stocks', function (Blueprint $table) {
             $table->id();
+            $table->string('product_name', 100);// 商品名
+            $table->string('category',50);// カテゴリー
+            $table->integer('quantity');// 数量
+            $table->integer('purchase_price');// 仕入れ価格、小数点以下2桁まで、合計10桁まで、
+            $table->string('supplier',50);// 仕入先
             $table->timestamps();
         });
     }
@@ -26,6 +31,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sales');
+        Schema::dropIfExists('stocks');
     }
 };
+
+

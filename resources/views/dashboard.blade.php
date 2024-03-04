@@ -21,10 +21,67 @@
         @for ($i = 1; $i <= 10; $i++)
         <div class="relative">
             <div class="w-32 h-32 bg-gray-200 text-center flex items-center justify-center hover:bg-gray-300">
-                <a href="#" class="block w-full h-full">
+                
+                    @switch($i)
+                        @case(1)
+                        <a href="{{ route('attendance.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
-                </a>
+                    </a>
+                            @break
+                        @case(2)
+
+                           <a href="{{ route('customers.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @case(3)
+                           <a href="{{ route('sales.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @case(4)
+                           <a href="{{ route('schedule.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @case(5)
+                           <a href="{{ route('stocks.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @case(6)
+                           <a href="{{ route('expense.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @case(7)
+                           <a href="{{ route('course.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @case(8)
+                           <a href="{{ route('option.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @case(9)
+                           <a href="{{ route('merchandise.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @case(10)
+                           <a href="{{ route('hairstyle.index') }}" class="block w-full h-full">
+                    <img src="画像のURL" alt="コンテンツ{{ $i }}">
+                    </a>
+                            @break
+                        @default
+                           <a href="#" class="block w-full h-full">
+                    <img src="画像のURL" alt="秘密">
+                    </a>
+                       @endswitch
+
             </div>
+
             <!-- コンテンツの下にテキスト -->
             <div class="absolute inset-x-0 bottom-0 bg-gray-900 text-white py-2">
                 @switch($i)

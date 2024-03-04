@@ -155,6 +155,11 @@ return [
 
     'attributes' => [
       'password' => 'パスワード',
+        'email' => 'メールアドレス',
+        'name' => '名前',
+        'position' => '役職',
+        'password_confirmation' => 'パスワード確認',
+        
     ],
 
 ];

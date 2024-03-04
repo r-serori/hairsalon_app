@@ -13,8 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('saks', function (Blueprint $table) {
+        Schema::create('merchandises', function (Blueprint $table) {
             $table->id();
+            $table->string('merchandise_name',100)->nullable();// 物販名
+            $table->integer('price')->nullable(); // 金額
             $table->timestamps();
         });
     }
@@ -26,6 +28,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('saks');
+        Schema::dropIfExists('merchandises');
     }
 };
+
+

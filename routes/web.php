@@ -2,6 +2,21 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\MerchandiseController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\CustomersController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\HairstyleController;
+use App\Http\Controllers\OptionController;
+use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\SalesController;
+use App\Http\Controllers\StocksController;
+
+
+
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +28,20 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+Route::resource('attendance', AttendanceController::class)->middleware('auth');
+Route::resource('merchandise', MerchandiseController::class)->middleware('auth');
+Route::resource('course', CourseController::class)->middleware('auth');
+Route::resource('customers', CustomersController::class)->middleware('auth');
+Route::resource('expense', ExpenseController::class)->middleware('auth');
+Route::resource('hairstyle', HairstyleController::class)->middleware('auth');
+Route::resource('option', OptionController::class)->middleware('auth');
+Route::resource('schedule', ScheduleController::class)->middleware('auth');
+Route::resource('sales', SalesController::class)->middleware('auth');
+Route::resource('stocks', StocksController::class)->middleware('auth');
+
+
+
 
 Route::get('/', function () {
     return view('welcome');

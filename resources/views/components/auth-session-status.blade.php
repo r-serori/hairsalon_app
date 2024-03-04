@@ -1,3 +1,4 @@
+<!-- resources/views/components/auth-session-status.blade.php -->
 @props(['status'])
 
 @if ($status)

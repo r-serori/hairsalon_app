@@ -14,12 +14,15 @@
         </div>
 
 
-           <!-- position Address -->
-           <div class="mt-4">
-            <x-input-label for="position" :value="__('役職')" />
-            <x-text-input id="position" class="block mt-1 w-full" type="text" name="position" :value="old('position')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('position')" class="mt-2" />
-        </div>
+       <!-- Position -->
+<div class="mt-4">
+    <x-input-label for="position" :value="__('役職')" />
+    <select id="position" name="position" class="block w-full mt-1 rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required autocomplete="position">
+        <option value="owner" {{ old('position') == 'owner' ? 'selected' : '' }}>オーナー</option>
+        <option value="employee" {{ old('position') == 'employee' ? 'selected' : '' }}>社員</option>
+    </select>
+    <x-input-error :messages="$errors->get('position')" class="mt-2" />
+</div>
 
         <!-- Password -->
         <div class="mt-4">
@@ -30,7 +33,7 @@
                             name="password"
                             required autocomplete="current-password" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                            <x-input-error :messages="$errors->get('password')" class="mt-2" />
         </div>
       <!-- Remember Me -->
       <div class="flex items-center justify-between mt-4">

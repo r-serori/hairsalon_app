@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class Hairstyle extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'hairstyle_name',
+        'created_at',
+    ];
+
 }
