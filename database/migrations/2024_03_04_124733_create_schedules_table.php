@@ -27,7 +27,7 @@ return new class extends Migration
             $table->time('reservation_start_time')->nullable(); // 予約開始時間
             $table->time('reservation_end_time')->nullable(); // 予約終了時間
             $table->integer('price')->nullable(); // 合計金額
-            $table->boolean('new_customer')->default(true)->nullable();// 新規顧客, true: 新規顧客, false: 既存顧客
+            $table->string('new_customer')->nullable();// 新規顧客, 新規顧客or既存顧客
             $table->timestamps();
         });
     }

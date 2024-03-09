@@ -29,6 +29,7 @@
                     <th>コース名</th>
                     <th>オプション名</th>
                     <th>物販</th>
+                    <th>担当者</th>
                     <th>アクション</th>
                   </tr>
                 </thead>
@@ -42,6 +43,7 @@
                     <td>{{ $customer->course ? $customer->course->course_name : '-' }}</td>
                     <td>{{ $customer->option ? $customer->option->option_name : '-' }}</td>
                     <td>{{ $customer->merchandise ? $customer->merchandise->merchandise_name : '-' }}</td>
+                    <td>{{ $customer->user ? $customer->user->name : '-' }}</td>
 
                     <td>
                       <a href="{{ route('customers.show', $customer->id) }}" class="btn btn-info btn-sm">{{ __('詳細') }}</a>

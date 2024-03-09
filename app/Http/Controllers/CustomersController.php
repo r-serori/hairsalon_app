@@ -8,6 +8,7 @@ use App\Models\Hairstyle;
 use App\Models\Course;
 use App\Models\Option;
 use App\Models\Merchandise;
+use App\Models\User;
 
 
 
@@ -20,15 +21,10 @@ class CustomersController extends Controller{
      */
     public function index()
     {
-        $hairstyles = Hairstyle::all();
-        $courses = Course::all();
-        $options = Option::all();
-        $merchandises = Merchandise::all();
-        
         // 顧客データを取得し、各外部キーに対応するモデルのインスタンスをロードする
-        $customers = Customers::with('hairstyle', 'course', 'option', 'merchandise')->get();
+        $customers = Customers::with('user','hairstyle', 'course', 'option', 'merchandise')->get();
     
-        return view('jobs.customers.index', compact('customers', 'hairstyles', 'courses', 'options', 'merchandises'));
+        return view('jobs.customers.index', compact('customers'));
     }
     
     
@@ -44,8 +40,9 @@ class CustomersController extends Controller{
         $courses = Course::all();
         $options = Option::all();
         $merchandises = Merchandise::all();
+        $users = User::all();
 
-        return view('jobs.customers.create', compact('hairstyles', 'courses', 'options', 'merchandises'));
+        return view('jobs.customers.create', compact('users','hairstyles', 'courses', 'options', 'merchandises'));
     }
 
     /**
@@ -69,8 +66,11 @@ class CustomersController extends Controller{
      */
     public function show($id)
     {
-        Customers::find($id);
-        return view('jobs.customers.show', compact('customers'));
+             // 指定されたIDの顧客データを取得
+             $customer = Customers::findOrFail($id);
+        
+             // showビューにデータを渡して表示
+             return view('jobs.customers.show', compact('customer'));
     }
 
     /**
@@ -81,8 +81,17 @@ class CustomersController extends Controller{
      */
     public function edit($id)
     {
-        Customers::find($id);
-        return view('jobs.customers.edit', compact('customers'));
+        $customer = Customers::findOrFail($id);
+
+        // すべての髪型、コース、オプション、物販データを取得
+        $hairstyles = Hairstyle::all();
+        $courses = Course::all();
+        $options = Option::all();
+        $merchandises = Merchandise::all();
+        $users = User::all();
+
+        // editビューにデータを渡して表示
+        return view('jobs.customers.edit', compact('customer', 'users','hairstyles', 'courses', 'options', 'merchandises'));
     }
 
     /**
@@ -94,7 +103,25 @@ class CustomersController extends Controller{
      */
     public function update(Request $request, $id)
     {
-        Customers::find($id)->update($request->all());
+        // 指定されたIDの顧客データを取得
+        $customer = Customers::findOrFail($id);
+
+        // フォームからの入力を検証
+        $validatedData = $request->validate([
+            'name' => 'required|string',
+            'phone_number' => 'required|string',
+            'features' => 'nullable|string',
+            'hairstyle_id' => 'nullable|exists:hairstyles,id',
+            'course_id' => 'nullable|exists:courses,id',
+            'option_id' => 'nullable|exists:options,id',
+            'user_id' => 'nullable|exists:users,id',
+            'merchandise_id' => 'nullable|exists:merchandises,id',
+        ]);
+
+        // 顧客データを更新
+        $customer->update($validatedData);
+
+        // index画面にリダイレクト
         return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
     }
 
@@ -106,7 +133,14 @@ class CustomersController extends Controller{
      */
     public function destroy($id)
     {
-        Customers::find($id)->delete();
-        return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
+    
+            // 指定されたIDの顧客データを取得
+            $customer = Customers::findOrFail($id);
+        
+            // データを削除
+            $customer->delete();
+        
+            // 顧客一覧ページにリダイレクト
+            return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }
 }
