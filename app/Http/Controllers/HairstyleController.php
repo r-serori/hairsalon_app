@@ -12,7 +12,10 @@ class HairstyleController extends Controller{
      */
     public function index()
     {
-        return view('courses.hairstyle');
+        $hairstyles = \App\Models\Hairstyle::all();
+        return view('menus.hairstyles.index', compact('hairstyles'));
+
+        
     }
 
     /**
@@ -22,7 +25,8 @@ class HairstyleController extends Controller{
      */
     public function create()
     {
-        //
+        return view('menus.hairstyles.create');
+        
     }
 
     /**
@@ -33,7 +37,8 @@ class HairstyleController extends Controller{
      */
     public function store(Request $request)
     {
-        //
+        \App\Models\Hairstyle::create($request->all());
+        return redirect()->route('hairstyle.index');
     }
 
     /**
@@ -44,7 +49,8 @@ class HairstyleController extends Controller{
      */
     public function show($id)
     {
-        //
+        $hairstyle = \App\Models\Hairstyle::find($id);
+        return view('menus.hairstyles.show', compact('hairstyle'));
     }
 
     /**
@@ -55,7 +61,8 @@ class HairstyleController extends Controller{
      */
     public function edit($id)
     {
-        //
+        $hairstyle = \App\Models\Hairstyle::find($id);
+        return view('menus.hairstyles.edit', compact('hairstyle'));
     }
 
     /**
@@ -67,7 +74,8 @@ class HairstyleController extends Controller{
      */
     public function update(Request $request, $id)
     {
-        //
+        \App\Models\Hairstyle::find($id)->update($request->all());
+        return redirect()->route('hairstyle.index');
     }
 
     /**
@@ -78,6 +86,8 @@ class HairstyleController extends Controller{
      */
     public function destroy($id)
     {
-        //
+    
+        \App\Models\Hairstyle::destroy($id);
+        return redirect()->route('hairstyle.index');
     }
 }

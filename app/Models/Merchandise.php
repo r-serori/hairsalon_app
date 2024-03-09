@@ -13,4 +13,9 @@ class Merchandise extends Model
         'price',
         'created_at',
     ];
+
+    public function customers()
+    {
+        return $this->hasMany(Customers::class);
+    }
 }

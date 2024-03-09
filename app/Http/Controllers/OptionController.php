@@ -10,9 +10,16 @@ class OptionController extends Controller{
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('courses.option');
+        $search = $request->input('search');
+        
+        $options = \App\Models\Option::query()
+        ->where('option_name', 'like', '%'.$search.'%')
+        ->paginate(20)
+        ;
+
+        return view('menus.options.index', compact('options'));
     }
 
     /**
@@ -22,7 +29,7 @@ class OptionController extends Controller{
      */
     public function create()
     {
-        //
+        return view('menus.options.create');
     }
 
     /**
@@ -33,7 +40,8 @@ class OptionController extends Controller{
      */
     public function store(Request $request)
     {
-        //
+        \App\Models\Option::create($request->all());
+        return redirect()->route('option.index');
     }
 
     /**
@@ -44,7 +52,8 @@ class OptionController extends Controller{
      */
     public function show($id)
     {
-        //
+        $option = \App\Models\Option::find($id);
+        return view('menus.options.show', compact('option'));
     }
 
     /**
@@ -55,7 +64,8 @@ class OptionController extends Controller{
      */
     public function edit($id)
     {
-        //
+        $option = \App\Models\Option::find($id);
+        return view('menus.options.edit', compact('option'));
     }
 
     /**
@@ -67,7 +77,8 @@ class OptionController extends Controller{
      */
     public function update(Request $request, $id)
     {
-        //
+        \App\Models\Option::find($id)->update($request->all());
+        return redirect()->route('option.index');
     }
 
     /**
@@ -78,6 +89,7 @@ class OptionController extends Controller{
      */
     public function destroy($id)
     {
-        //
+        \App\Models\Option::destroy($id);
+        return redirect()->route('option.index');
     }
 }

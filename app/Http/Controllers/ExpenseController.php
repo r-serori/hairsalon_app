@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Expense;
 
 class ExpenseController extends Controller{
     /**
@@ -12,7 +13,8 @@ class ExpenseController extends Controller{
      */
     public function index()
     {
-        return view('stores.expense');
+        $expenses = Expense::all();
+        return view('stores.expenses.index', compact('expenses'));
     }
 
     /**
@@ -22,7 +24,8 @@ class ExpenseController extends Controller{
      */
     public function create()
     {
-        //
+        return view('stores.expenses.create');
+
     }
 
     /**
@@ -33,7 +36,8 @@ class ExpenseController extends Controller{
      */
     public function store(Request $request)
     {
-        //
+        Expense::create($request->all());
+        return redirect()->route('expense.index')->with('success', '経費を登録しました。');
     }
 
     /**
@@ -44,7 +48,8 @@ class ExpenseController extends Controller{
      */
     public function show($id)
     {
-        //
+        $expense = Expense::find($id);
+        return view('stores.expenses.show', compact('expense'));    
     }
 
     /**
@@ -55,7 +60,8 @@ class ExpenseController extends Controller{
      */
     public function edit($id)
     {
-        //
+        $expense = Expense::find($id);
+        return view('stores.expenses.edit', compact('expense'));    
     }
 
     /**
@@ -67,7 +73,8 @@ class ExpenseController extends Controller{
      */
     public function update(Request $request, $id)
     {
-        //
+        Expense::find($id)->update($request->all());
+        return redirect()->route('expense.index')->with('success', '経費を更新しました。');
     }
 
     /**
@@ -78,6 +85,7 @@ class ExpenseController extends Controller{
      */
     public function destroy($id)
     {
-        //
+        Expense::find($id)->delete();
+        return redirect()->route('expense.index')->with('success', '経費を削除しました。');
     }
 }

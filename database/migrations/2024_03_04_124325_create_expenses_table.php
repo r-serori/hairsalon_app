@@ -15,7 +15,6 @@ return new class extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('stock_id')->constrained('stocks')->onDelete('cascade')->onUpdate('cascade');// 外部キー制約
             $table->string('expense_name', 100);// 経費名
             $table->integer('price');// 金額
             $table->string('remarks', 100)->nullable();// 備考

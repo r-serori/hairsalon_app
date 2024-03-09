@@ -3,6 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Customers;
+use App\Models\Hairstyle;
+use App\Models\Course;
+use App\Models\Option;
+use App\Models\Merchandise;
+
+
+
 
 class CustomersController extends Controller{
     /**
@@ -12,8 +20,18 @@ class CustomersController extends Controller{
      */
     public function index()
     {
-        return view('jobs.customers');
+        $hairstyles = Hairstyle::all();
+        $courses = Course::all();
+        $options = Option::all();
+        $merchandises = Merchandise::all();
+        
+        // 顧客データを取得し、各外部キーに対応するモデルのインスタンスをロードする
+        $customers = Customers::with('hairstyle', 'course', 'option', 'merchandise')->get();
+    
+        return view('jobs.customers.index', compact('customers', 'hairstyles', 'courses', 'options', 'merchandises'));
     }
+    
+    
 
     /**
      * Show the form for creating a new resource.
@@ -22,7 +40,12 @@ class CustomersController extends Controller{
      */
     public function create()
     {
-        //
+        $hairstyles = Hairstyle::all();
+        $courses = Course::all();
+        $options = Option::all();
+        $merchandises = Merchandise::all();
+
+        return view('jobs.customers.create', compact('hairstyles', 'courses', 'options', 'merchandises'));
     }
 
     /**
@@ -33,7 +56,9 @@ class CustomersController extends Controller{
      */
     public function store(Request $request)
     {
-        //
+        Customers::create($request->all());
+        return redirect()->route('customers.index')->with('success', 'Customer created successfully.');
+
     }
 
     /**
@@ -44,7 +69,8 @@ class CustomersController extends Controller{
      */
     public function show($id)
     {
-        //
+        Customers::find($id);
+        return view('jobs.customers.show', compact('customers'));
     }
 
     /**
@@ -55,7 +81,8 @@ class CustomersController extends Controller{
      */
     public function edit($id)
     {
-        //
+        Customers::find($id);
+        return view('jobs.customers.edit', compact('customers'));
     }
 
     /**
@@ -67,7 +94,8 @@ class CustomersController extends Controller{
      */
     public function update(Request $request, $id)
     {
-        //
+        Customers::find($id)->update($request->all());
+        return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
     }
 
     /**
@@ -78,6 +106,7 @@ class CustomersController extends Controller{
      */
     public function destroy($id)
     {
-        //
+        Customers::find($id)->delete();
+        return redirect()->route('customers.index')->with('success', 'Customer deleted successfully.');
     }
 }

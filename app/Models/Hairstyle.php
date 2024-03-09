@@ -13,4 +13,9 @@ class Hairstyle extends Model
         'created_at',
     ];
 
+    public function customers()
+    {
+        return $this->hasMany(Customers::class);
+    }
+
 }

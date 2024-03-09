@@ -12,7 +12,10 @@ class CourseController extends Controller{
      */
     public function index()
     {
-        return view('courses.course');
+        $courses = \App\Models\Course::all();
+        return view('menus.courses.index', compact('courses'));
+
+        
     }
 
     /**
@@ -22,7 +25,8 @@ class CourseController extends Controller{
      */
     public function create()
     {
-        //
+        return view('menus.courses.create');
+        
     }
 
     /**
@@ -33,7 +37,8 @@ class CourseController extends Controller{
      */
     public function store(Request $request)
     {
-        //
+        \App\Models\Course::create($request->all());
+        return redirect()->route('course.index');
     }
 
     /**
@@ -44,7 +49,8 @@ class CourseController extends Controller{
      */
     public function show($id)
     {
-        //
+        $course = \App\Models\Course::find($id);
+        return view('menus.courses.show', compact('course'));
     }
 
     /**
@@ -55,7 +61,8 @@ class CourseController extends Controller{
      */
     public function edit($id)
     {
-        //
+        $course = \App\Models\Course::find($id);
+        return view('menus.courses.edit', compact('course'));
     }
 
     /**
@@ -67,7 +74,8 @@ class CourseController extends Controller{
      */
     public function update(Request $request, $id)
     {
-        //
+        \App\Models\Course::find($id)->update($request->all());
+        return redirect()->route('course.index');
     }
 
     /**
@@ -78,6 +86,8 @@ class CourseController extends Controller{
      */
     public function destroy($id)
     {
-        //
+    
+        \App\Models\Course::destroy($id);
+        return redirect()->route('course.index');
     }
 }

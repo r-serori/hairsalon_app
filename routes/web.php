@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceTimesController;
 use App\Http\Controllers\MerchandiseController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CustomersController;
@@ -12,7 +13,6 @@ use App\Http\Controllers\OptionController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SalesController;
 use App\Http\Controllers\StocksController;
-
 
 
 
@@ -30,6 +30,16 @@ use App\Http\Controllers\StocksController;
 */
 
 Route::resource('attendance', AttendanceController::class)->middleware('auth');
+
+Route::resource('attendance_times', AttendanceTimesController::class)->middleware('auth');
+Route::get('/attendance_times/{attendance_id}', [AttendanceTimesController::class, 'index'])->name('attendance_times.index');
+Route::get('/attendance_times/create/{attendance_id}', [AttendanceTimesController::class, 'create'])->name('attendance_times.create');
+Route::post('/attendance_times/{attendance_id}', [AttendanceTimesController::class, 'store'])->name('attendance_times.store');
+
+
+
+
+
 Route::resource('merchandise', MerchandiseController::class)->middleware('auth');
 Route::resource('course', CourseController::class)->middleware('auth');
 Route::resource('customers', CustomersController::class)->middleware('auth');

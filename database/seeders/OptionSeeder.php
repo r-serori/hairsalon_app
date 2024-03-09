@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Option;
+use Illuminate\Support\Facades\DB;
 
 class OptionSeeder extends Seeder
 {
@@ -14,6 +16,20 @@ class OptionSeeder extends Seeder
      */
     public function run()
     {
-        //
+        DB::table('options')->insert([
+            'option_name' => 'エステA',
+            'price' => 3000,
+            'created_at' => now(),
+        ]);
+        DB::table('options')->insert([
+            'option_name' => 'エステB',
+            'price' => 500,
+            'created_at' => now(),
+        ]);
+        DB::table('options')->insert([
+            'option_name' => 'クレンジング',
+            'price' => 1000,
+            'created_at' => now(),
+        ]);
     }
 }

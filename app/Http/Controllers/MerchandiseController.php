@@ -10,9 +10,15 @@ class MerchandiseController extends Controller{
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('courses.merchandise');
+        $search = $request->input('search');
+
+        $merchandises = \App\Models\Merchandise::query()
+        ->where('merchandise_name', 'like', '%'.$search.'%')
+        ->paginate(20);
+
+        return view('menus.merchandises.index', compact('merchandises'));
     }
 
     /**
@@ -22,7 +28,7 @@ class MerchandiseController extends Controller{
      */
     public function create()
     {
-        //
+        return view('menus.merchandises.create');
     }
 
     /**
@@ -33,7 +39,8 @@ class MerchandiseController extends Controller{
      */
     public function store(Request $request)
     {
-        //
+        \App\Models\Merchandise::create($request->all());
+        return redirect()->route('merchandise.index');
     }
 
     /**
@@ -44,7 +51,8 @@ class MerchandiseController extends Controller{
      */
     public function show($id)
     {
-        //
+        $merchandise = \App\Models\Merchandise::find($id);
+        return view('menus.merchandises.show', compact('merchandise'));
     }
 
     /**
@@ -55,7 +63,8 @@ class MerchandiseController extends Controller{
      */
     public function edit($id)
     {
-        //
+        $merchandise = \App\Models\Merchandise::find($id);
+        return view('menus.merchandises.edit', compact('merchandise'));
     }
 
     /**
@@ -67,7 +76,8 @@ class MerchandiseController extends Controller{
      */
     public function update(Request $request, $id)
     {
-        //
+        \App\Models\Merchandise::find($id)->update($request->all());
+        return redirect()->route('merchandise.index');
     }
 
     /**
@@ -78,6 +88,7 @@ class MerchandiseController extends Controller{
      */
     public function destroy($id)
     {
-        //
+        \App\Models\Merchandise::destroy($id);
+        return redirect()->route('merchandise.index');
     }
 }

@@ -10,15 +10,16 @@ class Attendance extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'id',
         'name',
         'position',
-        'start_time',
-        'end_time',
-        'break_time',
+        'phone_number',
         'address',
         'created_at',
-        //外部キーの追加
-        'users_id',
     ];
+    public function attendance_times()
+    {
+        return $this->hasMany('App\Models\Attendance_times');
+    }
 
 }

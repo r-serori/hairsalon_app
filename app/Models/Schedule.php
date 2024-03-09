@@ -22,4 +22,9 @@ class Schedule extends Model
         'users_id',
         'courses_id',
     ];
+
+    public function customers()
+    {
+        return $this->hasMany(Customers::class);
+    }
 }

@@ -14,6 +14,7 @@ class Stocks extends Model
         'quantity',
         'purchase_price',
         'supplier',
+        'remarks',
         'created_at',
      
     ];
