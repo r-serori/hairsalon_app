@@ -9,11 +9,11 @@
 
     <div class="container mx-auto py-6">
         <div class="max-w-2xl mx-auto">
-            <form action="{{ route('course.store') }}" method="POST">
+            <form action="{{ route('courses.store') }}" method="POST">
                 @csrf
                 <div class="mb-4">
                     <label for="course_name" class="block text-gray-700 text-sm font-bold mb-2">コース名</label>
-                    <input type="text" name="course_name" id="course_name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"placeholder="コース名を入力してください>
+                    <input type="text" name="course_name" id="course_name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"placeholder="コース名を入力してください">
                 </div>
                 <div class="mb-4">
                     <label for="price" class="block text-gray-700 text-sm font-bold mb-2">料金</label>

@@ -9,7 +9,7 @@
 
     <div class="container mx-auto py-6">
         <div class="max-w-2xl mx-auto">
-            <form action="{{ route('option.update', $option->id) }}" method="POST">
+            <form action="{{ route('options.update', $option->id) }}" method="POST">
                 @csrf
                 @method('PUT')
                 <div class="mb-4">

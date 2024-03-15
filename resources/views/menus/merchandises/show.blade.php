@@ -38,12 +38,13 @@
                                         <div class="text-sm text-gray-900">{{ $merchandise->price }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <form action="{{ route('merchandise.destroy', $merchandise->id) }}" method="POST" class="inline">
+                                    <a href="{{ route('merchandises.edit', $merchandise->id) }}" class="text-blue-600 hover:text-blue-900 mr-2">編集</a>
+                                        <form action="{{ route('merchandises.destroy', $merchandise->id) }}" method="POST" class="inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-indigo-600 hover:text-indigo-900 mr-2">削除</button>
                                         </form>
-                                        <a href="{{ route('merchandise.edit', $merchandise->id) }}" class="text-blue-600 hover:text-blue-900 mr-2">編集</a>
+                                      
                                     </td>
                                 </tr>
 

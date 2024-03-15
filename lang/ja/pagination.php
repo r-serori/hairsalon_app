@@ -11,8 +11,19 @@ return [
     | 自由に変更してください。
     |
     */
-
-    'previous' => '&laquo; 前',
-    'next' => '次 &raquo;',
-
+    'previous' => '前へ',
+    'next' => '次へ',
+    'first' => '最初',
+    'last' => '最後',
+    'page' => 'ページ',
+    'page_of' => 'の',
+    'items' => '件',
+    'item' => '件',
+    'page_of' => 'の',
+    'showing' => '表示中',
+    'to' => 'から',
+    'of' => 'の',
+    
+    'total' => '件中',
+    'results' => '結果',
 ];

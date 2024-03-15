@@ -2,15 +2,25 @@
     <x-slot name="header">
         <h1>Attendance Times</h1>
     </x-slot>
-       
+
     <div class="container">
         <div class="row mb-3">
             <div class="col">
-                <a href="{{ route('attendance_times.create', ['attendance_id' => $attendance->id]) }}" class="btn btn-primary">新規作成</a>
+                <a href="{{ route('attendance_times.create', ['attendance_id' => $attendanceId]) }}" class="btn btn-primary">新規作成</a>
             </div>
         </div>
 
-
+        <div class="row mb-3">
+            <div class="col">
+                <form action="{{ route('attendance_times.search') }}" method="GET">
+                    <div class="form-group">
+                        <label for="search-date">日付：</label>
+                        <input type="text" id="search-date" name="search_date" class="form-control" placeholder="YYYY-MM-DD">
+                    </div>
+                    <button type="submit" class="btn btn-primary">検索</button>
+                </form>
+            </div>
+        </div>
 
         <div class="container">
             <table class="table table-bordered">
@@ -25,23 +35,24 @@
                 </thead>
                 <tbody>
                     @foreach($attendanceTimes as $attendanceTime)
-                        <tr>
-                            <td>{{ $attendanceTime->date }}</td>
-                            <td>{{ $attendanceTime->start_time }}</td>
-                            <td>{{ $attendanceTime->end_time }}</td>
-                            <td>{{ $attendanceTime->break_time }}</td>
-                            <td>
-                                <a href="{{ route('attendance_times.edit', $attendanceTime->id) }}" class="btn btn-success">編集</a>
-                                <form action="{{ route('attendance_times.destroy', $attendanceTime->id) }}" method="POST" style="display:inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger">削除</button>
-                                </form>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ $attendanceTime->date }}</td>
+                        <td>{{ $attendanceTime->start_time }}</td>
+                        <td>{{ $attendanceTime->end_time }}</td>
+                        <td>{{ $attendanceTime->break_time }}</td>
+                        <td>
+                            <a href="{{ route('attendance_times.edit', $attendanceTime->id) }}" class="btn btn-success">編集</a>
+                            <form action="{{ route('attendance_times.destroy', $attendanceTime->id) }}" method="POST" style="display:inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger">削除</button>
+                            </form>
+                        </td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     </div>
+
 </x-app-layout>

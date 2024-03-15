@@ -6,25 +6,12 @@
         @csrf
 
 
-        <!-- Name -->
+        <!-- ID -->
         <div>
-            <x-input-label for="name" :value="__('名前')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <x-input-label for="login_id" :value="__('login_id')" />
+            <x-text-input id="login_id" class="block mt-1 w-full" type="text" name="login_id" :value="old('login_id')" required autofocus autocomplete="login_id" />
+            <x-input-error :messages="$errors->get('login_id')" class="mt-2" />
         </div>
-
-
-       <!-- Position -->
-<div class="mt-4">
-    <x-input-label for="position" :value="__('役職')" />
-    <select id="position" name="position" class="block w-full mt-1 rounded-md shadow-sm border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required autocomplete="position">
-        <option value="owner" {{ old('position') == 'owner' ? 'selected' : '' }}>オーナー</option>
-        <option value="employee" {{ old('position') == 'employee' ? 'selected' : '' }}>社員</option>
-    </select>
-    <x-input-error :messages="$errors->get('position')" class="mt-2" />
-</div>
-
-
 
         <!-- Password -->
         <div class="mt-4">

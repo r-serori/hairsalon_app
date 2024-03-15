@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Attendance_times;
-use App\Models\Attendance;
-
+use App\Models\attendance_times;
+use App\Models\attendances;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceTimesController extends Controller
 {
@@ -14,33 +15,62 @@ class AttendanceTimesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request, $id)
-    {       
-        // 検索フォームで入力された日付を取得
-        $search = $request->input('search');
+    public function index(Request $request)
+    {
+        $attendanceId = $request->query('attendance_id');
     
-        // データを取得
-        $query = Attendance_times::where('attendance_id', $id);
+        // 出席時間データを取得
+        $attendanceTimes = attendance_times::where('attendance_id', $attendanceId)->orderBy('date', 'desc')->get();
     
-        // 日付の範囲を指定して検索
-        if ($search) {
-            // 日付がYYYY/MMの形式で入力されていることを想定して、年月を取得して検索条件に追加
-            $dateParts = explode('/', $search);
-            $year = $dateParts[0];
-            $month = $dateParts[1];
-    
-            $query->whereYear('date', $year)
-                ->whereMonth('date', $month);
-        }
-    
-        // データを取得
-        $attendanceTimes = $query->get();
+        // 出席情報を取得
+        $attendance = attendances::find($attendanceId);
 
-        $attendance = Attendance::find($id);
     
         // ビューにデータを渡す
-        return view('jobs.attendance_times.show', compact('attendanceTimes', 'attendance'));
+        return view('jobs.attendance_times.index', compact('attendanceTimes', 'attendanceId', 'attendance'));
     }
+    
+    /**
+     * Search for attendance times.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function search(Request $request, $attendance_id)
+    {
+        // 検索フォームから入力された年月を取得
+        $searchDate = $request->input('search_date');
+    
+        // 年月が入力されている場合、年と月に分割
+        $searchYear = null;
+        $searchMonth = null;
+        if ($searchDate) {
+            list($searchYear, $searchMonth) = explode('-', $searchDate);
+        }
+    
+        // 出席時間データを取得するクエリを実行
+        $query = attendance_times::where('attendance_id', $attendance_id);
+    
+        // 年の検索条件を追加
+        if ($searchYear) {
+            $query->whereYear('date', $searchYear);
+        }
+    
+        // 月の検索条件を追加
+        if ($searchMonth) {
+            $query->whereMonth('date', $searchMonth);
+        }
+    
+        // 出席時間データを取得
+        $attendanceTimes = $query->orderBy('date', 'desc')->get();
+    
+        // 検索結果を表示するビューを返す
+        return view('jobs.attendance_times.search_result', compact('attendanceTimes', 'attendance_id', 'searchYear', 'searchMonth'));
+    }
+    
+    
+    
+
 
 
     /**
@@ -48,19 +78,13 @@ class AttendanceTimesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create($id)
+    public function create(Request $request)
     {
-        // $attendance_idに対応するデータを取得するクエリを実行
-       
-        
-        $attendance = Attendance::find($id);
-
-        
-        // 取得したデータをビューに渡す
-        return view('jobs.attendance_times.create', compact('attendance'));
+        $attendanceId = $request->query('attendance_id');
 
 
-
+        // ビューにデータを渡す
+        return view('jobs.attendance_times.create', compact('attendanceId'));
     }
 
     /**
@@ -71,32 +95,27 @@ class AttendanceTimesController extends Controller
      */
     public function store(Request $request)
     {
-        
-            
-                // リクエストからデータを検証
-                $request->validate([
-                    'date' => 'required',
-                    'start_time' => 'required',
-                    'end_time' => 'required',
-                    'break_time' => 'required',
-                ]);
-            
-                // リクエストから受け取ったデータを使用してレコードを作成
-                Attendance_times::create([
-                    'date' => $request->date,
-                    'start_time' => $request->start_time,
-                    'end_time' => $request->end_time,
-                    'break_time' => $request->break_time,
-                    'attendance_id' => $request->attendance_id, 
+        // リクエストからデータを検証
+        $request->validate([
+            'date' => 'required',
+            'start_time' => 'required',
+            'end_time' => 'required',
+            'break_time' => 'required',
+        ]);
 
-                ]);
-            
-            
-                return redirect()->route('attendance_times.index', $request->attendance_id)->with('success', 'Attendance time created successfully');
-            
-            
+        // リクエストから受け取ったデータを使用してレコードを作成
+        attendance_times::create([
+            'date' => $request->date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'break_time' => $request->break_time,
+            'attendance_id' => $request->attendance_id,
+        ]);
 
+        // 新規作成後に index 画面にリダイレクトする
+        return redirect()->route('attendance_times.index', ['attendance_id' => $request->attendance_id])->with('success', 'Attendance time created successfully');
     }
+
 
     /**
      * Display the specified resource.
@@ -104,34 +123,31 @@ class AttendanceTimesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request,$id)
+    public function show(Request $request, $id)
     {
-         // 検索フォームで入力された日付を取得
-         $search = $request->input('search');
+        $attendanceId = $request->query('attendance_id');
     
-         // データを取得
-         $query = Attendance_times::where('attendance_id', $id);
-     
-         // 日付の範囲を指定して検索
-         if ($search) {
-             // 日付がYYYY/MMの形式で入力されていることを想定して、年月を取得して検索条件に追加
-             $dateParts = explode('/', $search);
-             $year = $dateParts[0];
-             $month = $dateParts[1];
-     
-             $query->whereYear('date', $year)
-                 ->whereMonth('date', $month);
-         }
-     
-         // データを取得
-         $attendanceTimes = $query->get();
- 
-         $attendance = Attendance::find($id);
-     
-         // ビューにデータを渡す
-         return view('jobs.attendance_times.show', compact('attendanceTimes', 'attendance'));
+        // 検索フォームから入力された年月を取得
+        $searchDate = $request->input('search_date');
+    
+        // 出席時間データを取得するクエリを実行
+        $query = attendance_times::where('attendance_id', $attendanceId);
+    
+        // 日付の検索条件を追加
+        if ($searchDate) {
+            $query->where('date', 'LIKE', "$searchDate%");
+        }
+    
+        // 出席時間データを取得
+        $attendanceTimes = $query->orderBy('date', 'desc')->get();
+    
+        // 出席情報を取得
+        $attendance = attendances::find($attendanceId);
+    
+        // ビューにデータを渡す
+        return view('jobs.attendance_times.show', compact('attendanceTimes', 'attendanceId'));
     }
-    
+
 
     /**
      * Show the form for editing the specified resource.
@@ -142,7 +158,7 @@ class AttendanceTimesController extends Controller
     public function edit($id)
     {
 
-        $attendanceTime = Attendance_times::find($id);
+        $attendanceTime = attendance_times::find($id);
         // $attendance からデータを取得してビューに渡す
         // $attendanceTimes からデータを取得してビューに渡す
         return view('jobs.attendance_times.edit', compact('attendanceTime'));
@@ -155,23 +171,30 @@ class AttendanceTimesController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
     public function update(Request $request, $id)
     {
-            
-
-            
-                // リクエストから受け取ったデータを使用してレコードを更新
-                Attendance_times::where('id', $id)->update([
-                    'date' => $request->date,
-                    'start_time' => $request->start_time,
-                    'end_time' => $request->end_time,
-                    'break_time' => $request->break_time,
-                ]);
-            
-                return redirect()->route('attendance_times.show', $request->attendance_time)->with('success', 'Attendance time updated successfully');
-            
-        
+        // リクエストから受け取ったデータを使用してレコードを更新
+        attendance_times::where('id', $id)->update([
+            'date' => $request->date,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'break_time' => $request->break_time,
+            'attendance_id' => $request->attendance_id,
+        ]);
+    
+        // 更新後に index 画面にリダイレクトする
+        return redirect()->route('attendance_times.index', ['attendance_id' => $request->attendance_id])->with('success', 'Attendance time updated successfully');
     }
+    
+    
+
 
     /**
      * Remove the specified resource from storage.
@@ -181,12 +204,17 @@ class AttendanceTimesController extends Controller
      */
     public function destroy($id)
     {
-            
-                // レコードを削除
-                Attendance_times::destroy($id);
 
-            
-                return redirect()->route('attendance.index')->with('success', 'Attendance time deleted successfully');
+
+        $attendanceId = attendance_times::find($id);
+
+        // レコードを削除
+        attendance_times::destroy($id);
+
+        // 削除後に index 画面にリダイレクトする
+
+
+
+        return redirect()->route('attendance_times.index', ['attendance_id' => $attendanceId->attendance_id])->with('success', 'Attendance time created successfully');
     }
-
 }

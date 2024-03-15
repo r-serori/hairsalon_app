@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Stocks;
 use Illuminate\Http\Request;
+use App\Models\stocks;
 
-class StocksController extends Controller{
+class StocksController extends Controller
+{
     /**
      * Display a listing of the resource.
      *
@@ -15,7 +16,7 @@ class StocksController extends Controller{
     {
         $search = $request->input('search');
     
-        $stocks = Stocks::query()
+        $stocks = stocks::query()
             ->where('product_name', 'like', '%'.$search.'%')
             ->orWhere('category', 'like', '%'.$search.'%')
             ->paginate(20);
@@ -41,7 +42,7 @@ class StocksController extends Controller{
      */
     public function store(Request $request)
     {
-        \App\Models\Stocks::create($request->all());
+        \App\Models\stocks::create($request->all());
         return redirect()->route('stocks.index')->with('success', '在庫を登録しました。');
     }
 
@@ -53,7 +54,7 @@ class StocksController extends Controller{
      */
     public function show($id)
     {
-        $stock = \App\Models\Stocks::find($id);
+        $stock = \App\Models\stocks::find($id);
         return view('stores.stocks.show', compact('stock'));
     }
 
@@ -65,7 +66,7 @@ class StocksController extends Controller{
      */
     public function edit($id)
     {
-        $stock = \App\Models\Stocks::find($id);
+        $stock = \App\Models\stocks::find($id);
         return view('stores.stocks.edit', compact('stock'));
     }
 
@@ -78,7 +79,7 @@ class StocksController extends Controller{
      */
     public function update(Request $request, $id)
     {
-        \App\Models\Stocks::find($id)->update($request->all());
+        \App\Models\stocks::find($id)->update($request->all());
         return redirect()->route('stocks.index')->with('success', '在庫を更新しました。');
     }
 
@@ -90,7 +91,9 @@ class StocksController extends Controller{
      */
     public function destroy($id)
     {
-        \App\Models\Stocks::destroy($id);
+        \App\Models\stocks::destroy($id);
         return redirect()->route('stocks.index')->with('success', '在庫を削除しました。');
     }
 }
+
+

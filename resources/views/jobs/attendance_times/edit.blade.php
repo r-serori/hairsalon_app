@@ -23,6 +23,9 @@
                 <label for="break_time">休憩時間（時間）</label>
                 <input type="text" class="form-control" id="break_time" name="break_time" value="{{ $attendanceTime->break_time }}">
             </div>
+
+            <input type="hidden" name="attendance_id" value="{{ $attendanceTime->attendance_id }}">
+
             <button type="submit" class="btn btn-primary">更新</button>
         </form>
     </div>

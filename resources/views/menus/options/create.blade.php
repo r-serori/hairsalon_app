@@ -9,7 +9,7 @@
 
     <div class="container mx-auto py-6">
         <div class="max-w-2xl mx-auto">
-            <form action="{{ route('option.store') }}" method="POST">
+            <form action="{{ route('options.store') }}" method="POST">
                 @csrf
                 <div class="mb-4">
                     <label for="option_name" class="block text-gray-700 text-sm font-bold mb-2">オプション名</label>

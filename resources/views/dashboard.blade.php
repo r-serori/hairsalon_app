@@ -24,7 +24,7 @@
                 
                     @switch($i)
                         @case(1)
-                        <a href="{{ route('attendance.index') }}" class="block w-full h-full">
+                        <a href="{{ route('attendances.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
                     </a>
                             @break
@@ -35,12 +35,12 @@
                     </a>
                             @break
                         @case(3)
-                           <a href="{{ route('sales.index') }}" class="block w-full h-full">
+                           <a href="{{ route('daily_sales.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
                     </a>
                             @break
                         @case(4)
-                           <a href="{{ route('schedule.index') }}" class="block w-full h-full">
+                           <a href="{{ route('schedules.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
                     </a>
                             @break
@@ -50,27 +50,27 @@
                     </a>
                             @break
                         @case(6)
-                           <a href="{{ route('expense.index') }}" class="block w-full h-full">
+                           <a href="{{ route('expenses.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
                     </a>
                             @break
                         @case(7)
-                           <a href="{{ route('course.index') }}" class="block w-full h-full">
+                           <a href="{{ route('courses.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
                     </a>
                             @break
                         @case(8)
-                           <a href="{{ route('option.index') }}" class="block w-full h-full">
+                           <a href="{{ route('options.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
                     </a>
                             @break
                         @case(9)
-                           <a href="{{ route('merchandise.index') }}" class="block w-full h-full">
+                           <a href="{{ route('merchandises.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
                     </a>
                             @break
                         @case(10)
-                           <a href="{{ route('hairstyle.index') }}" class="block w-full h-full">
+                           <a href="{{ route('hairstyles.index') }}" class="block w-full h-full">
                     <img src="画像のURL" alt="コンテンツ{{ $i }}">
                     </a>
                             @break

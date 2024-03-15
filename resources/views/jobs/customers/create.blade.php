@@ -16,8 +16,8 @@
 
                 <!-- 名前 -->
                 <div class="mb-3">
-                  <label for="name" class="form-label">{{ __('名前') }}</label>
-                  <input type="text" class="form-control" id="name" name="name" required>
+                  <label for="customer_name" class="form-label">{{ __('名前') }}</label>
+                  <input type="text" class="form-control" id="customer_name" name="customer_name" required>
                 </div>
 
                 <!-- 電話番号 -->
@@ -28,68 +28,81 @@
 
                 <!-- 特徴 -->
                 <div class="mb-3">
-                  <label for="features" class="form-label">{{ __('特徴') }}</label>
-                  <textarea class="form-control" id="features" name="features" rows="3"></textarea>
+                  <label for="remarks" class="form-label">{{ __('特徴') }}</label>
+                  <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
                 </div>
 
                 <!-- 髪型 -->
                 <div class="mb-3">
-                  <label for="hairstyle_id" class="form-label">{{ __('髪型') }}</label>
-                  <select class="form-control" id="hairstyle_id" name="hairstyle_id">
-                    <option value="">選択しない</option> <!-- 選択しないオプションを追加 -->
-                    @foreach($hairstyles as $hairstyle)
-                    <option value="{{ $hairstyle->id }}">{{ $hairstyle->hairstyle_name }}</option>
-                    @endforeach
-                  </select>
+                  <label for="hairstyles" class="form-label">{{ __('髪型名') }}</label>
+                  @foreach($hairstyles as $hairstyle)
+                  <div>
+                    <input type="checkbox" id="hairstyle_{{ $hairstyle->id }}" name="hairstyles_id[]" value="{{ $hairstyle->id }}">
+                    <label for="hairstyle_{{ $hairstyle->id }}">{{ $hairstyle->hairstyle_name }}</label>
+                  </div>
+                  @endforeach
                 </div>
 
-                <!-- コース名 -->
+                <!-- コース -->
                 <div class="mb-3">
-                  <label for="course_id" class="form-label">{{ __('コース名') }}</label>
-                  <select class="form-control" id="course_id" name="course_id">
-                    <option value="">選択しない</option> <!-- 選択しないオプションを追加 -->
-                    @foreach($courses as $course)
-                    <option value="{{ $course->id }}">{{ $course->course_name }}</option>
-                    @endforeach
-                  </select>
-                </div>
+                  <label for="courses" class="form-label">{{ __('コース名') }}</label>
+                  @foreach($courses as $course)
+                  <div>
+                    <input type="checkbox" id="course_{{ $course->id }}" name="courses_id[]" value="{{ $course->id }}">
+                    <label for="course_{{ $course->id }}">{{ $course->course_name }}</label>
+                  </div>
+                  @endforeach
 
                 <!-- オプション名 -->
                 <div class="mb-3">
-                  <label for="option_id" class="form-label">{{ __('オプション名') }}</label>
-                  <select class="form-control" id="option_id" name="option_id">
-                    <option value="">選択しない</option> <!-- 選択しないオプションを追加 -->
-                    @foreach($options as $option)
-                    <option value="{{ $option->id }}">{{ $option->option_name }}</option>
-                    @endforeach
-                  </select>
+                  <label for="options" class="form-label">{{ __('オプション名') }}</label>
+                  @foreach($options as $option)
+                  <div>
+                    <input type="checkbox" id="option_{{ $option->id }}" name="options_id[]" value="{{ $option->id }}">
+                    <label for="option_{{ $option->id }}">{{ $option->option_name }}</label>
+                  </div>
+                  @endforeach
                 </div>
+
+
 
                 <!-- 物販 -->
                 <div class="mb-3">
-                  <label for="merchandise_id" class="form-label">{{ __('物販') }}</label>
-                  <select class="form-control" id="merchandise_id" name="merchandise_id">
-                    <option value="">選択しない</option> <!-- 選択しないオプションを追加 -->
-                    @foreach($merchandises as $merchandise)
-                    <option value="{{ $merchandise->id }}">{{ $merchandise->merchandise_name }}</option>
-                    @endforeach
-                  </select>
+                  <label for="merchandises" class="form-label">{{ __('物販名') }}</label>
+                  @foreach($merchandises as $merchandise)
+                  <div>
+                    <input type="checkbox" id="merchandise_{{ $merchandise->id }}" name="merchandises_id[]" value="{{ $merchandise->id }}">
+                    <label for="merchandise_{{ $merchandise->id }}">{{ $merchandise->merchandise_name }}</label>
+                  </div>
+                  @endforeach
                 </div>
 
                 <!-- 担当者 -->
                 <div class="mb-3">
-                  <label for="user_id" class="form-label">{{ __('担当者') }}</label>
-                  <select class="form-control" id="user_id" name="user_id">
-                    <option value="">選択しない</option> <!-- 選択しないオプションを追加 -->
-                    @foreach($users as $user)
-                    <option value="{{ $user->id }}">{{ $user->name }}</option>
-                    @endforeach
-                  </select>
+                  <label for="attendance" class="form-label">{{ __('担当者') }}</label>
+                  @foreach($attendances as $attendance)
+                  <div>
+                    <input type="radio" id="attendance_{{ $attendance->id }}" name="attendances_id" value="{{ $attendance->id }}">
+                    <label for="attendance_{{ $attendance->id }}">{{ $attendance->attendance_name }}</label>
+                  </div>
+                  @endforeach
                 </div>
 
 
+                <!-- 新規or既存 -->
+                <div class="mb-3">
+                  <label for="new_customer" class="form-label">{{ __('新規or既存') }}</label>
+                  <div>
+                    <input type="radio" id="new_customer" name="new_customer" value="1">
+                    <label for="new_customer">{{ __('新規') }}</label>
+                  </div>
+                  <div>
+                    <input type="radio" id="old_customer" name="new_customer" value="0">
+                    <label for="old_customer">{{ __('既存') }}</label>
+                  </div>
 
-                <button type="submit" class="btn btn-primary">{{ __('作成') }}</button>
+
+                  <button type="submit" class="btn btn-primary">{{ __('作成') }}</button>
               </form>
             </div>
           </div>

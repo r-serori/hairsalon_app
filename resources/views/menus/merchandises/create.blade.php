@@ -9,7 +9,7 @@
 
     <div class="container mx-auto py-6">
         <div class="max-w-2xl mx-auto">
-            <form action="{{ route('merchandise.store') }}" method="POST">
+            <form action="{{ route('merchandises.store') }}" method="POST">
                 @csrf
                 <div class="mb-4">
                     <label for="merchandise_name" class="block text-gray-700 text-sm font-bold mb-2">オプション名</label>

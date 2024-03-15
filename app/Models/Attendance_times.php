@@ -1,12 +1,12 @@
 <?php
 
 namespace App\Models;
+use App\Models\attendances;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
-class Attendance_times extends Model
+class attendance_times extends Model
 {
     use HasFactory;
     protected $fillable = [
@@ -15,14 +15,12 @@ class Attendance_times extends Model
         'start_time',
         'end_time',
         'break_time',
-        'created_at',
-        'updated_at',
-        //外部キーの追加
         'attendance_id',
+        'created_at',
     ];
-    public function attendance()
-    {
-        return $this->belongsTo('App\Models\Attendance');
-    }
 
+    public function attendances()
+    {
+        return $this->belongsTo(attendances::class);
+    }
 }

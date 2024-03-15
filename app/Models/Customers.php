@@ -5,56 +5,52 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Hairstyle;
-use App\Models\Course;
-use App\Models\Option;
-use App\Models\Merchandise;
 
-
-class Customers extends Model
+class customers extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'name',
+        'id',
+        'customer_name',
         'phone_number',
-        'features',
+        'remarks',
+        'new_customer',
         'created_at',
-        'user_id',
-        'course_id',
-        'option_id',
-        'merchandise_id',
-        'hairstyle_id',
-        'schedule_id',
-
     ];
 
-    public function user()
+    public function courses()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToMany(courses::class, 'course_customers');
+    }
+    
+    public function options()
+    {
+        return $this->belongsToMany(options::class, 'option_customers');
     }
 
-    public function hairstyle()
+    public function merchandises()
     {
-        return $this->belongsTo(Hairstyle::class);
+        return $this->belongsToMany(merchandises::class, 'merchandise_customers');
+    }
+    
+    public function hairstyles()
+    {
+        return $this->belongsToMany(hairstyles::class, 'hairstyle_customers');
     }
 
-    public function course()
+    public function attendances()
     {
-        return $this->belongsTo(Course::class);
+        return $this->belongsToMany(attendances::class, 'customer_attendances', 'customers_id', 'attendances_id');
     }
 
-    public function option()
+    public function customer_attendances()
     {
-        return $this->belongsTo(Option::class);
+        return $this->hasMany(customer_attendances::class);
     }
 
-    public function merchandise()
+    public function schedules()
     {
-        return $this->belongsTo(Merchandise::class);
+        return $this->hasMany(schedules::class);
     }
 
-    public function schedule()
-    {
-        return $this->belongsTo(Schedule::class);
-    }
 }

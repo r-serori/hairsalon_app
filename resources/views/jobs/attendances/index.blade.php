@@ -4,6 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
                 勤怠管理画面
             </h2>
+            <a href="{{ route('attendances.create') }}" class="btn btn-primary">新規作成</a>
            
         </div>
     </x-slot>
@@ -28,15 +29,15 @@
 
                         <tr>
                     
-                            <td>{{ $data->name }}</td>
+                            <td>{{ $data->attendance_name }}</td>
                             <td>{{ $data->phone_number }}</td>
                             <td>{{ $data->position }}</td>
                             <td>{{ $data->address }}</td>
 
                             
-                            <td><a href="{{ route('attendance.edit', $data->id) }}" class="btn btn-success">編集</a></td>
-                            <td><a href="{{ route('attendance.show', $data->id) }}" class="btn btn-success">詳細</a></td>
-                            <td><a href="{{ route('attendance_times.index', ['attendance_id' => $data->id]) }}" class="btn btn-success">勤怠時間表示</a></td>
+                            <td><a href="{{ route('attendances.edit', $data->id) }}" class="btn btn-success">編集</a></td>
+                            <td><a href="{{ route('attendances.show', $data->id) }}" class="btn btn-success">詳細</a></td>
+                          
 
 
 

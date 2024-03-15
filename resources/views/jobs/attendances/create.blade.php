@@ -8,13 +8,13 @@
   <div class="container mt-5">
     <div class="row">
       <div class="col-md-6 mx-auto">
-        <form action="{{ route('attendance.store') }}" method="POST">
+        <form action="{{ route('attendances.store') }}" method="POST">
           @csrf
           
           <!-- 名前 -->
           <div class="mb-3">
-            <label for="name" class="form-label">名前</label>
-            <input type="text" class="form-control" id="name" name="name" required>
+            <label for="attendance_name" class="form-label">名前</label>
+            <input type="text" class="form-control" id="attendance_name" name="attendance_name" required>
           </div>
           
           <!-- 住所 -->

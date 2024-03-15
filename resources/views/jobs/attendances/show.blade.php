@@ -18,6 +18,7 @@
                             <th scope="col">電話番号</th>
                             <th scope="col">役職</th>
                             <th scope="col">住所</th>
+                            <th scope="col">アクション</th>
              
                         </tr>
                     </thead>
@@ -27,12 +28,13 @@
 
                         <tr>
                     
-                            <td>{{ $attendance->name }}</td>
+                            <td>{{ $attendance->attendance_name }}</td>
                             <td>{{ $attendance->phone_number }}</td>
                             <td>{{ $attendance->position }}</td>
                             <td>{{ $attendance->address }}</td>
+                            <td><a href="{{ route('attendance_times.index', ['attendance_id' => $attendance->id]) }}" class="btn btn-success">勤怠時間表示</a></td>
 
-                            <form action="{{ route('attendance.destroy', $attendance->id) }}" method="POST" >
+                            <form action="{{ route('attendances.destroy', $attendance->id) }}" method="POST" >
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger">削除</button>

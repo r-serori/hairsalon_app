@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\attendance_times;
+
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Attendance_times>
@@ -16,7 +18,8 @@ class Attendance_timesFactory extends Factory
      */
     public function definition()
     {
-        $attendanceIds = [1, 2]; // 使用可能な勤怠IDを定義します
+        // 使用可能な勤怠IDを定義します
+        $attendanceIds = [1, 2];
         
         return [
             'attendance_id' => $this->faker->randomElement($attendanceIds),

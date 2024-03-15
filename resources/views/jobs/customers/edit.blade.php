@@ -1,96 +1,113 @@
 <x-app-layout>
-  <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-      {{ __('顧客編集') }}
-    </h2>
-  </x-slot>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('顧客編集') }}
+        </h2>
+    </x-slot>
 
-  <div class="py-12">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card">
-            <div class="card-body">
-              <form method="POST" action="{{ route('customers.update', $customer->id) }}">
-                @csrf
-                @method('PUT')
+    <div class="py-12">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="POST" action="{{ route('customers.update', $customer->id) }}">
+                                @csrf
+                                @method('PUT')
 
-                <!-- 名前 -->
-                <div class="mb-3">
-                  <label for="name" class="form-label">{{ __('名前') }}</label>
-                  <input type="text" class="form-control" id="name" name="name" value="{{ $customer->name }}" required>
+                                <!-- 名前 -->
+                                <div class="mb-3">
+                                    <label for="customer_name" class="form-label">{{ __('名前') }}</label>
+                                    <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ $customer->customer_name }}" required>
+                                </div>
+
+                                <!-- 電話番号 -->
+                                <div class="mb-3">
+                                    <label for="phone_number" class="form-label">{{ __('電話番号') }}</label>
+                                    <input type="tel" class="form-control" id="phone_number" name="phone_number" value="{{ $customer->phone_number }}" required>
+                                </div>
+
+                                <!-- 特徴 -->
+                                <div class="mb-3">
+                                    <label for="remarks" class="form-label">{{ __('特徴') }}</label>
+                                    <textarea class="form-control" id="remarks" name="remarks" rows="3" required>{{ $customer->remarks }}</textarea>
+                                </div>
+
+                                <!-- 髪型 -->
+                                <div class="mb-3">
+                                    <label for="hairstyles" class="form-label">{{ __('髪型名') }}</label>
+                                    @foreach($hairstyles as $hairstyle)
+                                    <div>
+                                        <input type="checkbox" id="hairstyle_{{ $hairstyle->id }}" name="hairstyles_id[]" value="{{ $hairstyle->id }}">
+                                        <label for="hairstyle_{{ $hairstyle->id }}">{{ $hairstyle->hairstyle_name }}</label>
+                                    </div>
+                                    @endforeach
+                                </div>
+
+                                <!-- コース -->
+                                <div class="mb-3">
+                                    <label for="courses" class="form-label">{{ __('コース名') }}</label>
+                                    @foreach($courses as $course)
+                                    <div>
+                                        <input type="checkbox" id="course_{{ $course->id }}" name="courses_id[]" value="{{ $course->id }}">
+                                        <label for="course_{{ $course->id }}">{{ $course->course_name }}</label>
+                                    </div>
+                                    @endforeach
+                                </div>
+
+                                <!-- オプション名 -->
+                                <div class="mb-3">
+                                    <label for="options" class="form-label">{{ __('オプション名') }}</label>
+                                    @foreach($options as $option)
+                                    <div>
+                                        <input type="checkbox" id="option_{{ $option->id }}" name="options_id[]" value="{{ $option->id }}">
+                                        <label for="option_{{ $option->id }}">{{ $option->option_name }}</label>
+                                    </div>
+                                    @endforeach
+                                </div>
+
+                                <!-- 物販 -->
+                                <div class="mb-3">
+                                    <label for="merchandises" class="form-label">{{ __('物販名') }}</label>
+                                    @foreach($merchandises as $merchandise)
+                                    <div>
+                                        <input type="checkbox" id="merchandise_{{ $merchandise->id }}" name="merchandises_id[]" value="{{ $merchandise->id }}">
+                                        <label for="merchandise_{{ $merchandise->id }}">{{ $merchandise->merchandise_name }}</label>
+                                    </div>
+                                    @endforeach
+                                </div>
+
+                                <!-- 担当者 -->
+                                <div class="mb-3">
+                                    <label for="attendance" class="form-label">{{ __('担当者') }}</label>
+                                    @foreach($attendances as $attendance)
+                                    <div>
+                                        <input type="radio" id="attendance_{{ $attendance->id }}" name="attendances_id" value="{{ $attendance->id }}">
+                                        <label for="attendance_{{ $attendance->id }}">{{ $attendance->attendance_name }}</label>
+                                    </div>
+                                    @endforeach
+                                </div>
+
+                                <!-- 新規or既存 -->
+                                <div class="mb-3">
+                                    <label for="new_customer" class="form-label">{{ __('新規or既存') }}</label>
+                                    <div>
+                                        <input type="radio" id="new_customer" name="new_customer" value="1">
+                                        <label for="new_customer">{{ __('新規') }}</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" id="old_customer" name="new_customer" value="0">
+                                        <label for="old_customer">{{ __('既存') }}</label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">{{ __('更新') }}</button>
+                                <a href="{{ route('customers.show', $customer->id) }}" class="btn btn-secondary">{{ __('キャンセル') }}</a>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- 電話番号 -->
-                <div class="mb-3">
-                  <label for="phone_number" class="form-label">{{ __('電話番号') }}</label>
-                  <input type="tel" class="form-control" id="phone_number" name="phone_number" value="{{ $customer->phone_number }}" required>
-                </div>
-
-                <!-- 特徴 -->
-                <div class="mb-3">
-                  <label for="features" class="form-label">{{ __('特徴') }}</label>
-                  <textarea class="form-control" id="features" name="features" rows="3">{{ $customer->features }}</textarea>
-                </div>
-
-                <div class="mb-3">
-                  <label for="hairstyle_id" class="form-label">{{ __('髪型') }}</label>
-                  <select class="form-control" id="hairstyle_id" name="hairstyle_id">
-                    <option value="">選択しない</option>
-                    @foreach($hairstyles as $hairstyle)
-                    <option value="{{ $hairstyle->id }}" {{ $customer->hairstyle_id == $hairstyle->id ? 'selected' : '' }}>{{ $hairstyle->hairstyle_name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label for="course_id" class="form-label">{{ __('コース名') }}</label>
-                  <select class="form-control" id="course_id" name="course_id">
-                    <option value="">選択しない</option>
-                    @foreach($courses as $course)
-                    <option value="{{ $course->id }}" {{ $customer->course_id == $course->id ? 'selected' : '' }}>{{ $course->course_name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label for="option_id" class="form-label">{{ __('オプション名') }}</label>
-                  <select class="form-control" id="option_id" name="option_id">
-                    <option value="">選択しない</option>
-                    @foreach($options as $option)
-                    <option value="{{ $option->id }}" {{ $customer->option_id == $option->id ? 'selected' : '' }}>{{ $option->option_name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label for="merchandise_id" class="form-label">{{ __('物販') }}</label>
-                  <select class="form-control" id="merchandise_id" name="merchandise_id">
-                    <option value="">選択しない</option>
-                    @foreach($merchandises as $merchandise)
-                    <option value="{{ $merchandise->id }}" {{ $customer->merchandise_id == $merchandise->id ? 'selected' : '' }}>{{ $merchandise->merchandise_name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label for="user_id" class="form-label">{{ __('担当者') }}</label>
-                  <select class="form-control" id="user_id" name="user_id">
-                    <option value="">選択しない</option>
-                    @foreach($users as $user)
-                    <option value="{{ $user->id }}" {{ $customer->user_id == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
-                    @endforeach
-                  </select>
-                </div>
-
-
-
-                <button type="submit" class="btn btn-primary">{{ __('更新') }}</button>
-              </form>
             </div>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
 </x-app-layout>
