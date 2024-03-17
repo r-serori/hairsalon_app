@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Models\customers;
 use App\Models\hairstyles;
 use App\Models\courses;
-use App\Models\customer_prices;
 use App\Models\options;
 use App\Models\merchandises;
 
@@ -40,10 +39,6 @@ class CustomersController extends Controller
         return view('jobs.customers.index', compact('customers'));
     }
 
-
-
-
-
     /**
      * Show the form for creating a new resource.
      *
@@ -58,9 +53,36 @@ class CustomersController extends Controller
         $attendances = attendances::all();
 
 
-
         return view('jobs.customers.create', compact('attendances', 'hairstyles', 'courses', 'options', 'merchandises'));
     }
+
+    public function scheduleCreate($id)
+    {
+        $customer = customers::findOrFail($id);
+        $hairstyles = hairstyles::all();
+        $courses = courses::all();
+        $options = options::all();
+        $merchandises = merchandises::all();
+    
+        $course_customers = $customer->courses;
+        $option_customers = $customer->options;
+        $merchandise_customers = $customer->merchandises;
+        $hairstyle_customers = $customer->hairstyles;
+    
+        return view('jobs.customers.scheduleCreate', compact(
+            'customer', 
+            'hairstyles', 
+            'courses', 
+            'options', 
+            'merchandises', 
+            'course_customers', 
+            'option_customers', 
+            'merchandise_customers', 
+            'hairstyle_customers'
+        ));
+    }
+
+    
     /**
      * Store a newly created resource in storage.
      *
@@ -93,30 +115,27 @@ class CustomersController extends Controller
             'new_customer' => $validatedData['new_customer'], // 新規or既存の選択肢はフォームから受け取らないので、ここで代入
         ]);
 
-
+  
         // 顧客とコースの中間テーブルにデータを保存
         if (isset($validatedData['courses_id'])) {
-            $customer->courses()->attach($validatedData['courses_id']);
-            $courses = courses::find($validatedData['courses_id']);
+            $customer->courses()->sync($validatedData['courses_id']);
         }
 
         if (isset($validatedData['options_id'])) {
-            $customer->options()->attach($validatedData['options_id']);
-            $options = options::find($validatedData['options_id']);
+            $customer->options()->sync($validatedData['options_id']);
             }
         
 
         if (isset($validatedData['merchandises_id'])) {
-            $customer->merchandises()->attach($validatedData['merchandises_id']);
-            $merchandises = merchandises::find($validatedData['merchandises_id']);
+            $customer->merchandises()->sync($validatedData['merchandises_id']);
             }
         
 
         if (isset($validatedData['hairstyles_id'])) {
-            $customer->hairstyles()->attach($validatedData['hairstyles_id']);
+            $customer->hairstyles()->sync($validatedData['hairstyles_id']);
         }
         if (isset($validatedData['attendances_id'])) {
-            $customer->attendances()->attach($validatedData['attendances_id']);
+            $customer->attendances()->sync($validatedData['attendances_id']);
         }
 
 
@@ -222,19 +241,19 @@ class CustomersController extends Controller
 
         // 新しいデータを中間テーブルに追加
         if (isset($validatedData['courses_id'])) {
-            $customer->courses()->attach($validatedData['courses_id']);
+            $customer->courses()->sync($validatedData['courses_id']);
         }
         if (isset($validatedData['options_id'])) {
-            $customer->options()->attach($validatedData['options_id']);
+            $customer->options()->sync($validatedData['options_id']);
         }
         if (isset($validatedData['merchandises_id'])) {
-            $customer->merchandises()->attach($validatedData['merchandises_id']);
+            $customer->merchandises()->sync($validatedData['merchandises_id']);
         }
         if (isset($validatedData['hairstyles_id'])) {
-            $customer->hairstyles()->attach($validatedData['hairstyles_id']);
+            $customer->hairstyles()->sync($validatedData['hairstyles_id']);
         }
         if (isset($validatedData['attendances_id'])) {
-            $customer->attendances()->attach($validatedData['attendances_id']);
+            $customer->attendances()->sync($validatedData['attendances_id']);
         }
 
         // index画面にリダイレクト

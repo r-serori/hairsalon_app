@@ -27,4 +27,9 @@ class option_customers extends Model
     {
         return $this->belongsTo(options::class);
     }
+
+    public function schedules()
+    {
+        return $this->hasMany(schedules::class);
+    }
 }

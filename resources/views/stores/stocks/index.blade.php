@@ -82,8 +82,6 @@
             </div>
         </div>
     </div>
-    <!-- ページネーションリンク -->
-<div class="px-6 py-4">
-    {{ $stocks->links() }}
+
 </div>
 </x-app-layout>

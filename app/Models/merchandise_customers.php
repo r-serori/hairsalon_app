@@ -27,4 +27,9 @@ class merchandise_customers extends Model
         return $this->belongsTo(merchandises::class);
     }
 
+    public function schedules()
+    {
+        return $this->hasMany(schedules::class);
+    }
+
 }

@@ -95,6 +95,7 @@
                         @method('DELETE')
                         <button type="submit" class="btn btn-danger btn-sm">{{ __('削除') }}</button>
                       </form>
+                      <a href="{{ route('customers.scheduleCreate', [$customer->id]) }}" class="btn btn-warning btn-sm">{{ __('予約') }}</a>
                     </td>
                   </tr>
                   @endforeach

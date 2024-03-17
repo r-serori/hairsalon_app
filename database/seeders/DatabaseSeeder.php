@@ -35,6 +35,8 @@ class DatabaseSeeder extends Seeder
             OptionSeeder::class,
             HairstyleSeeder::class,
             CustomersSeeder::class,
+            StockCategoriesSeeder::class,
+
 
             
 

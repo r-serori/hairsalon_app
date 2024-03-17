@@ -44,10 +44,24 @@ use App\Http\Controllers\YearlySalesController;
 
 Route::resource('hairstyle_customers', HairstyleCustomersController::class);
 Route::resource('option_customers', OptionCustomersController::class);
+
 Route::resource('customers', CustomersController::class);
+Route::get('customers/{customer}/schedule', [CustomersController::class, 'scheduleCreate'])->name('customers.scheduleCreate');
+
+
+
+
 Route::resource('hairstyles', HairstylesController::class);
 Route::resource('options', OptionsController::class);
+
 Route::resource('schedules', SchedulesController::class);
+Route::post('schedules/create/{customer}', [SchedulesController::class, 'fromCustomersStore'])->name('schedules.from_customers_store');//追加, 顧客からのスケジュール登録
+
+
+
+
+
+
 Route::resource('daily_sales', DailySalesController::class);
 Route::resource('courses', CoursesController::class);
 Route::resource('course_customers', CourseCustomersController::class);
@@ -66,7 +80,6 @@ Route::get('attendance_times/{attendance_id}/search', [AttendanceTimesController
 
 
 
-Route::resource('customer_prices', CustomerPricesController::class);
 Route::resource('expense_categories', ExpenseCategoriesController::class);
 Route::resource('expenses', ExpensesController::class);
 Route::resource('merchandise_customers', MerchandiseCustomersController::class);

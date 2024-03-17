@@ -13,14 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('schedules', function (Blueprint $table) {
+        Schema::create('merchandise_schedules', function (Blueprint $table) {
             $table->id();
-            $table->string('customer_name',50)->nullable();
-            $table->date('date')->nullable();
-            $table->time('start_time')->nullable();
-            $table->time('end_time')->nullable();
-            $table->integer('price')->nullable();
-            $table->foreignId('customer_id')->nullable()->constrained('customers');
+            $table->foreignId('merchandises_id')->constrained('merchandises')->onDelete('cascade');
+            $table->foreignId('schedules_id')->constrained('schedules')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('schedules');
+        Schema::dropIfExists('merchandise_schedules');
     }
 };

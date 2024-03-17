@@ -25,4 +25,9 @@ class hairstyle_customers extends Model
     {
         return $this->belongsTo(customers::class);
     }
+
+    public function schedules()
+    {
+        return $this->hasMany(schedules::class);
+    }
 }

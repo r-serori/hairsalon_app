@@ -14,12 +14,8 @@ class StocksController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $stocks = stocks::all();
     
-        $stocks = stocks::query()
-            ->where('product_name', 'like', '%'.$search.'%')
-            ->orWhere('category', 'like', '%'.$search.'%')
-            ->paginate(20);
     
         return view('stores.stocks.index', compact('stocks'));
     }
