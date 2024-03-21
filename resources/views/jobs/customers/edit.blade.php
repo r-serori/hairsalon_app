@@ -18,13 +18,16 @@
                                 <!-- 名前 -->
                                 <div class="mb-3">
                                     <label for="customer_name" class="form-label">{{ __('名前') }}</label>
-                                    <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ $customer->customer_name }}" required>
+                                    <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ $customer->customer_name }}">
+                                    @error('customer_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <!-- 電話番号 -->
                                 <div class="mb-3">
                                     <label for="phone_number" class="form-label">{{ __('電話番号') }}</label>
-                                    <input type="tel" class="form-control" id="phone_number" name="phone_number" value="{{ $customer->phone_number }}" required>
+                                    <input type="tel" class="form-control" id="phone_number" name="phone_number" value="{{ $customer->phone_number }}">
                                 </div>
 
                                 <!-- 特徴 -->
@@ -92,13 +95,16 @@
                                 <div class="mb-3">
                                     <label for="new_customer" class="form-label">{{ __('新規or既存') }}</label>
                                     <div>
-                                        <input type="radio" id="new_customer" name="new_customer" value="1">
+                                        <input type="radio" id="new_customer" name="new_customer" value="0">
                                         <label for="new_customer">{{ __('新規') }}</label>
                                     </div>
                                     <div>
-                                        <input type="radio" id="old_customer" name="new_customer" value="0">
+                                        <input type="radio" id="old_customer" name="new_customer" value="1">
                                         <label for="old_customer">{{ __('既存') }}</label>
                                     </div>
+                                    @error('new_customer')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <button type="submit" class="btn btn-primary">{{ __('更新') }}</button>

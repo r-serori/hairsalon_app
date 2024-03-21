@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('options', function (Blueprint $table) {
             $table->id();
-            $table->string('option_name', 100)->nullable();
-            $table->integer('price')->nullable();
+            $table->string('option_name', 100);
+            $table->integer('price');
             $table->timestamps();
         });
     }

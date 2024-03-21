@@ -41,8 +41,18 @@ class MerchandisesController extends Controller
      */
     public function store(Request $request)
     {
-        \App\Models\merchandises::create($request->all());
-        return redirect()->route('merchandises.index');
+        $validatedData = $request->validate([
+            'merchandise_name' => 'required',
+            'price' => 'required',
+        ]);
+
+        merchandises::create([
+            'merchandise_name' => $validatedData['merchandise_name'],
+            'price' => $validatedData['price'],
+
+        ]);
+
+        return redirect()->route('merchandises.index')->with('success', '商品の新規作成に成功しました。');
     }
 
     /**
@@ -78,8 +88,17 @@ class MerchandisesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        \App\Models\merchandises::find($id)->update($request->all());
-        return redirect()->route('merchandises.index');
+        $validatedData = $request->validate([
+            'merchandise_name' => 'required',
+            'price' => 'required',
+        ]);
+
+        $merchandise = \App\Models\merchandises::find($id);
+        $merchandise->merchandise_name = $validatedData['merchandise_name'];
+        $merchandise->price = $validatedData['price'];
+        $merchandise->save();
+
+        return redirect()->route('merchandises.index')->with('success', '商品の更新に成功しました。');
     }
 
     /**
@@ -91,7 +110,7 @@ class MerchandisesController extends Controller
     public function destroy($id)
     {
         \App\Models\merchandises::destroy($id);
-        return redirect()->route('merchandises.index');
+        return redirect()->route('merchandises.index')->with('success', '商品の削除に成功しました。');
     }
 }
 

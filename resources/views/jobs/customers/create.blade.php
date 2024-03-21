@@ -17,13 +17,16 @@
                 <!-- 名前 -->
                 <div class="mb-3">
                   <label for="customer_name" class="form-label">{{ __('名前') }}</label>
-                  <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                  <input type="text" class="form-control" id="customer_name" name="customer_name">
+                  @error('customer_name')
+                  <div class="invalid-feedback">{{ $message }}</div>
+                  @enderror
                 </div>
 
                 <!-- 電話番号 -->
                 <div class="mb-3">
                   <label for="phone_number" class="form-label">{{ __('電話番号') }}</label>
-                  <input type="tel" class="form-control" id="phone_number" name="phone_number" required>
+                  <input type="tel" class="form-control" id="phone_number" name="phone_number">
                 </div>
 
                 <!-- 特徴 -->
@@ -53,53 +56,57 @@
                   </div>
                   @endforeach
 
-                <!-- オプション名 -->
-                <div class="mb-3">
-                  <label for="options" class="form-label">{{ __('オプション名') }}</label>
-                  @foreach($options as $option)
-                  <div>
-                    <input type="checkbox" id="option_{{ $option->id }}" name="options_id[]" value="{{ $option->id }}">
-                    <label for="option_{{ $option->id }}">{{ $option->option_name }}</label>
+                  <!-- オプション名 -->
+                  <div class="mb-3">
+                    <label for="options" class="form-label">{{ __('オプション名') }}</label>
+                    @foreach($options as $option)
+                    <div>
+                      <input type="checkbox" id="option_{{ $option->id }}" name="options_id[]" value="{{ $option->id }}">
+                      <label for="option_{{ $option->id }}">{{ $option->option_name }}</label>
+                    </div>
+                    @endforeach
                   </div>
-                  @endforeach
-                </div>
 
 
 
-                <!-- 物販 -->
-                <div class="mb-3">
-                  <label for="merchandises" class="form-label">{{ __('物販名') }}</label>
-                  @foreach($merchandises as $merchandise)
-                  <div>
-                    <input type="checkbox" id="merchandise_{{ $merchandise->id }}" name="merchandises_id[]" value="{{ $merchandise->id }}">
-                    <label for="merchandise_{{ $merchandise->id }}">{{ $merchandise->merchandise_name }}</label>
+                  <!-- 物販 -->
+                  <div class="mb-3">
+                    <label for="merchandises" class="form-label">{{ __('物販名') }}</label>
+                    @foreach($merchandises as $merchandise)
+                    <div>
+                      <input type="checkbox" id="merchandise_{{ $merchandise->id }}" name="merchandises_id[]" value="{{ $merchandise->id }}">
+                      <label for="merchandise_{{ $merchandise->id }}">{{ $merchandise->merchandise_name }}</label>
+                    </div>
+                    @endforeach
                   </div>
-                  @endforeach
-                </div>
 
-                <!-- 担当者 -->
-                <div class="mb-3">
-                  <label for="attendance" class="form-label">{{ __('担当者') }}</label>
-                  @foreach($attendances as $attendance)
-                  <div>
-                    <input type="radio" id="attendance_{{ $attendance->id }}" name="attendances_id" value="{{ $attendance->id }}">
-                    <label for="attendance_{{ $attendance->id }}">{{ $attendance->attendance_name }}</label>
+                  <!-- 担当者 -->
+                  <div class="mb-3">
+                    <label for="attendance" class="form-label">{{ __('担当者') }}</label>
+                    @foreach($attendances as $attendance)
+                    <div>
+                      <input type="radio" id="attendance_{{ $attendance->id }}" name="attendances_id" value="{{ $attendance->id }}">
+                      <label for="attendance_{{ $attendance->id }}">{{ $attendance->attendance_name }}</label>
+                    </div>
+                    @endforeach
                   </div>
-                  @endforeach
-                </div>
 
+                  <!-- 新規or既存 -->
+                  <div class="mb-3">
+                    <label for="new_customer" class="form-label">{{ __('新規or既存') }}</label>
+                    <div>
+                      <input type="radio" id="new_customer" name="new_customer" value="0">
+                      <label for="new_customer">{{ __('新規') }}</label>
+                    </div>
+                    <div>
+                      <input type="radio" id="old_customer" name="new_customer" value="1">
+                      <label for="old_customer">{{ __('既存') }}</label>
+                    </div>
+                    @error('new_customer')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                  </div>
 
-                <!-- 新規or既存 -->
-                <div class="mb-3">
-                  <label for="new_customer" class="form-label">{{ __('新規or既存') }}</label>
-                  <div>
-                    <input type="radio" id="new_customer" name="new_customer" value="1">
-                    <label for="new_customer">{{ __('新規') }}</label>
-                  </div>
-                  <div>
-                    <input type="radio" id="old_customer" name="new_customer" value="0">
-                    <label for="old_customer">{{ __('既存') }}</label>
-                  </div>
 
 
                   <button type="submit" class="btn btn-primary">{{ __('作成') }}</button>

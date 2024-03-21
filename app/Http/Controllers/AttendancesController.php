@@ -46,9 +46,24 @@ class AttendancesController extends Controller
      */
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'attendance_name' => 'required|string',
+            'position' => 'required|string',
+            'phone_number' => 'nullable|string',
+            'address' => 'nullable|string',
+        ]);
+
+        attendances::create([
+            'attendance_name' => $validatedData['attendance_name'],
+            'position' => $validatedData['position'],
+            'phone_number' => $validatedData['phone_number'],
+            'address' => $validatedData['address'],
+        ]);
         
-        attendances::create($request->all());
-        return redirect('attendances');
+
+
+        
+        return redirect('attendances')->with('success','スタッフの新規作成に成功しました。');
     }
 
     /**
@@ -73,13 +88,7 @@ class AttendancesController extends Controller
     public function edit($id)
     {
         $attendance = attendances::find($id);
-    
-        // if (!$attendance) {
-        //     return redirect()->route('attendance.index')->with('error', 'Attendance not found.');
-        // }
-    
-    
-    
+       
         return view('jobs.attendances.edit', compact('attendance'));
     }
     
@@ -93,13 +102,25 @@ class AttendancesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $attendance = attendances::find($id);
-    
-        // $attendance 変数の値をログに出力
-        Log::info('attendances data:', ['attendances' => $attendance]);
-    
-        $attendance->update($request->all());
-        return redirect('attendances')->with('success', 'Attendance updated successfully');
+        
+        $validatedData = $request->validate([
+            'attendance_name' => 'required|string',
+            'position' => 'required|string',
+            'phone_number' => 'nullable|string',
+            'address' => 'nullable|string',
+        ]);
+
+        $attendance = attendances::findOrFail($id);
+
+        $attendance->attendance_name = $validatedData['attendance_name'];
+        $attendance->position = $validatedData['position'];
+        $attendance->phone_number = $validatedData['phone_number'];
+        $attendance->address = $validatedData['address'];
+
+        $attendance->save();
+
+        
+        return redirect('attendances')->with('success', 'スタッフの情報の更新に成功しました。');
     }
     
 
@@ -114,7 +135,7 @@ class AttendancesController extends Controller
         attendances::destroy($id);
 
             
-        return redirect()->route('attendances.index')->with('success', 'Attendance time deleted successfully');
+        return redirect()->route('attendances.index')->with('success', 'スタッフの削除に成功しました。');
     }
     
 }

@@ -42,8 +42,17 @@ class OptionsController extends Controller
      */
     public function store(Request $request)
     {
-        \App\Models\options::create($request->all());
-        return redirect()->route('options.index');
+        $validatedData = $request->validate([
+            'option_name' => 'required',
+            'price' => 'required',
+        ]);
+
+        options::create([
+            'option_name' => $validatedData['option_name'],
+            'price' => $validatedData['price'],
+        
+        ]);
+        return redirect()->route('options.index')->with('success', 'オプションの新規作成に成功しました。');
     }
 
     /**
@@ -79,8 +88,19 @@ class OptionsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        \App\Models\options::find($id)->update($request->all());
-        return redirect()->route('options.index');
+
+        $validatedData = $request->validate([
+            'option_name' => 'required',
+            'price' => 'required',
+        ]);
+
+        $option = \App\Models\options::find($id);
+
+        $option->option_name = $validatedData['option_name'];
+        $option->price = $validatedData['price'];
+        $option->save();
+
+        return redirect()->route('options.index')->with('success', 'オプションの更新に成功しました。');
     }
 
     /**
@@ -92,7 +112,7 @@ class OptionsController extends Controller
     public function destroy($id)
     {
         \App\Models\options::destroy($id);
-        return redirect()->route('options.index');
+        return redirect()->route('options.index')->with('success', 'オプションの削除に成功しました。');
     }
 }
 

@@ -19,20 +19,29 @@
                                 <div class="form-group">
                                     <label for="date">Date:</label>
                                     <input type="text" name="date" class="form-control" value="{{ $schedule->date }}">
+                                    @error('date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="form-group">
                                     <label for="start_time">Start Time:</label>
                                     <input type="text" name="start_time" class="form-control" value="{{ $schedule->start_time }}">
+                                    @error('start_time')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="form-group">
                                     <label for="end_time">End Time:</label>
                                     <input type="text" name="end_time" class="form-control" value="{{ $schedule->end_time }}">
                                 </div>
                                 <!-- 他のフォーム項目も同様に追加してください -->
-                                
-                                <div class="form-group      ">
+
+                                <div class="form-groups">
                                     <label for="customer_name">Customer Name:</label>
                                     <input type="text" name="customer_name" class="form-control" value="{{ $schedule->customer_name }}">
+                                    @error('customer_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="form-group">
                                     <label for="courses">Courses:</label>
@@ -61,8 +70,11 @@
                                     <input type="checkbox" id="merchandises_{{ $merchandise->id }}" name="merchandises_id[]" value="{{ $merchandise->id }}" {{ $schedule->merchandises->contains($merchandise) ? 'checked' : '' }}>
                                     <label for="merchandises_{{ $merchandise->id }}">{{ $merchandise->merchandise_name }}</label><br>
                                     @endforeach
-                                    
+
+
+
                                 </div>
+
 
                                 <button type="submit" class="btn btn-primary">更新</button>
                             </form>

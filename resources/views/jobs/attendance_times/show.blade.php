@@ -19,6 +19,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary">検索</button>
                 </form>
+                <a href="{{ route('attendance_times.index', ['attendance_id' => $attendanceId]) }}" class="btn btn-primary">全体へ戻る</a>
             </div>
         </div>
 

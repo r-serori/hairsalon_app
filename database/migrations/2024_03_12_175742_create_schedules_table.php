@@ -16,8 +16,8 @@ return new class extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->string('customer_name',50)->nullable();
-            $table->date('date')->nullable();
-            $table->time('start_time')->nullable();
+            $table->date('date');
+            $table->time('start_time');
             $table->time('end_time')->nullable();
             $table->integer('price')->nullable();
             $table->foreignId('customer_id')->nullable()->constrained('customers');

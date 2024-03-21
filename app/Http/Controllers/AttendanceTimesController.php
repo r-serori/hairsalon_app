@@ -36,7 +36,7 @@ class AttendanceTimesController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function search(Request $request, $attendance_id)
+    public function search(Request $request, $attendanceId)
     {
         // 検索フォームから入力された年月を取得
         $searchDate = $request->input('search_date');
@@ -49,7 +49,7 @@ class AttendanceTimesController extends Controller
         }
     
         // 出席時間データを取得するクエリを実行
-        $query = attendance_times::where('attendance_id', $attendance_id);
+        $query = attendance_times::where('attendance_id', $attendanceId);
     
         // 年の検索条件を追加
         if ($searchYear) {
@@ -65,7 +65,7 @@ class AttendanceTimesController extends Controller
         $attendanceTimes = $query->orderBy('date', 'desc')->get();
     
         // 検索結果を表示するビューを返す
-        return view('jobs.attendance_times.search_result', compact('attendanceTimes', 'attendance_id', 'searchYear', 'searchMonth'));
+        return view('jobs.attendance_times.search_result', compact('attendanceTimes', 'attendanceId', 'searchYear', 'searchMonth'));
     }
     
     
@@ -100,7 +100,7 @@ class AttendanceTimesController extends Controller
             'date' => 'required',
             'start_time' => 'required',
             'end_time' => 'required',
-            'break_time' => 'required',
+            'break_time' => 'nullable',
         ]);
 
         // リクエストから受け取ったデータを使用してレコードを作成
@@ -113,7 +113,7 @@ class AttendanceTimesController extends Controller
         ]);
 
         // 新規作成後に index 画面にリダイレクトする
-        return redirect()->route('attendance_times.index', ['attendance_id' => $request->attendance_id])->with('success', 'Attendance time created successfully');
+        return redirect()->route('attendance_times.index', ['attendance_id' => $request->attendance_id])->with('success', '勤怠時間を新規作成に成功しました。');
     }
 
 
@@ -180,17 +180,28 @@ class AttendanceTimesController extends Controller
      */
     public function update(Request $request, $id)
     {
+            // リクエストからデータを検証
+            $request->validate([
+                'date' => 'required',
+                'start_time' => 'required',
+                'end_time' => 'required',
+                'break_time' => 'nullable',
+            ]);
+
         // リクエストから受け取ったデータを使用してレコードを更新
-        attendance_times::where('id', $id)->update([
-            'date' => $request->date,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'break_time' => $request->break_time,
-            'attendance_id' => $request->attendance_id,
-        ]);
+        $attendanceTime = attendance_times::find($id);
+
+        $attendanceTime->date = $request->date;
+        $attendanceTime->start_time = $request->start_time;
+        $attendanceTime->end_time = $request->end_time;
+        $attendanceTime->break_time = $request->break_time;
+        $attendanceTime->attendance_id = $request->attendance_id;
+
+        $attendanceTime->save();
+    
     
         // 更新後に index 画面にリダイレクトする
-        return redirect()->route('attendance_times.index', ['attendance_id' => $request->attendance_id])->with('success', 'Attendance time updated successfully');
+        return redirect()->route('attendance_times.index', ['attendance_id' => $request->attendance_id])->with('success', '勤怠時間の更新に成功しました。');
     }
     
     
@@ -215,6 +226,6 @@ class AttendanceTimesController extends Controller
 
 
 
-        return redirect()->route('attendance_times.index', ['attendance_id' => $attendanceId->attendance_id])->with('success', 'Attendance time created successfully');
+        return redirect()->route('attendance_times.index', ['attendance_id' => $attendanceId->attendance_id])->with('success', '勤怠時間の削除に成功しました。');
     }
 }

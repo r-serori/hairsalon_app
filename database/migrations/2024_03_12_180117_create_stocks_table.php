@@ -18,9 +18,9 @@ return new class extends Migration
             $table->string('product_name');//商品名
             $table->integer('product_price');//商品価格 
             $table->integer('quantity');//数量
-            $table->string('remarks');//備考
-            $table->string('supplier');//仕入先
-            $table->foreignId('stock_category_id')->nullable()->constrained('stock_categories')->onDelete('cascade');
+            $table->string('remarks')->nullable();//備考
+            $table->string('supplier')->nullable();//仕入先
+            $table->foreignId('stock_category_id')->constrained('stock_categories')->onDelete('cascade');
             $table->timestamps();
         });
     }

@@ -12,7 +12,7 @@ class yearly_sales extends Model
     protected $fillable = [
         'id',
         'year',
-        'year_sales',
+        'yearly_sales',
         'created_at',
     ];
 

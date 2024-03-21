@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('merchandises', function (Blueprint $table) {
             $table->id();
-            $table->string('merchandise_name', 100)->nullable();
-            $table->integer('price')->nullable();
+            $table->string('merchandise_name', 100);
+            $table->integer('price');
             $table->timestamps();
         });
     }

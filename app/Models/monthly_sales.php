@@ -12,7 +12,7 @@ class monthly_sales extends Model
         'id',
         'year',
         'month',
-        'month_sales',
+        'monthly_sales',
         'created_at'
     ];
 }

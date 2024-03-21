@@ -4,25 +4,34 @@
   <!-- 日付 -->
   <div class="mb-3">
     <label for="date" class="form-label">{{ __('日付') }}</label>
-    <input type="date" class="form-control" id="date" name="date" required>
+    <input type="date" class="form-control" id="date" name="date" >
+    @error('date')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
   </div>
 
   <!-- 開始時間 -->
   <div class="mb-3">
     <label for="start_time" class="form-label">{{ __('開始時間') }}</label>
-    <input type="time" class="form-control" id="start_time" name="start_time" required>
+    <input type="time" class="form-control" id="start_time" name="start_time" >
+    @error('start_time')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
   </div>
 
   <!-- 終了時間 -->
   <div class="mb-3">
     <label for="end_time" class="form-label">{{ __('終了時間') }}</label>
-    <input type="time" class="form-control" id="end_time" name="end_time" required>
+    <input type="time" class="form-control" id="end_time" name="end_time" >
   </div>
 
   <!-- 顧客 -->
   <div class="mb-3">
     <label for="customer_name" class="form-label">{{ __('名前') }}</label>
-    <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ $customer->customer_name }}" required>
+    <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ $customer->customer_name }}" >
+    @error('customer_name')
+    <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
   </div>
 
   <!-- コース -->

@@ -11,17 +11,15 @@ class expenses extends Model
     use HasFactory;
     protected $fillable = [
         'expense_name',
-        'price',
-        'price',
+        'expense_price',
         'date',
         'expense_location',
-        'quantity',
         'remarks',
         'expense_category_id',
         'created_at',
     ];
 
-    public function expense_categories()
+    public function expense_category()
     {
         return $this->belongsTo(expense_categories::class);
     }

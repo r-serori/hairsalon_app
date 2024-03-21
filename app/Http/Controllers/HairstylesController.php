@@ -39,8 +39,15 @@ class HairstylesController extends Controller
      */
     public function store(Request $request)
     {
-        \App\Models\hairstyles::create($request->all());
-        return redirect()->route('hairstyles.index');
+        $validatedData = $request->validate([
+            'hairstyle_name' => 'required',
+        ]);
+
+        hairstyles::create([
+            'hairstyle_name' => $validatedData['hairstyle_name'],
+        ]);
+
+        return redirect()->route('hairstyles.index')->with('success', 'ヘアスタイルの新規作成に成功しました。');
     }
 
     /**
@@ -76,8 +83,15 @@ class HairstylesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        \App\Models\hairstyles::find($id)->update($request->all());
-        return redirect()->route('hairstyles.index');
+        $validatedData = $request->validate([
+            'hairstyle_name' => 'required',
+        ]);
+
+        $hairstyle = \App\Models\hairstyles::find($id);
+        $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
+        $hairstyle->save();
+
+        return redirect()->route('hairstyles.index')->with('success', 'ヘアスタイルの更新に成功しました。');
     }
 
     /**
@@ -90,7 +104,7 @@ class HairstylesController extends Controller
     {
     
         \App\Models\hairstyles::destroy($id);
-        return redirect()->route('hairstyles.index');
+        return redirect()->route('hairstyles.index')->with('success', 'ヘアスタイルの削除に成功しました。');
     }
 }
 

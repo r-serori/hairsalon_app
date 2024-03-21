@@ -1,5 +1,3 @@
-<!-- resources/views/stocks/edit.blade.php -->
-
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -8,42 +6,57 @@
     </x-slot>
 
     <div class="container mx-auto py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <form action="{{ route('stocks.update', $stock->id) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <div class="mb-4">
-                            <label for="product_name" class="font-bold">商品名:</label>
-                            <input type="text" name="product_name" id="product_name" value="{{ $stock->product_name }}" class="border-gray-300 focus:outline-none focus:ring focus:border-blue-300 rounded-md shadow-sm focus:ring-blue-200 focus:ring-opacity-50 w-full">
-                        </div>
-                        <div class="mb-4">
-                            <label for="category" class="font-bold">カテゴリー:</label>
-                            <input type="text" name="category" id="category" value="{{ $stock->category }}" class="border-gray-300 focus:outline-none focus:ring focus:border-blue-300 rounded-md shadow-sm focus:ring-blue-200 focus:ring-opacity-50 w-full">
-                        </div>
-                        <div class="mb-4">
-                            <label for="quantity" class="font-bold">数量:</label>
-                            <input type="number" name="quantity" id="quantity" value="{{ $stock->quantity }}" class="border-gray-300 focus:outline-none focus:ring focus:border-blue-300 rounded-md shadow-sm focus:ring-blue-200 focus:ring-opacity-50 w-full">
-                        </div>
-                        <div class="mb-4">
-                            <label for="purchase_price" class="font-bold">仕入れ価格:</label>
-                            <input type="number" name="purchase_price" id="purchase_price" value="{{ $stock->purchase_price }}" class="border-gray-300 focus:outline-none focus:ring focus:border-blue-300 rounded-md shadow-sm focus:ring-blue-200 focus:ring-opacity-50 w-full">
-                        </div>
-                        <div class="mb-4">
-                            <label for="supplier" class="font-bold">仕入れ先:</label>
-                            <input type="text" name="supplier" id="supplier" value="{{ $stock->supplier }}" class="border-gray-300 focus:outline-none focus:ring focus:border-blue-300 rounded-md shadow-sm focus:ring-blue-200 focus:ring-opacity-50 w-full">
-                        </div>
-                        <div class="mb-4">
-                            <label for="remarks" class="font-bold">備考:</label>
-                            <input type="text" name="remarks" id="remarks" value="{{ $stock->remarks }}" class="border-gray-300 focus:outline-none focus:ring focus:border-blue-300 rounded-md shadow-sm focus:ring-blue-200 focus:ring-opacity-50 w-full">
-                        </div>
-                        <div>
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">更新</button>
-                        </div>
-                    </form>
+        <div class="w-full max-w-md mx-auto">
+            <form action="{{ route('stocks.update', $stock->id) }}" method="POST" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                @csrf
+                @method('PUT')
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        カテゴリー
+                    </label>
+                    @foreach ($stock_categories as $category)
+                    <div class="flex items-center mb-2">
+                        <input type="radio" id="stock_category_{{ $category->id }}" name="stock_category_id" value="{{ $category->id }}" class="mr-2" {{ $category->id == $stock->stock_category_id ? 'checked' : '' }}>
+                        <label for="stock_category_{{ $category->id }}" class="text-gray-700">{{ $category->category }}</label>
+                    </div>
+                    @endforeach
                 </div>
-            </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="product_name">
+                        商品名
+                    </label>
+                    <input type="text" name="product_name" id="product_name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="商品名を入力してください" value="{{ $stock->product_name }}">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="quantity">
+                        数量
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="quantity" name="quantity" type="number" placeholder="数量を入力してください" value="{{ $stock->quantity }}">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="product_price">
+                        仕入れ価格
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="product_price" name="product_price" type="number" placeholder="仕入れ価格を入力してください" value="{{ $stock->product_price }}">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="supplier">
+                        仕入れ先
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="supplier" name="supplier" type="text" placeholder="仕入れ先を入力してください" value="{{ $stock->supplier }}">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="remarks">
+                        備考
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="remarks" name="remarks" type="text" placeholder="備考を入力してください" value="{{ $stock->remarks }}">
+                </div>
+                <div class="flex items-center justify-between">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                        更新
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </x-app-layout>

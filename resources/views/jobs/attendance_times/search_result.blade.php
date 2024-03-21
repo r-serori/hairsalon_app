@@ -8,6 +8,21 @@
     <div class="container">
         <h2>Search Result</h2>
 
+
+        <div class="row mb-3">
+            <div class="col">
+                <form action="{{ route('attendance_times.search', ['attendance_id' => $attendanceId]) }}" method="GET">
+                    <div class="form-group">
+                        <label for="search-date">年月：</label>
+                        <input type="month" id="search-date" name="search_date" class="form-control" placeholder="YYYY-MM" pattern="[0-9]{4}-[0-9]{2}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">検索</button>
+                </form>
+                <a href="{{ route('attendance_times.index', ['attendance_id' => $attendanceId]) }}" class="btn btn-primary">全体へ戻る</a>
+            </div>
+        </div>
+
+
         <table class="table table-bordered">
             <thead class="table-dark">
                 <tr>

@@ -23,6 +23,13 @@
             全体表示
         </a>
     </div>
+    
+
+    @if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+    @endif
 
     <div class="container mx-auto py-6">
         <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">

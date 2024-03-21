@@ -12,9 +12,13 @@ class CoursesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $courses = \App\Models\courses::all();
+        $search = $request->input('search');
+        $courses = \App\Models\courses::query()
+        ->where('course_name', 'like', '%'.$search.'%')
+        ->paginate(20);
+        
         return view('menus.courses.index', compact('courses'));
     }
 
@@ -36,8 +40,18 @@ class CoursesController extends Controller
      */
     public function store(Request $request)
     {
-        \App\Models\courses::create($request->all());
-        return redirect()->route('courses.index');
+        $validatedData = $request->validate([
+            'course_name' => 'required',
+            'price' => 'required',
+        ]);
+
+        courses::create([
+            'course_name' => $validatedData['course_name'],
+            'price' => $validatedData['price'],
+        
+        ]);
+
+        return redirect()->route('courses.index')->with('success', '新しいコースを追加しました。');
     }
 
     /**
@@ -73,8 +87,19 @@ class CoursesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        \App\Models\courses::find($id)->update($request->all());
-        return redirect()->route('courses.index');
+        $validatedData = $request->validate([
+            'course_name' => 'required',
+            'price' => 'required',
+        ]);
+
+        $course = \App\Models\courses::find($id);
+
+        $course->course_name = $validatedData['course_name'];
+        $course->price = $validatedData['price'];
+
+        $course->save();
+
+        return redirect()->route('courses.index')->with('success', 'コースの更新に成功しました。');
     }
 
     /**
@@ -87,6 +112,6 @@ class CoursesController extends Controller
     {
 
         \App\Models\courses::destroy($id);
-        return redirect()->route('courses.index');
+        return redirect()->route('courses.index')->with('success', 'コースの削除に成功しました。');
     }
 }

@@ -17,6 +17,7 @@ class attendance_times extends Model
         'break_time',
         'attendance_id',
         'created_at',
+        'updated_at',
     ];
 
     public function attendances()

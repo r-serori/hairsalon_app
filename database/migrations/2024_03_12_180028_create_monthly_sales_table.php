@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->integer('year');
             $table->integer('month');
-            $table->integer('month_sales');
+            $table->integer('monthly_sales');
             $table->timestamps();
         });
     }

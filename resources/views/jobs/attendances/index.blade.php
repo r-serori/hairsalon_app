@@ -5,9 +5,16 @@
                 勤怠管理画面
             </h2>
             <a href="{{ route('attendances.create') }}" class="btn btn-primary">新規作成</a>
-           
+
         </div>
     </x-slot>
+
+    @if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+    @endif
+
 
     <div class="container mt-5">
         <div class="row">
@@ -19,29 +26,36 @@
                             <th scope="col">電話番号</th>
                             <th scope="col">役職</th>
                             <th scope="col">住所</th>
+    
                             <th scope="col" colspan="3">アクション</th>
                         </tr>
                     </thead>
                     <tbody>
-                        
+
                         <!-- ここにデータを動的に挿入 -->
                         @foreach($attendances as $data)
 
                         <tr>
-                    
+
                             <td>{{ $data->attendance_name }}</td>
                             <td>{{ $data->phone_number }}</td>
                             <td>{{ $data->position }}</td>
                             <td>{{ $data->address }}</td>
 
-                            
+
                             <td><a href="{{ route('attendances.edit', $data->id) }}" class="btn btn-success">編集</a></td>
                             <td><a href="{{ route('attendances.show', $data->id) }}" class="btn btn-success">詳細</a></td>
-                          
+                            <td>
+                                <form action="{{ route('attendances.destroy', $data->id) }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger">削除</button>
+                                </form>
 
 
 
-                            
+
+
 
                         </tr>
                         @endforeach

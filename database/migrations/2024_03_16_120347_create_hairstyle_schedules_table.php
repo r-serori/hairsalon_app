@@ -14,10 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::create('hairstyle_schedules', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('hairstyles_id')->constrained('hairstyles')->onDelete('cascade');
-            $table->foreignId('schedules_id')->constrained('schedules')->onDelete('cascade');
-            $table->timestamps();
+            $table->foreignId('hairstyles_id')->nullable()->constrained('hairstyles')->onDelete('cascade');
+            $table->foreignId('schedules_id')->nullable()->constrained('schedules')->onDelete('cascade');
         });
     }
 

@@ -159,6 +159,14 @@ return [
         'name' => '名前',
         'position' => '役職',
         'password_confirmation' => 'パスワード確認',
+        'phone_number' => '電話番号',
+        'address' => '住所',
+        'attendance_name' => '名前',
+        'date' => '日付',
+        'start_time' => '出勤時間',
+        'end_time' => '退勤時間',
+        'break_time' => '休憩時間',
+        
         
     ],
 

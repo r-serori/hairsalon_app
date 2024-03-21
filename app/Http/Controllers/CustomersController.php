@@ -93,16 +93,16 @@ class CustomersController extends Controller
     {
         $validatedData = $request->validate([
             'customer_name' => 'required',
-            'phone_number' => 'required',
+            'phone_number' => 'nullable',
             'remarks' => 'nullable',
-            'new_customer' => 'required', // 新規or既存の選択肢はフォームから受け取らないので、ここで代入
-            'courses_id' => 'array', // 複数選択されたコースのIDの配列を受け取る
+            'new_customer' => 'required|in:0,1', // 新規or既存の選択肢はフォームから受け取らないので、ここで代入
+            'courses_id' => 'nullable|array', // 複数選択されたコースのIDの配列を受け取る
             'courses_id.*' => 'nullable|exists:courses,id', // 選択された全てのコースが存在することを確認
-            'options_id' => 'array',
+            'options_id' => 'nullable|array',
             'options_id.*' => 'nullable|exists:options,id',
-            'merchandises_id' => 'array',
+            'merchandises_id' => ' nullable|array',
             'merchandises_id.*' => 'nullable|exists:merchandises,id',
-            'hairstyles_id' => 'array',
+            'hairstyles_id' => 'nullable|array',
             'hairstyles_id.*' => 'nullable|exists:hairstyles,id',
             'attendances_id' => 'nullable|exists:attendances,id',
         ]);
@@ -117,24 +117,24 @@ class CustomersController extends Controller
 
   
         // 顧客とコースの中間テーブルにデータを保存
-        if (isset($validatedData['courses_id'])) {
+        if (!empty($validatedData['courses_id'])) {
             $customer->courses()->sync($validatedData['courses_id']);
         }
 
-        if (isset($validatedData['options_id'])) {
+        if (!empty($validatedData['options_id'])) {
             $customer->options()->sync($validatedData['options_id']);
             }
         
 
-        if (isset($validatedData['merchandises_id'])) {
+        if (!empty($validatedData['merchandises_id'])) {
             $customer->merchandises()->sync($validatedData['merchandises_id']);
             }
         
 
-        if (isset($validatedData['hairstyles_id'])) {
+        if (!empty($validatedData['hairstyles_id'])) {
             $customer->hairstyles()->sync($validatedData['hairstyles_id']);
         }
-        if (isset($validatedData['attendances_id'])) {
+        if (!empty($validatedData['attendances_id'])) {
             $customer->attendances()->sync($validatedData['attendances_id']);
         }
 
@@ -210,16 +210,16 @@ class CustomersController extends Controller
 
         $validatedData = $request->validate([
             'customer_name' => 'required',
-            'phone_number' => 'required',
+            'phone_number' => 'nullable',
             'remarks' => 'nullable',
-            'new_customer' => 'required', // 新規or既存の選択肢はフォームから受け取らないので、ここで代入
-            'courses_id' => 'array', // 複数選択されたコースのIDの配列を受け取る
+            'new_customer' => 'required|in:0,1', // 新規or既存の選択肢はフォームから受け取らないので、ここで代入
+            'courses_id' => 'nullable|array', // 複数選択されたコースのIDの配列を受け取る
             'courses_id.*' => 'nullable|exists:courses,id', // 選択された全てのコースが存在することを確認
-            'options_id' => 'array',
+            'options_id' => 'nullable|array',
             'options_id.*' => 'nullable|exists:options,id',
-            'merchandises_id' => 'array',
+            'merchandises_id' => ' nullable|array',
             'merchandises_id.*' => 'nullable|exists:merchandises,id',
-            'hairstyles_id' => 'array',
+            'hairstyles_id' => 'nullable|array',
             'hairstyles_id.*' => 'nullable|exists:hairstyles,id',
             'attendances_id' => 'nullable|exists:attendances,id',
         ]);
@@ -240,19 +240,19 @@ class CustomersController extends Controller
         $customer->attendances()->detach();
 
         // 新しいデータを中間テーブルに追加
-        if (isset($validatedData['courses_id'])) {
+        if (!empty($validatedData['courses_id'])) {
             $customer->courses()->sync($validatedData['courses_id']);
         }
-        if (isset($validatedData['options_id'])) {
+        if (!empty($validatedData['options_id'])) {
             $customer->options()->sync($validatedData['options_id']);
         }
-        if (isset($validatedData['merchandises_id'])) {
+        if (!empty($validatedData['merchandises_id'])) {
             $customer->merchandises()->sync($validatedData['merchandises_id']);
         }
-        if (isset($validatedData['hairstyles_id'])) {
+        if (!empty($validatedData['hairstyles_id'])) {
             $customer->hairstyles()->sync($validatedData['hairstyles_id']);
         }
-        if (isset($validatedData['attendances_id'])) {
+        if (!empty($validatedData['attendances_id'])) {
             $customer->attendances()->sync($validatedData['attendances_id']);
         }
 

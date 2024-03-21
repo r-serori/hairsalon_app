@@ -12,6 +12,26 @@
         </div>
     </x-slot>
 
+    @if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+    @endif
+
+    <div class="container mx-auto py-6">
+        <form action="{{ route('courses.index') }}" method="GET">
+            <div class="flex items
+            -center">
+                <input type="text" name="search" class="border rounded py-2 px-3" placeholder="コース名で検索">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ml-2">検索</button>
+            </div>
+        </form>
+    </div>
+
+    <a href="{{ route('courses.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+            全体表示
+        </a>
+
     <div class="container mx-auto py-6">
         <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">

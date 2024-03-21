@@ -1,21 +1,46 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-4 border-b border-gray-100">
         <div class="flex justify-between h-16">
             <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
+                <div class="hidden space-x-8 sm:-my-px sm:ml-3 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('一覧画面') }}
                     </x-nav-link>
+                    <!-- Add more Navigation Links here -->
+                    <x-nav-link :href="route('attendances.index')" :active="request()->routeIs('attendances.index')">
+                        {{ __('勤怠管理') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.index')">
+                        {{ __('顧客名簿') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('daily_sales.index')" :active="request()->routeIs('daily_sales.index')">
+                        {{ __('売上') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('schedules.index')" :active="request()->routeIs('schedules.index')">
+                        {{ __('予約表') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('stocks.index')" :active="request()->routeIs('stocks.index')">
+                        {{ __('在庫') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('courses.index')" :active="request()->routeIs('courses.index')">
+                        {{ __('コース') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('options.index')" :active="request()->routeIs('options.index')">
+                        {{ __('オプション') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('merchandises.index')" :active="request()->routeIs('merchandises.index')">
+                        {{ __('物販') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('hairstyles.index')" :active="request()->routeIs('hairstyles.index')">
+                        {{ __('髪型') }}
+                    </x-nav-link>
                 </div>
+
+                <!-- Add more Navigation Links here -->
+
             </div>
 
             <!-- Settings Dropdown -->
@@ -42,8 +67,7 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
+                            <x-dropdown-link :href="route('logout')" onclick="event.preventDefault();
                                                 this.closest('form').submit();">
                                 {{ __('Log Out') }}
                             </x-dropdown-link>
@@ -67,16 +91,71 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
+
+            <!-- Navigation Links -->
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
+                {{ __('一覧画面') }}
             </x-responsive-nav-link>
+
+            <!-- Navigation Links -->
+            <x-responsive-nav-link :href=" route('attendances.index') " :active="request()->routeIs('dashboard')">
+                {{ __('勤怠管理') }}
+            </x-responsive-nav-link>
+            <!-- Navigation Links -->
+
+            <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('dashboard')">
+                {{ __('顧客名簿') }}
+            </x-responsive-nav-link>
+
+            <!-- Navigation Links -->
+
+            <x-responsive-nav-link :href="route('daily_sales.index')" :active="request()->routeIs('dashboard')">
+                {{ __('売上') }}
+            </x-responsive-nav-link>
+
+            <!-- Navigation Links -->
+
+            <x-responsive-nav-link :href="route('schedules.index')" :active="request()->routeIs('dashboard')">
+                {{ __('予約表') }}
+            </x-responsive-nav-link>
+
+            <!-- Navigation Links -->
+
+            <x-responsive-nav-link :href="route('stocks.index')" :active="request()->routeIs('dashboard')">
+                {{ __('在庫') }}
+            </x-responsive-nav-link>
+
+
+            <!-- Navigation Links -->
+
+            <x-responsive-nav-link :href="route('courses.index')" :active="request()->routeIs('dashboard')">
+                {{ __('コース') }}
+            </x-responsive-nav-link>
+
+            <!-- Navigation Links -->
+
+            <x-responsive-nav-link :href="route('options.index')" :active="request()->routeIs('dashboard')">
+                {{ __('オプション') }}
+            </x-responsive-nav-link>
+
+
+            <x-responsive-nav-link :href="route('merchandises.index')" :active="request()->routeIs('dashboard')">
+                {{ __('物販') }}
+            </x-responsive-nav-link>
+
+
+            <x-responsive-nav-link :href="route('hairstyles.index')" :active="request()->routeIs('dashboard')">
+                {{ __('髪型') }}
+            </x-responsive-nav-link>
+
         </div>
+
+        <!-- Add more Responsive Navigation Links here -->
 
         <!-- Responsive Settings Options -->
         <div class="pt-4 pb-1 border-t border-gray-200">
             <div class="px-4">
                 <div class="font-medium text-base text-gray-800">{{ Auth::user()->login_id }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
@@ -88,8 +167,7 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
+                    <x-responsive-nav-link :href="route('logout')" onclick="event.preventDefault();
                                         this.closest('form').submit();">
                         {{ __('Log Out') }}
                     </x-responsive-nav-link>

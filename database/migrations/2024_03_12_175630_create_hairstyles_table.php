@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('hairstyles', function (Blueprint $table) {
             $table->id();
-            $table->string('hairstyle_name', 100)->nullable();
+            $table->string('hairstyle_name', 100);
             $table->timestamps();
         });
     }

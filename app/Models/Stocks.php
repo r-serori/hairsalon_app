@@ -12,6 +12,7 @@ class stocks extends Model
     protected $fillable = [
         'id',
         'product_name',
+        'product_price',
         'quantity',
         'remarks',
         'supplier',
@@ -19,7 +20,7 @@ class stocks extends Model
         'created_at'
     ];              
     
-    public function stock_categories()
+    public function stock_category()
     {
         return $this->belongsTo(stock_categories::class);
     }

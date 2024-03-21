@@ -14,14 +14,15 @@
 
 
         <div class="col-md-6 text-right">
-        <form action="{{ route('customers.index') }}" method="GET">
-      <div class="input-group">
-        <input type="text" name="search" class="form-control" placeholder="{{ __('名前で検索') }}">
-        <div class="input-group-append">
-          <button class="btn btn-primary" type="submit">{{ __('検索') }}</button>
-        </div>
-      </div>
-    </form>
+          <form action="{{ route('customers.index') }}" method="GET">
+            <div class="input-group">
+              <input type="text" name="search" class="form-control" placeholder="{{ __('名前で検索') }}">
+              <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">{{ __('検索') }}</button>
+              </div>
+            </div>
+          </form>
+          <a href="{{ route('customers.index') }}" class="btn btn-primary">全体へ戻る</a>
           <a href="{{ route('customers.create') }}" class="btn btn-primary">{{ __('新規作成') }}</a>
         </div>
       </div>
@@ -56,7 +57,7 @@
                       {{ $hairstyle->hairstyle_name }},
                       @endforeach
                     </td>
-                  
+
                     <td>
                       @foreach ($customer->courses as $course)
                       {{ $course->course_name }},
@@ -82,8 +83,8 @@
                       @endforeach
 
                     </td>
-                 
-                   
+
+
 
 
                     <td>{{ $customer->new_customer ? '新規' : '既存' }}</td>
@@ -109,6 +110,6 @@
   </div>
 
   <!-- ページネーションを表示 -->
-{{ $customers->links() }}
+  {{ $customers->links() }}
 
 </x-app-layout>
