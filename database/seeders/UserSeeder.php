@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
         ]);
         DB::table('users')->insert([
             'login_id' => 'tarou123',
-            'password' => Hash::make('password1234'),
+            'password' => Hash::make('password123'),
             'created_at' => now(),
         ]);
     }

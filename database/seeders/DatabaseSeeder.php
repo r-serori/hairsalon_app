@@ -37,8 +37,6 @@ class DatabaseSeeder extends Seeder
             CustomersSeeder::class,
             StockCategoriesSeeder::class,
             StocksSeeder::class,
-            ExpenseCategoriesSeeder::class,
-            ExpensesSeeder::class,
             ScheduleSeeder::class,
             DailySalesSeeder::class,
             MonthlySalesSeeder::class,

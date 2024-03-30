@@ -25,11 +25,17 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
-
+        $credentials = $request->only('login_id', 'password');
+    
+        if (!Auth::attempt($credentials, $request->has('remember'))) {
+            return back()->withErrors([
+                'login_id' => 'ログインIDまたはパスワードが正しくありません。',
+            ]);
+        }
+    
         $request->session()->regenerate();
-
-        return redirect()->intended(RouteServiceProvider::HOME);
+    
+        return redirect(RouteServiceProvider::HOME);
     }
 
     /**

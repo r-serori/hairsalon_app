@@ -91,9 +91,6 @@ Route::get('attendance_times/{attendance_id}/search', [AttendanceTimesController
 
 
 
-Route::resource('expense_categories', ExpenseCategoriesController::class);
-Route::resource('expenses', ExpensesController::class);
-Route::get('expenses/search', [ExpensesController::class, 'search'])->name('expenses.search');
 
 
 Route::resource('merchandise_customers', MerchandiseCustomersController::class);
@@ -124,5 +121,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
+
 
 require __DIR__.'/auth.php';
