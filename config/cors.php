@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\attendances;
+
 return [
 
     /*
@@ -15,13 +17,15 @@ return [
     |
     */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths' => [
+        'api/*', 'sanctum/csrf-cookie', 'login', 'register', 'dashboard', 'logout', 'user', 'user/*', 'attendances', 'attendances/*', 'attendance_times', 'attendance_times/*', 'attendance_times/*/search', 'courses', 'courses/*', 'customers', 'customers/*', 'customers/*/schedule', 'daily_sales', 'daily_sales/*', 'daily_sales/update-daily-sales', 'hairstyles', 'hairstyles/*', 'monthly_sales', 'monthly_sales/*', 'monthly_sales/update-monthly-sales', 'options', 'options/*', 'schedules', 'schedules/*', 'schedules/create/*', 'schedules/update-daily-sales', 'yearly_sales', 'yearly_sales/*', 'yearly_sales/update-yearly-sales', 'yearly_sales/update-daily-sales', 'yearly_sales/update-monthly-sales', 'yearly_sales/update-weekly'
+    ],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['http://localhost:3000'],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ['*'],
 
     'allowed_headers' => ['*'],
 
@@ -29,6 +33,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

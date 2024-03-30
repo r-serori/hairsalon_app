@@ -42,8 +42,6 @@ use App\Http\Controllers\YearlySalesController;
 |
 */
 
-Route::resource('hairstyle_customers', HairstyleCustomersController::class);
-Route::resource('option_customers', OptionCustomersController::class);
 
 Route::resource('customers', CustomersController::class);
 Route::get('customers/{customer}/schedule', [CustomersController::class, 'scheduleCreate'])->name('customers.scheduleCreate');
@@ -58,21 +56,11 @@ Route::resource('schedules', SchedulesController::class);
 Route::post('schedules/create/{customer}', [SchedulesController::class, 'fromCustomersStore'])->name('schedules.from_customers_store');//追加, 顧客からのスケジュール登録
 Route::post('schedules/update-daily-sales', [SchedulesController::class, 'updateDailySales'])->name('schedules.updateDailySales');
 
-
-
-
-
-
 Route::resource('daily_sales', DailySalesController::class);
 Route::post('daily_sales/update-daily-sales', [DailySalesController::class, 'updateMonthlySales'])->name('daily_sales.updateMonthlySales');
 
-
-
 Route::resource('monthly_sales', MonthlySalesController::class);
 Route::post('monthly_sales/update-monthly-sales', [MonthlySalesController::class, 'updateYearlySales'])->name('monthly_sales.updateYearlySales');
-
-
-
 
 Route::resource('courses', CoursesController::class);
 Route::resource('course_customers', CourseCustomersController::class);
