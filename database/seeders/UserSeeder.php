@@ -21,10 +21,10 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password123'),
             'created_at' => now(),
         ]);
-        DB::table('users')->insert([
-            'login_id' => 'tarou123',
-            'password' => Hash::make('password123'),
-            'created_at' => now(),
-        ]);
+        // DB::table('users')->insert([
+        //     'login_id' => 'tarou123',
+        //     'password' => Hash::make('password123'),
+        //     'created_at' => now(),
+        // ]);
     }
 }

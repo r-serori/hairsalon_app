@@ -33,3 +33,20 @@ Route::post('/login', function (Request $request) {
     return response()->json(['error' => 'Unauthorized'], 401);
 });
 
+
+
+
+Route::post('/logout', function (Request $request) {
+    $request->user()->currentAccessToken()->delete();
+
+    return response()->json(['message' => 'Logged out'], 200);
+});
+
+Route::post('/register', function (Request $request) {
+    $user = new User();
+    $user->login_id = $request->login_id;
+    $user->password = bcrypt($request->password);
+    $user->save();
+
+    return response()->json(['message' => 'User created'], 201);
+});

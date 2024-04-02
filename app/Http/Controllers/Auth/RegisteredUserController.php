@@ -31,20 +31,10 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
 
-        // 現在のユーザー数を取得
-        $userCount = User::count();
-
-        
-        // ユーザー数が2人未満であることを確認
-        if ($userCount >= 2) {
-            return redirect('register')->withErrors([
-                'login_id' => ['ユーザー数が上限に達しています。'],
-            ]);
-        }
-
         $request->validate([
             'login_id' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'string'],
+            'confirmPassword' => ['required', 'same:password'], // confirmPasswordがpasswordと同じかどうかを確認するルールを追加
         ]);
 
         $user = User::create([
