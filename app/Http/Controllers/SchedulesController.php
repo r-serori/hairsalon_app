@@ -55,7 +55,6 @@ class SchedulesController extends Controller
     {
         // バリデーションルールを定義する
         $validatedData = $request->validate([
-            'customer_name' => 'required|string',
             'date' => 'required',
             'start_time' => 'required',
             'end_time' => 'nullable',
@@ -100,7 +99,7 @@ class SchedulesController extends Controller
         }
 
         $schedule = schedules::create([
-            'customer_name' => $validatedData['customer_name'],
+
             'date' => $validatedData['date'],
             'start_time' => $validatedData['start_time'],
             'end_time' => $validatedData['end_time'],
@@ -130,12 +129,11 @@ class SchedulesController extends Controller
     public function store(Request $request)
     {
 
-        
+
 
 
         // バリデーションルールを定義する
         $validatedData = $request->validate([
-            'customer_name' => 'string|nullable',
             'date' => 'required',
             'start_time' => 'required',
             'end_time' => 'nullable',
@@ -150,7 +148,7 @@ class SchedulesController extends Controller
         ]);
 
 
-    
+
 
         // courses_id
         $coursesId = $request->input('courses_id');
@@ -196,7 +194,7 @@ class SchedulesController extends Controller
         }
 
         $schedule = schedules::create([
-            'customer_name' => $validatedData['customer_name'],
+
             'date' => $validatedData['date'],
             'start_time' => $validatedData['start_time'],
             'end_time' => $validatedData['end_time'],
@@ -262,7 +260,6 @@ class SchedulesController extends Controller
 
         // バリデーションルールを定義する
         $validatedData = $request->validate([
-            'customer_name' => 'required|string',
             'date' => 'required',
             'start_time' => 'required',
             'end_time' => 'nullable',
@@ -303,7 +300,7 @@ class SchedulesController extends Controller
 
         // スケジュールの各フィールドを更新する
         $schedule->update([
-            'customer_name' => $validatedData['customer_name'],
+
             'date' => $validatedData['date'],
             'start_time' => $validatedData['start_time'],
             'end_time' => $validatedData['end_time'],
@@ -350,7 +347,7 @@ class SchedulesController extends Controller
             ]);
         }
 
-        
+
         return redirect()->back()->with('success', '日次売り上げが更新されました');
     }
 }

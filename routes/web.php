@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HairstyleCustomersController;
-use App\Http\Controllers\OptionCustomersController;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\HairstylesController;
 use App\Http\Controllers\OptionsController;
@@ -13,9 +11,6 @@ use App\Http\Controllers\CoursesController;
 use App\Http\Controllers\CourseCustomersController;
 use App\Http\Controllers\AttendancesController;
 use App\Http\Controllers\AttendanceTimesController;
-use App\Http\Controllers\CustomerPricesController;
-use App\Http\Controllers\ExpenseCategoriesController;
-use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\MerchandiseCustomersController;
 use App\Http\Controllers\MerchandisesController;
 use App\Http\Controllers\MonthlySalesController;
@@ -53,7 +48,7 @@ Route::resource('hairstyles', HairstylesController::class);
 Route::resource('options', OptionsController::class);
 
 Route::resource('schedules', SchedulesController::class);
-Route::post('schedules/create/{customer}', [SchedulesController::class, 'fromCustomersStore'])->name('schedules.from_customers_store');//追加, 顧客からのスケジュール登録
+Route::post('schedules/create/{customer}', [SchedulesController::class, 'fromCustomersStore'])->name('schedules.from_customers_store'); //追加, 顧客からのスケジュール登録
 Route::post('schedules/update-daily-sales', [SchedulesController::class, 'updateDailySales'])->name('schedules.updateDailySales');
 
 Route::resource('daily_sales', DailySalesController::class);
@@ -63,8 +58,13 @@ Route::resource('monthly_sales', MonthlySalesController::class);
 Route::post('monthly_sales/update-monthly-sales', [MonthlySalesController::class, 'updateYearlySales'])->name('monthly_sales.updateYearlySales');
 
 Route::resource('courses', CoursesController::class);
-Route::resource('course_customers', CourseCustomersController::class);
+
+
 Route::resource('attendances', AttendancesController::class);
+
+Route::post('attendances/{id}/update', [AttendancesController::class, 'update']);
+Route::post('attendances/{id}/delete', [AttendancesController::class, 'destroy']);
+
 Route::resource('attendance_times', AttendanceTimesController::class)->parameters(['attendance_times' => 'id']);
 //attendance_times/id　に置き換わる。　attendance_times/{attendance_time}　になると、idがattendance_timeになる。
 Route::get('attendance_times/{attendance_id}/search', [AttendanceTimesController::class, 'search'])->name('attendance_times.search');
@@ -72,16 +72,6 @@ Route::get('attendance_times/{attendance_id}/search', [AttendanceTimesController
 
 
 
-
-
-
-
-
-
-
-
-
-Route::resource('merchandise_customers', MerchandiseCustomersController::class);
 Route::resource('merchandises', MerchandisesController::class);
 Route::resource('monthly_sales', MonthlySalesController::class);
 Route::resource('stock_categories', StockCategoriesController::class);
@@ -102,7 +92,8 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->name('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -110,7 +101,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::get('/csrf-token', function () {
+    return response()->json(['csrfToken' => csrf_token()]);
+});
 
 
 
-require __DIR__.'/auth.php';
+
+require __DIR__ . '/auth.php';

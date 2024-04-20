@@ -2,13 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\attendances;
 use Illuminate\Http\Request;
 use App\Models\customers;
-use App\Models\hairstyles;
-use App\Models\courses;
-use App\Models\options;
-use App\Models\merchandises;
 
 
 class CustomersController extends Controller
@@ -20,23 +15,14 @@ class CustomersController extends Controller
      */
     public function index(Request $request)
     {
-        // 検索キーワードを取得
-        $search = $request->input('search');
 
-        // 検索がある場合は顧客名で部分一致検索を行う
-        if ($search) {
-            $customers = customers::where('customer_name', 'like', '%' . $search . '%')
-                ->with(['attendances', 'hairstyles', 'courses', 'options', 'merchandises'])
-                ->paginate(20);
-        } else {
-            // 検索がない場合は全ての顧客を取得する
-            //withメソッドはmodelsのメソッドから参照されている、中間テーブルのデータを取得する
-            $customers = customers::with(['attendances', 'hairstyles', 'courses', 'options', 'merchandises'])
-                ->paginate(20);
-        }
+        // 顧客データを取得
+        $customers = customers::all(); // または適切なクエリを使用してデータを取得する
+
 
         // 中間テーブルを含むデータをビューに渡す
-        return view('jobs.customers.index', compact('customers'));
+        return
+            response()->json(['customers' => $customers]);
     }
 
     /**
@@ -46,43 +32,22 @@ class CustomersController extends Controller
      */
     public function create()
     {
-        $hairstyles = hairstyles::all();
-        $courses = courses::all();
-        $options = options::all();
-        $merchandises = merchandises::all();
-        $attendances = attendances::all();
 
-
-        return view('jobs.customers.create', compact('attendances', 'hairstyles', 'courses', 'options', 'merchandises'));
+        return view('jobs.customers.create');
     }
 
     public function scheduleCreate($id)
     {
         $customer = customers::findOrFail($id);
-        $hairstyles = hairstyles::all();
-        $courses = courses::all();
-        $options = options::all();
-        $merchandises = merchandises::all();
-    
-        $course_customers = $customer->courses;
-        $option_customers = $customer->options;
-        $merchandise_customers = $customer->merchandises;
-        $hairstyle_customers = $customer->hairstyles;
-    
-        return view('jobs.customers.scheduleCreate', compact(
-            'customer', 
-            'hairstyles', 
-            'courses', 
-            'options', 
-            'merchandises', 
-            'course_customers', 
-            'option_customers', 
-            'merchandise_customers', 
-            'hairstyle_customers'
-        ));
+
+
+
+        return view(
+            'jobs.customers.scheduleCreate'
+        );
     }
 
-    
+
     /**
      * Store a newly created resource in storage.
      *
@@ -95,16 +60,7 @@ class CustomersController extends Controller
             'customer_name' => 'required',
             'phone_number' => 'nullable',
             'remarks' => 'nullable',
-            'new_customer' => 'required|in:0,1', // 新規or既存の選択肢はフォームから受け取らないので、ここで代入
-            'courses_id' => 'nullable|array', // 複数選択されたコースのIDの配列を受け取る
-            'courses_id.*' => 'nullable|exists:courses,id', // 選択された全てのコースが存在することを確認
-            'options_id' => 'nullable|array',
-            'options_id.*' => 'nullable|exists:options,id',
-            'merchandises_id' => ' nullable|array',
-            'merchandises_id.*' => 'nullable|exists:merchandises,id',
-            'hairstyles_id' => 'nullable|array',
-            'hairstyles_id.*' => 'nullable|exists:hairstyles,id',
-            'attendances_id' => 'nullable|exists:attendances,id',
+            'new_customer' => 'required', // 新規or既存の選択肢はフォームから受け取らないので、
         ]);
 
         // 顧客を作成
@@ -115,28 +71,6 @@ class CustomersController extends Controller
             'new_customer' => $validatedData['new_customer'], // 新規or既存の選択肢はフォームから受け取らないので、ここで代入
         ]);
 
-  
-        // 顧客とコースの中間テーブルにデータを保存
-        if (!empty($validatedData['courses_id'])) {
-            $customer->courses()->sync($validatedData['courses_id']);
-        }
-
-        if (!empty($validatedData['options_id'])) {
-            $customer->options()->sync($validatedData['options_id']);
-            }
-        
-
-        if (!empty($validatedData['merchandises_id'])) {
-            $customer->merchandises()->sync($validatedData['merchandises_id']);
-            }
-        
-
-        if (!empty($validatedData['hairstyles_id'])) {
-            $customer->hairstyles()->sync($validatedData['hairstyles_id']);
-        }
-        if (!empty($validatedData['attendances_id'])) {
-            $customer->attendances()->sync($validatedData['attendances_id']);
-        }
 
 
         // index画面にリダイレクト
@@ -157,7 +91,8 @@ class CustomersController extends Controller
         $customer = customers::findOrFail($id);
 
         // showビューにデータを渡して表示
-        return view('jobs.customers.show', compact('customer'));
+        return
+            response()->json(['customer' => $customer]);
     }
 
     /**
@@ -170,15 +105,9 @@ class CustomersController extends Controller
     {
         $customer = Customers::findOrFail($id);
 
-        // すべての髪型、コース、オプション、物販データを取得
-        $hairstyles = hairstyles::all();
-        $courses = courses::all();
-        $options = options::all();
-        $merchandises = merchandises::all();
-        $attendances = attendances::all();
 
         // editビューにデータを渡して表示
-        return view('jobs.customers.edit', compact('customer', 'attendances', 'hairstyles', 'courses', 'options', 'merchandises'));
+        return view('jobs.customers.edit');
     }
 
 
@@ -212,16 +141,7 @@ class CustomersController extends Controller
             'customer_name' => 'required',
             'phone_number' => 'nullable',
             'remarks' => 'nullable',
-            'new_customer' => 'required|in:0,1', // 新規or既存の選択肢はフォームから受け取らないので、ここで代入
-            'courses_id' => 'nullable|array', // 複数選択されたコースのIDの配列を受け取る
-            'courses_id.*' => 'nullable|exists:courses,id', // 選択された全てのコースが存在することを確認
-            'options_id' => 'nullable|array',
-            'options_id.*' => 'nullable|exists:options,id',
-            'merchandises_id' => ' nullable|array',
-            'merchandises_id.*' => 'nullable|exists:merchandises,id',
-            'hairstyles_id' => 'nullable|array',
-            'hairstyles_id.*' => 'nullable|exists:hairstyles,id',
-            'attendances_id' => 'nullable|exists:attendances,id',
+            'new_customer' => 'required',
         ]);
 
         // 顧客データを更新
@@ -232,29 +152,6 @@ class CustomersController extends Controller
             'new_customer' => $validatedData['new_customer'],
         ]);
 
-        // 中間テーブルのデータを一度削除
-        $customer->courses()->detach();
-        $customer->options()->detach();
-        $customer->merchandises()->detach();
-        $customer->hairstyles()->detach();
-        $customer->attendances()->detach();
-
-        // 新しいデータを中間テーブルに追加
-        if (!empty($validatedData['courses_id'])) {
-            $customer->courses()->sync($validatedData['courses_id']);
-        }
-        if (!empty($validatedData['options_id'])) {
-            $customer->options()->sync($validatedData['options_id']);
-        }
-        if (!empty($validatedData['merchandises_id'])) {
-            $customer->merchandises()->sync($validatedData['merchandises_id']);
-        }
-        if (!empty($validatedData['hairstyles_id'])) {
-            $customer->hairstyles()->sync($validatedData['hairstyles_id']);
-        }
-        if (!empty($validatedData['attendances_id'])) {
-            $customer->attendances()->sync($validatedData['attendances_id']);
-        }
 
         // index画面にリダイレクト
         return redirect()->route('customers.index')->with('success', 'Customer updated successfully.');
@@ -270,10 +167,6 @@ class CustomersController extends Controller
     {
         // 指定されたIDの顧客データを取得
         $customer = customers::findOrFail($id);
-
-        // hairstyle_customers テーブルから関連するレコードを削除
-        $customer->hairstyles()->detach();
-
 
 
         // 顧客データを削除

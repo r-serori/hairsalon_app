@@ -46,12 +46,16 @@ class VerifyCsrfToken extends Middleware
         'schedules/update-daily-sales',
         'yearly_sales',
         'yearly_sales/*',
-        'yearly_sales/update-yearly-sales',
-        'yearly_sales/update-daily-sales',
-        'yearly_sales/update-monthly-sales',
-        'yearly_sales/update-weekly'
+        'stocks',
+        'stocks/*',
+        'stocks/*/search',
+        'stock_categories',
+        'stock_categories/*',
+        'stock_categories/*/search',
 
-        
+
+
+
 
 
 

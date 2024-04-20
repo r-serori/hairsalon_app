@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\attendances;
-use App\Models\attendance_times;
 use Illuminate\Support\Facades\Log;
 
 
@@ -22,10 +21,10 @@ class AttendancesController extends Controller
 
         $attendances = attendances::all(); // または適切なクエリを使用してデータを取得する
         Log::info('Attendances data:', ['attendances' => $attendances]);
-    
-        return view('jobs.attendances.index', compact('attendances'));
+
+        return response()->json(['attendances' => $attendances]);
     }
-    
+
 
     /**
      * Show the form for creating a new resource.
@@ -35,7 +34,6 @@ class AttendancesController extends Controller
     public function create()
     {
         return view('jobs.attendances.create');
-        
     }
 
     /**
@@ -59,11 +57,11 @@ class AttendancesController extends Controller
             'phone_number' => $validatedData['phone_number'],
             'address' => $validatedData['address'],
         ]);
-        
 
 
-        
-        return redirect('attendances')->with('success','スタッフの新規作成に成功しました。');
+
+
+        return redirect('attendances')->with('success', 'スタッフの新規作成に成功しました。');
     }
 
     /**
@@ -74,9 +72,13 @@ class AttendancesController extends Controller
      */
     public function show($id)
     {
-            
-            $attendance = attendances::find($id);
-            return view('jobs.attendances.show', compact('attendance'));
+        $attendance = attendances::find($id);
+
+        if (!$attendance) {
+            return response()->json(['error' => 'スタッフが見つかりませんでした。'], 404);
+        }
+
+        return response()->json(['attendance' => $attendance]);
     }
 
     /**
@@ -88,10 +90,10 @@ class AttendancesController extends Controller
     public function edit($id)
     {
         $attendance = attendances::find($id);
-       
-        return view('jobs.attendances.edit', compact('attendance'));
+
+        return response()->json(['attendance' => $attendance]);
     }
-    
+
 
     /**
      * Update the specified resource in storage.
@@ -102,7 +104,7 @@ class AttendancesController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
+
         $validatedData = $request->validate([
             'attendance_name' => 'required|string',
             'position' => 'required|string',
@@ -119,10 +121,10 @@ class AttendancesController extends Controller
 
         $attendance->save();
 
-        
+
         return redirect('attendances')->with('success', 'スタッフの情報の更新に成功しました。');
     }
-    
+
 
     /**
      * Remove the specified resource from storage.
@@ -132,11 +134,20 @@ class AttendancesController extends Controller
      */
     public function destroy($id)
     {
-        attendances::destroy($id);
+        $attendance = attendances::find($id);
+        if (!$attendance) {
+            return response()->json(['message' => 'attendance not found'], 404);
+        }
 
-            
-        return redirect()->route('attendances.index')->with('success', 'スタッフの削除に成功しました。');
+        try {
+            $attendance->delete();
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to delete attendance', 'error' => $e->getMessage()], 500);
+        }
+
+        return response()->json(
+            [],
+            204
+        );
     }
-    
 }
-

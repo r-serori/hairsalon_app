@@ -8,23 +8,26 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * @return void
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('customer_schedules', function (Blueprint $table) {
             $table->id();
-            $table->string('login_id');
-            $table->string('password');
-            $table->rememberToken();
+            $table->foreignId('customers_id')->constrained();
+            $table->foreignId('schedules_id')->constrained();
             $table->timestamps();
         });
     }
 
     /**
      * Reverse the migrations.
+     *
+     * @return void
      */
-    public function down(): void
+    public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('customer_schedules');
     }
 };
