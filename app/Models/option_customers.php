@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\customers;
 use App\Models\options;
 
@@ -11,9 +12,10 @@ class option_customers extends Model
 {
 
     public $timestamps = false;
-    
+
     use HasFactory;
     protected $fillable = [
+        'id',
         'options_id',
         'customers_id',
     ];
@@ -22,7 +24,7 @@ class option_customers extends Model
     {
         return $this->belongsTo(customers::class);
     }
-    
+
     public function option()
     {
         return $this->belongsTo(options::class);

@@ -14,11 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::create('customer_attendances', function (Blueprint $table) {
-            $table->unsignedBigInteger('customers_id');
-            $table->unsignedBigInteger('attendances_id');
-        
-            $table->foreign('customers_id')->references('id')->on('customers')->onDelete('cascade');
-            $table->foreign('attendances_id')->references('id')->on('attendances')->onDelete('cascade');
+            $table->id();
+            $table->foreignId('customers_id')->constrained('customers')->onDelete('cascade');
+            $table->foreignId('attendances_id')->constrained('attendances')->onDelete('cascade');
         });
     }
 

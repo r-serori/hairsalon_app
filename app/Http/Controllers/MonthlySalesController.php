@@ -11,99 +11,86 @@ class MonthlySalesController extends Controller
 {
     public function index()
     {
-        $monthly_sales = monthly_sales::all()->sortBy('year')->sortBy('month');
 
+        // 月別売上一覧を取得
+        $monthly_sales = monthly_sales::all();
 
-        return view('stores.monthly_sales.index', compact('monthly_sales'));
-    }
-
-    public function create()
-    {
-        return view('stores.monthly_sales.create');
+        // 月別売上一覧ページにデータを渡して表示
+        return response()->json(['monthly_sales' => $monthly_sales]);
     }
 
     public function store(Request $request)
     {
+        // バリデーションルールを定義する
         $validatedData = $request->validate([
-            'year' => 'required',
-            'month' => 'required',
-            'monthly_sales' => 'required',
+            'year' => 'required|integer',
+            'month' => 'required|integer',
+            'monthly_sales' => 'required|integer',
         ]);
+
+        // 月別売上モデルを作成して保存する
 
         monthly_sales::create([
             'year' => $validatedData['year'],
             'month' => $validatedData['month'],
             'monthly_sales' => $validatedData['monthly_sales'],
         ]);
-        return redirect()->route('monthly_sales.index');
+
+        // 成功したらリダイレクト
+        return response()->json([], 204);
     }
+
 
     public function show($id)
     {
-        $monthlySales = monthly_sales::find($id);
-        return view('stores.monthly_sales.show', compact('monthlySales'));
+        // 指定されたIDの月別売上を取得
+        $monthly_sale = monthly_sales::find($id);
+
+        // 月別売上を表示
+        return response()->json(['monthly_sale' => $monthly_sale]);
     }
 
-    public function edit($id)
-    {
-        $monthlySales = monthly_sales::find($id);
-        return view('stores.monthly_sales.edit', compact('monthlySales'));
-    }
+
 
     public function update(Request $request, $id)
     {
+        // バリデーションルールを定義する
         $validatedData = $request->validate([
-            'year' => 'required',
-            'month' => 'required',
-            'monthly_sales' => 'required',
+            'year' => 'required|integer',
+            'month' => 'required|integer',
+            'monthly_sales' => 'required|integer',
         ]);
 
-        $monthlySales = monthly_sales::find($id);
+        // 月別売上を取得する
+        $monthly_sale = monthly_sales::findOrFail($id);
 
-        $monthlySales->year = $validatedData['year'];
-        $monthlySales->month = $validatedData['month'];
-        $monthlySales->monthly_sales = $validatedData['monthly_sales'];
+        // 月別売上を更新する
+        $monthly_sale->year = $validatedData['year'];
+        $monthly_sale->month = $validatedData['month'];
+        $monthly_sale->monthly_sales = $validatedData['monthly_sales'];
+        $monthly_sale->save();
 
-        $monthlySales->save();
-        return redirect()->route('monthly_sales.index');
+        // 成功したらリダイレクト
+        return response()->json(
+            [],
+            204
+        );
     }
 
     public function destroy($id)
     {
-        $monthlySales = monthly_sales::find($id);
-        $monthlySales->delete();
-        return redirect()->route('monthly_sales.index');
+        $monthly_sale = monthly_sales::find($id);
+        if (!$monthly_sale) {
+            return response()->json(['message' =>
+            'monthly_sale not found'], 404);
+        }
+
+        try {
+            $monthly_sale->delete();
+            return response()->json([], 204);
+        } catch (\Exception $e) {
+            return response()->json(['message' =>
+            'monthly_sale has child records'], 409);
+        }
     }
-
-    public function updateYearlySales(Request $request)
-    {
-        // バリデーション
-        $validatedData = $request->validate([
-            'year' => 'required',
-        ]);
-
-        // 月次売り上げの年別売り上げを取得
-        $yearlySalesAmount = monthly_sales::where('year', $validatedData['year'])
-            ->sum('monthly_sales');
-
-        // 年次売り上げのレコードを取得
-        $yearlySales = yearly_sales::where('year', $validatedData['year'])->first();
-
-        // 年次売り上げのレコードが存在しない場合は新規作成
-        if ($yearlySales) {
-            // 年次売り上げのレコードが存在する場合は更新
-            $yearlySales->yearly_sales = $yearlySalesAmount;
-            $yearlySales->save();
-            return redirect()->route('monthly_sales.index')->with('success', '年次売り上げを更新しました');
-        } else {
-            yearly_sales::create([
-                'year' => $validatedData['year'],
-                'yearly_sales' => $yearlySalesAmount,
-            ]);
-        // リダイレクトおよび成功メッセージの返却
-        return redirect()->route('monthly_sales.index')->with('success', '年次売り上げを作成しました');
-    
-
-    }
-}
 }

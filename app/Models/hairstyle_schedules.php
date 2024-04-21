@@ -10,6 +10,7 @@ class hairstyle_schedules extends Model
     use HasFactory;
     public $timestamps = false;
     protected $fillable = [
+        'id',
         'hairstyles_id',
         'schedules_id',
     ];

@@ -10,6 +10,7 @@ class customer_schedules extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'customers_id',
         'schedules_id',
     ];

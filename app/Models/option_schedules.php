@@ -10,6 +10,7 @@ class option_schedules extends Model
     use HasFactory;
     public $timestamps = false;
     protected $fillable = [
+        'id',
         'options_id',
         'schedules_id',
     ];
@@ -18,5 +19,4 @@ class option_schedules extends Model
     {
         return $this->belongsTo(schedules::class);
     }
-    
 }

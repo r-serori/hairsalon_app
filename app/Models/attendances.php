@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\attendance_times;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,7 @@ class attendances extends Model
         'phone_number',
         'address',
         'created_at',
+        'updated_at',
     ];
 
     public function attendance_times()
@@ -23,6 +25,10 @@ class attendances extends Model
         return $this->hasMany(attendance_times::class);
     }
 
+    public function attendance_attendance_times()
+    {
+        return $this->hasMany(Attendance_AttendanceTimes::class);
+    }
 
     public function customers()
     {

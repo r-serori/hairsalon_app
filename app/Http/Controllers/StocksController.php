@@ -14,63 +14,16 @@ class StocksController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-    public function index(Request $request)
+    public function index()
     {
 
-        // カテゴリー一覧を取得
-        $stock_categories = stock_categories::all();
-
-        // カテゴリーIDと商品名を取得
-        $categoryId = $request->input('category');
-        $productName = $request->input('search');
-
-        // 在庫データを取得するクエリを作成
-        $query = stocks::query()->with('stock_category');
-
-    
-
-        // カテゴリーでフィルタリング
-        if ($categoryId) {
-            $query->where('stock_category_id', $categoryId);
-        }
-
-        // 商品名で部分一致検索
-        if ($productName) {
-            $query->where('product_name', 'like', '%' . $productName . '%');
-        }
-
-        // 在庫データを取得
-        $stocks = $query->get();
-
-
-
-        // 在庫一覧ページにデータを渡して表示
-        return view('stores.stocks.index', compact('stocks', 'stock_categories'));
+        $stocks = stocks::all();
+        return response()->json(['stocks' => $stocks]);
     }
 
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        $stock_categories = \App\Models\stock_categories::all();
-
-        return view('stores.stocks.create', compact('stock_categories'));
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-
-
         // バリデーションルールを定義する
         $validatedData = $request->validate([
             'product_name' => 'required',
@@ -80,7 +33,6 @@ class StocksController extends Controller
             'remarks' => 'nullable|string',
             'stock_category_id' => 'required|exists:stock_categories,id',
         ]);
-
 
         // 在庫モデルを作成して保存する
         stocks::create([
@@ -94,42 +46,20 @@ class StocksController extends Controller
 
 
         // 成功したらリダイレクト
-        return redirect()->route('stocks.index')->with('success', '在庫の新規作成に成功しました');
+        return response()->json([], 204);
     }
 
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        $stock = \App\Models\stocks::find($id);
-        return view('stores.stocks.show', compact('stock'));
+        // 指定されたIDの在庫を取得
+        $stock = stocks::findOrFail($id);
+
+        // 在庫を表示
+        return response()->json(['stock' => $stock]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        $stock = \App\Models\stocks::find($id);
-        $stock_categories = stock_categories::all();
-        return view('stores.stocks.edit', compact('stock', 'stock_categories'));
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         // バリデーションルールを定義する
@@ -157,19 +87,22 @@ class StocksController extends Controller
         $stock->save();
 
         // 成功したらリダイレクト
-        return redirect()->route('stocks.index')->with('success', '在庫の更新に成功しました');
+        return response()->json([], 204);
     }
 
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
     public function destroy($id)
     {
-        \App\Models\stocks::destroy($id);
-        return redirect()->route('stocks.index')->with('success', '在庫を削除しました。');
+        $stock = stocks::find($id);
+        if (!$stock) {
+            return response()->json(['message' => '在庫が見つかりませんでした。'], 404);
+        }
+
+        try {
+            $stock->delete();
+            return response()->json([], 204);
+        } catch (\Exception $e) {
+            return response()->json(['message' => '在庫の削除に失敗しました。'], 500);
+        }
     }
 }

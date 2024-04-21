@@ -17,69 +17,103 @@ use App\Http\Controllers\MonthlySalesController;
 use App\Http\Controllers\StockCategoriesController;
 use App\Http\Controllers\StocksController;
 use App\Http\Controllers\YearlySalesController;
+use App\Http\Controllers\AttendanceAttendanceTimesController;
+use App\Http\Controllers\CustomerSchedulesController;
+use App\Http\Controllers\CustomerAttendancesController;
+use App\Http\Controllers\HairstyleCustomersController;
+use App\Http\Controllers\OptionCustomersController;
 
 
 
-
-
-
-
-
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
-
-Route::resource('customers', CustomersController::class);
-Route::get('customers/{customer}/schedule', [CustomersController::class, 'scheduleCreate'])->name('customers.scheduleCreate');
-
-
-
-
-Route::resource('hairstyles', HairstylesController::class);
-Route::resource('options', OptionsController::class);
-
-Route::resource('schedules', SchedulesController::class);
-Route::post('schedules/create/{customer}', [SchedulesController::class, 'fromCustomersStore'])->name('schedules.from_customers_store'); //追加, 顧客からのスケジュール登録
-Route::post('schedules/update-daily-sales', [SchedulesController::class, 'updateDailySales'])->name('schedules.updateDailySales');
-
-Route::resource('daily_sales', DailySalesController::class);
-Route::post('daily_sales/update-daily-sales', [DailySalesController::class, 'updateMonthlySales'])->name('daily_sales.updateMonthlySales');
-
-Route::resource('monthly_sales', MonthlySalesController::class);
-Route::post('monthly_sales/update-monthly-sales', [MonthlySalesController::class, 'updateYearlySales'])->name('monthly_sales.updateYearlySales');
-
-Route::resource('courses', CoursesController::class);
 
 
 Route::resource('attendances', AttendancesController::class);
-
 Route::post('attendances/{id}/update', [AttendancesController::class, 'update']);
 Route::post('attendances/{id}/delete', [AttendancesController::class, 'destroy']);
 
+
 Route::resource('attendance_times', AttendanceTimesController::class)->parameters(['attendance_times' => 'id']);
-//attendance_times/id　に置き換わる。　attendance_times/{attendance_time}　になると、idがattendance_timeになる。
-Route::get('attendance_times/{attendance_id}/search', [AttendanceTimesController::class, 'search'])->name('attendance_times.search');
+Route::post('attendance_times/{id}/update', [AttendanceTimesController::class, 'update']);
+Route::post('attendance_times/{id}/delete', [AttendanceTimesController::class, 'destroy']);
+
+
+
+
+Route::resource('customers', CustomersController::class);
+Route::post('customers/{id}/update', [CustomersController::class, 'update']);
+Route::post('customers/{id}/delete', [CustomersController::class, 'destroy']);
+
+
+
+Route::resource('courses', CoursesController::class);
+Route::post('courses/{id}/update', [CoursesController::class, 'update']);
+Route::post('courses/{id}/delete', [CoursesController::class, 'destroy']);
+
+
+
+Route::resource('options', OptionsController::class);
+Route::post('options/{id}/update', [OptionsController::class, 'update']);
+Route::post('options/{id}/delete', [OptionsController::class, 'destroy']);
 
 
 
 
 Route::resource('merchandises', MerchandisesController::class);
+Route::post('merchandises/{id}/update', [MerchandisesController::class, 'update']);
+Route::post('merchandises/{id}/delete', [MerchandisesController::class, 'destroy']);
+
+
+
+Route::resource('hairstyles', HairstylesController::class);
+Route::post('hairstyles/{id}/update', [HairstylesController::class, 'update']);
+Route::post('hairstyles/{id}/delete', [HairstylesController::class, 'destroy']);
+
+
+
+Route::resource('schedules', SchedulesController::class);
+Route::post('schedules/{id}/update', [SchedulesController::class, 'update']);
+Route::post('schedules/{id}/delete', [SchedulesController::class, 'destroy']);
+
+
+
+Route::resource('daily_sales', DailySalesController::class);
+Route::post('daily_sales/{id}/update', [DailySalesController::class, 'update']);
+Route::post('daily_sales/{id}/delete', [DailySalesController::class, 'destroy']);
+
+
+
 Route::resource('monthly_sales', MonthlySalesController::class);
-Route::resource('stock_categories', StockCategoriesController::class);
-Route::resource('stocks', StocksController::class);
+Route::post('monthly_sales/{id}/update', [MonthlySalesController::class, 'update']);
+Route::post('monthly_sales/{id}/delete', [MonthlySalesController::class, 'destroy']);
+
+
+
 Route::resource('yearly_sales', YearlySalesController::class);
+Route::post('yearly_sales/{id}/update', [YearlySalesController::class, 'update']);
+Route::post('yearly_sales/{id}/delete', [YearlySalesController::class, 'destroy']);
 
 
 
+Route::resource('stocks', StocksController::class);
+Route::post('stocks/{id}/update', [StocksController::class, 'update']);
+Route::post('stocks/{id}/delete', [StocksController::class, 'destroy']);
+
+
+
+Route::resource('stock_categories', StockCategoriesController::class);
+Route::post('stock_categories/{id}/update', [StockCategoriesController::class, 'update']);
+Route::post('stock_categories/{id}/delete', [StockCategoriesController::class, 'destroy']);
+
+
+
+//中間テーブルのルーティング
+Route::resource('customer_schedules', CustomerSchedulesController::class);
+Route::resource('course_customers', CourseCustomersController::class);
+Route::resource('customer_attendances', CustomerAttendancesController::class);
+Route::resource('hairstyle_customers', HairstyleCustomersController::class);
+Route::resource('merchandise_customers', MerchandiseCustomersController::class);
+Route::resource('option_customers', OptionCustomersController::class);
+Route::resource('attendance_attendanceTimes', AttendanceAttendanceTimesController::class);
 
 
 
@@ -100,6 +134,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+
+
 
 Route::get('/csrf-token', function () {
     return response()->json(['csrfToken' => csrf_token()]);

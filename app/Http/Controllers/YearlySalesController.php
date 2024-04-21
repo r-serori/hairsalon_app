@@ -9,23 +9,15 @@ class YearlySalesController extends Controller
 {
     public function index()
     {
-        $yearly_sales = yearly_sales::all()-> sortBy('year');
-        
-
-        return view('stores.yearly_sales.index', compact('yearly_sales'));
-    }   
-
-    public function create()
-    {
-        return view('stores.yearly_sales.create');
+        $yearly_sales = yearly_sales::all();
+        return response()->json(['yearly_sales' => $yearly_sales]);
     }
 
     public function store(Request $request)
     {
-        
         $validatedData = $request->validate([
-            'year' => 'required',
-            'yearly_sales' => 'required',
+            'year' => 'required|integer',
+            'yearly_sales' => 'required|integer',
         ]);
 
         yearly_sales::create([
@@ -33,50 +25,51 @@ class YearlySalesController extends Controller
             'yearly_sales' => $validatedData['yearly_sales'],
         ]);
 
-        return redirect()->route('yearly_sales.index');
+        return response()->json([], 204);
     }
 
     public function show($id)
     {
-        $yearlySales = yearly_sales::find($id);
-        return view('stores.yearly_sales.show', compact('yearlySales'));
+        $yearly_sale = yearly_sales::find($id);
+
+        return response()->json(['yearly_sale' => $yearly_sale]);
     }
 
-    public function edit($id)
-    {
-        
-        $yearlySales = yearly_sales::find($id);
-        return view('stores.yearly_sales.edit', compact('yearlySales'));
-    }
 
     public function update(Request $request, $id)
     {
-
         $validatedData = $request->validate([
-            'year' => 'required',
-            'yearly_sales' => 'required',
+            'year' => 'required|integer',
+            'yearly_sales' => 'required|integer',
         ]);
 
-        $yearlySales = yearly_sales::find($id);
+        $yearly_sale = yearly_sales::find($id);
 
-        $yearlySales->year = $validatedData['year'];
-        $yearlySales->yearly_sales = $validatedData['yearly_sales'];
+        $yearly_sale->year = $validatedData['year'];
+        $yearly_sale->yearly_sales = $validatedData['yearly_sales'];
+        $yearly_sale->save();
 
-        $yearlySales->yearly_sales = $request->yearly_sales;
-        $yearlySales->save();
-        return redirect()->route('yearly_sales.index');
+        return response()->json(
+            [],
+            204
+        );
     }
 
     public function destroy($id)
     {
-        $yearlySales = yearly_sales::find($id);
-        $yearlySales->delete();
-        return redirect()->route('yearly_sales.index');
+        $yearly_sale = yearly_sales::find($id);
+        if (!$yearly_sale) {
+            return response()->json(['message' =>
+            'monthly_sale not found'], 404);
+        }
+
+
+        try {
+            $yearly_sale->delete();
+            return response()->json([], 204);
+        } catch (\Exception $e) {
+            return response()->json(['message' =>
+            'monthly_sale not found'], 404);
+        }
     }
-
-
 }
-
-
-//
-

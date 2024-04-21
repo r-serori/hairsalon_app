@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\merchandises;
 use App\Models\customers;
 
@@ -13,6 +14,7 @@ class merchandise_customers extends Model
 
     use HasFactory;
     protected $fillable = [
+        'id',
         'merchandise_id',
         'customer_id',
     ];
@@ -31,5 +33,4 @@ class merchandise_customers extends Model
     {
         return $this->hasMany(schedules::class);
     }
-
 }

@@ -10,6 +10,7 @@ class course_schedules extends Model
     use HasFactory;
     public $timestamps = false;
     protected $fillable = [
+        'id',
         'courses_id',
         'schedules_id',
     ];

@@ -15,9 +15,8 @@ return new class extends Migration
     {
         Schema::create('customer_schedules', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customers_id')->constrained();
-            $table->foreignId('schedules_id')->constrained();
-            $table->timestamps();
+            $table->foreignId('customers_id')->constrained('customers')->onDelete('cascade');
+            $table->foreignId('schedules_id')->constrained('schedules')->onDelete('cascade');
         });
     }
 
