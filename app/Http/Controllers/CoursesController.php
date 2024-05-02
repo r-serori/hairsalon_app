@@ -42,6 +42,17 @@ class CoursesController extends Controller
         return response()->json(['course' => $course]);
     }
 
+    public function edit($id)
+    {
+        $course = courses::find($id);
+        if (!$course) {
+            return response()->json(['message' =>
+            'course not found'], 404);
+        }
+
+        return response()->json(['course' => $course]);
+    }
+
 
     public function update(Request $request, $id)
     {

@@ -46,6 +46,15 @@ class StockCategoriesController extends Controller
         return response()->json(['stock_category' => $stock_category]);
     }
 
+    public function edit($id)
+    {
+        // 指定されたIDの在庫カテゴリーを取得
+        $stock_category = stock_categories::find($id);
+
+        // 在庫カテゴリーを表示
+        return response()->json(['stock_category' => $stock_category]);
+    }
+
 
 
     public function update(Request $request, $id)

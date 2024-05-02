@@ -14,7 +14,6 @@ class merchandise_customers extends Model
 
     use HasFactory;
     protected $fillable = [
-        'id',
         'merchandise_id',
         'customer_id',
     ];

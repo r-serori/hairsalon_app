@@ -15,13 +15,14 @@ class AttendanceSeeder extends Seeder
      */
     public function run()
     {
-     
+
         DB::table('attendances')->insert([
             'attendance_name' => '田中店長',
             'position' => 'オーナー',
             'phone_number' => '09012345678',
             'address' => '東京都渋谷区',
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
         DB::table('attendances')->insert([
             'attendance_name' => '太朗社員',
@@ -29,6 +30,7 @@ class AttendanceSeeder extends Seeder
             'phone_number' => '09012345678',
             'address' => '東京都渋谷区',
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

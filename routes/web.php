@@ -113,7 +113,6 @@ Route::resource('customer_attendances', CustomerAttendancesController::class);
 Route::resource('hairstyle_customers', HairstyleCustomersController::class);
 Route::resource('merchandise_customers', MerchandiseCustomersController::class);
 Route::resource('option_customers', OptionCustomersController::class);
-Route::resource('attendance_attendanceTimes', AttendanceAttendanceTimesController::class);
 
 
 

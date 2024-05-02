@@ -24,6 +24,7 @@ class Attendance_timesSeeder extends Seeder
             'end_time' => '18:00:00',
             'break_time' => '60', // Add this line
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
         DB::table('attendance_times')->insert([
             'date' => '2022-01-01', // Add this line
@@ -32,7 +33,8 @@ class Attendance_timesSeeder extends Seeder
             'end_time' => '24:00:00',
             'break_time' => '60', // Add this line
             'created_at' => now(),
-        ]);
+            'updated_at' => now(),
 
+        ]);
     }
 }

@@ -15,7 +15,6 @@ class course_customers extends Model
 
     use HasFactory;
     protected $fillable = [
-        'id',
         'courses_id',
         'customers_id',
     ];

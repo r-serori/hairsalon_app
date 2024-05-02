@@ -28,6 +28,16 @@ class CustomersController extends Controller
             'phone_number' => 'nullable',
             'remarks' => 'nullable',
             'new_customer' => 'required',
+            'courses_id' => 'required|array',
+            'courses_id.*' => 'required|integer|exists:courses,id',
+            'options_id' => 'required|array',
+            'options_id.*' => 'required|integer|exists:options,id',
+            'merchandises_id' => 'required|array',
+            'merchandises_id.*' => 'required|integer|exists:merchandises,id',
+            'hairstyles_id' => 'required|array',
+            'hairstyles_id.*' => 'required|integer|exists:hairstyles,id',
+            'attendances_id' => 'required|array',
+            'attendances_id.*' => 'required|integer|exists:attendances,id',
         ]);
 
         // 顧客を作成
@@ -38,9 +48,26 @@ class CustomersController extends Controller
             'new_customer' => $validatedData['new_customer'],
         ]);
 
+
+
+        // 中間テーブルにデータを挿入
+        $courseIds = $validatedData['courses_id'];
+        $optionIds = $validatedData['options_id'];
+        $merchandiseIds = $validatedData['merchandises_id'];
+        $hairstyleIds = $validatedData['hairstyles_id'];
+        $attendanceIds = $validatedData['attendances_id'];
+
+        $customer->courses()->sync($courseIds);
+        $customer->options()->sync($optionIds);
+        $customer->merchandises()->sync($merchandiseIds);
+        $customer->hairstyles()->sync($hairstyleIds);
+        $customer->attendances()->sync($attendanceIds);
+
+
+
         return
             response()->json(
-                [],
+                ['customer' => $customer, 'courses' => $courseIds, 'options' => $optionIds, 'merchandises' => $merchandiseIds, 'hairstyles' => $hairstyleIds, 'attendances' => $attendanceIds],
                 204
             );
     }
@@ -66,6 +93,16 @@ class CustomersController extends Controller
             'phone_number' => 'nullable',
             'remarks' => 'nullable',
             'new_customer' => 'required',
+            'courses_id' => 'required|array',
+            'courses_id.*' => 'required|integer|exists:courses,id',
+            'options_id' => 'required|array',
+            'options_id.*' => 'required|integer|exists:options,id',
+            'merchandises_id' => 'required|array',
+            'merchandises_id.*' => 'required|integer|exists:merchandises,id',
+            'hairstyles_id' => 'required|array',
+            'hairstyles_id.*' => 'required|integer|exists:hairstyles,id',
+            'attendances_id' => 'required|array',
+            'attendances_id.*' => 'required|integer|exists:attendances,id',
         ]);
 
         // 指定されたIDの顧客データを取得
@@ -77,12 +114,25 @@ class CustomersController extends Controller
         $customer->remarks = $validatedData['remarks'];
         $customer->new_customer = $validatedData['new_customer'];
 
+        // 中間テーブルにデータを挿入
+        $courseIds = $validatedData['courses_id'];
+        $optionIds = $validatedData['options_id'];
+        $merchandiseIds = $validatedData['merchandises_id'];
+        $hairstyleIds = $validatedData['hairstyles_id'];
+        $attendanceIds = $validatedData['attendances_id'];
+
+        $customer->courses()->sync($courseIds);
+        $customer->options()->sync($optionIds);
+        $customer->merchandises()->sync($merchandiseIds);
+        $customer->hairstyles()->sync($hairstyleIds);
+        $customer->attendances()->sync($attendanceIds);
+
         $customer->save();
+
 
         return
             response()->json(
-                [],
-                204
+                ['customer' => $customer, 'courses' => $courseIds, 'options' => $optionIds, 'merchandises' => $merchandiseIds, 'hairstyles' => $hairstyleIds, 'attendances' => $attendanceIds]
             );
     }
 

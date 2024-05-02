@@ -16,13 +16,14 @@ class customers extends Model
         'remarks',
         'new_customer',
         'created_at',
+        'updated_at',
     ];
 
     public function courses()
     {
         return $this->belongsToMany(courses::class, 'course_customers');
     }
-    
+
     public function options()
     {
         return $this->belongsToMany(options::class, 'option_customers');
@@ -32,7 +33,7 @@ class customers extends Model
     {
         return $this->belongsToMany(merchandises::class, 'merchandise_customers');
     }
-    
+
     public function hairstyles()
     {
         return $this->belongsToMany(hairstyles::class, 'hairstyle_customers');
@@ -52,5 +53,4 @@ class customers extends Model
     {
         return $this->hasMany(schedules::class);
     }
-
 }

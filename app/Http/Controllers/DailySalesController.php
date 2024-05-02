@@ -38,6 +38,18 @@ class DailySalesController extends Controller
         return response()->json(['daily_sale' => $daily_sale]);
     }
 
+    public function edit($id)
+    {
+        $daily_sale = daily_sales::find($id);
+
+        if (!$daily_sale) {
+            return response()->json(['message' =>
+            'daily_sale not found'], 404);
+        }
+
+        return response()->json(['daily_sale' => $daily_sale]);
+    }
+
 
     public function update(Request $request, $id)
     {

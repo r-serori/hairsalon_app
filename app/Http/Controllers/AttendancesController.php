@@ -55,6 +55,17 @@ class AttendancesController extends Controller
         return response()->json(['attendance' => $attendance]);
     }
 
+    public function edit($id)
+    {
+        $attendance = attendances::find($id);
+
+        if (!$attendance) {
+            return response()->json(['error' => 'スタッフが見つかりませんでした。'], 404);
+        }
+
+        return response()->json(['attendance' => $attendance]);
+    }
+
 
     public function update(Request $request, $id)
     {

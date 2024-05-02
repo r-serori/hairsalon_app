@@ -35,6 +35,17 @@ class YearlySalesController extends Controller
         return response()->json(['yearly_sale' => $yearly_sale]);
     }
 
+    public function edit($id)
+    {
+        $yearly_sale = yearly_sales::find($id);
+
+        if (!$yearly_sale) {
+            return response()->json(['message' =>
+            'yearly_sale not found'], 404);
+        }
+
+        return response()->json(['yearly_sale' => $yearly_sale]);
+    }
 
     public function update(Request $request, $id)
     {

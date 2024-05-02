@@ -14,7 +14,6 @@ class customer_attendances extends Model
 
     use HasFactory;
     protected $fillable = [
-        'id',
         'customers_id',
         'attendances_id',
     ];

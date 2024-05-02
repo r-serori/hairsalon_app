@@ -39,6 +39,16 @@ class HairstylesController extends Controller
         return response()->json(['hairstyle' => $hairstyle]);
     }
 
+    public function edit($id)
+    {
+        $hairstyle = hairstyles::find($id);
+        if (!$hairstyle) {
+            return response()->json(['message' => 'hairstyle not found'], 404);
+        }
+
+        return response()->json(['hairstyle' => $hairstyle]);
+    }
+
 
     public function update(Request $request, $id)
     {

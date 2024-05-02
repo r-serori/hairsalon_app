@@ -50,6 +50,15 @@ class MonthlySalesController extends Controller
         return response()->json(['monthly_sale' => $monthly_sale]);
     }
 
+    public function edit($id)
+    {
+        // 指定されたIDの月別売上を取得
+        $monthly_sale = monthly_sales::find($id);
+
+        // 月別売上を表示
+        return response()->json(['monthly_sale' => $monthly_sale]);
+    }
+
 
 
     public function update(Request $request, $id)

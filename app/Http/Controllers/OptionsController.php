@@ -38,6 +38,17 @@ class OptionsController extends Controller
         return response()->json(['option' => $option]);
     }
 
+    public function edit($id)
+    {
+        $option = options::find($id);
+        if (!$option) {
+            return response()->json(['message' =>
+            'option not found'], 404);
+        }
+
+        return response()->json(['option' => $option]);
+    }
+
 
     public function update(Request $request, $id)
     {

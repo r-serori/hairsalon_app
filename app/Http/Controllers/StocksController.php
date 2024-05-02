@@ -59,6 +59,15 @@ class StocksController extends Controller
         return response()->json(['stock' => $stock]);
     }
 
+    public function edit($id)
+    {
+        // 指定されたIDの在庫を取得
+        $stock = stocks::findOrFail($id);
+
+        // 在庫を表示
+        return response()->json(['stock' => $stock]);
+    }
+
 
     public function update(Request $request, $id)
     {

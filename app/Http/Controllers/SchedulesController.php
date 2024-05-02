@@ -44,6 +44,18 @@ class SchedulesController extends Controller
     }
 
 
+    public function edit($id)
+    {
+        $schedule = schedules::find($id);
+        if (!$schedule) {
+            return response()->json(['message' =>
+            'schedule not found'], 404);
+        }
+
+        return response()->json(['schedule' => $schedule]);
+    }
+
+
     public function update(Request $request, $id)
     {
         $validatedData = $request->validate([

@@ -15,7 +15,6 @@ class option_customers extends Model
 
     use HasFactory;
     protected $fillable = [
-        'id',
         'options_id',
         'customers_id',
     ];

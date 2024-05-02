@@ -38,6 +38,17 @@ class MerchandisesController extends Controller
         return response()->json(['merchandise' => $merchandise]);
     }
 
+    public function edit($id)
+    {
+        $merchandise = merchandises::find($id);
+        if (!$merchandise) {
+            return response()->json(['message' =>
+            'merchandise not found'], 404);
+        }
+
+        return response()->json(['merchandise' => $merchandise]);
+    }
+
 
     public function update(Request $request, $id)
     {
