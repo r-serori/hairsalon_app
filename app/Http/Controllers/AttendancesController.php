@@ -16,7 +16,6 @@ class AttendancesController extends Controller
     {
 
         $attendances = attendances::all(); // または適切なクエリを使用してデータを取得する
-        Log::info('Attendances data:', ['attendances' => $attendances]);
 
         return response()->json(['attendances' => $attendances]);
     }

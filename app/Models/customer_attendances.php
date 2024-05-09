@@ -17,14 +17,4 @@ class customer_attendances extends Model
         'customers_id',
         'attendances_id',
     ];
-
-    public function customer()
-    {
-        return $this->belongsTo(customers::class);
-    }
-
-    public function attendance()
-    {
-        return $this->belongsTo(attendances::class);
-    }
 }

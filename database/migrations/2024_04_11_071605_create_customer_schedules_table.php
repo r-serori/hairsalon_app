@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+
     /**
      * Run the migrations.
      *
@@ -13,6 +14,7 @@ return new class extends Migration
      */
     public function up()
     {
+
         Schema::create('customer_schedules', function (Blueprint $table) {
             $table->foreignId('customers_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('schedules_id')->constrained('schedules')->onDelete('cascade');

@@ -14,7 +14,6 @@ class customers extends Model
         'customer_name',
         'phone_number',
         'remarks',
-        'new_customer',
         'created_at',
         'updated_at',
     ];
@@ -44,13 +43,9 @@ class customers extends Model
         return $this->belongsToMany(attendances::class, 'customer_attendances', 'customers_id', 'attendances_id');
     }
 
-    public function customer_attendances()
-    {
-        return $this->hasMany(customer_attendances::class);
-    }
 
     public function schedules()
     {
-        return $this->hasMany(schedules::class);
+        return $this->belongsToMany(schedules::class, 'customer_schedules', 'customers_id', 'schedules_id');
     }
 }

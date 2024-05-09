@@ -17,14 +17,10 @@ class merchandises extends Model
         'created_at'
     ];
 
-    public function merchandise_customers()
-    {
-        return $this->hasMany(merchandise_customers::class);
-    }
 
 
     public function customers()
     {
-        return $this->belongsToMany(customers::class, 'merchandise_customers');
+        return $this->belongsToMany(customers::class, 'merchandise_customers', 'merchandises_id', 'customers_id');
     }
 }

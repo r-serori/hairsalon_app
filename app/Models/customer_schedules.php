@@ -9,19 +9,11 @@ class customer_schedules extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+
     protected $fillable = [
         'id',
         'customers_id',
         'schedules_id',
     ];
-
-    public function customer()
-    {
-        return $this->belongsTo(customers::class);
-    }
-
-    public function schedule()
-    {
-        return $this->belongsTo(schedules::class);
-    }
 }

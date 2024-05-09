@@ -14,9 +14,4 @@ class hairstyle_schedules extends Model
         'hairstyles_id',
         'schedules_id',
     ];
-
-    public function schedules()
-    {
-        return $this->belongsTo(schedules::class);
-    }
 }

@@ -14,22 +14,7 @@ class merchandise_customers extends Model
 
     use HasFactory;
     protected $fillable = [
-        'merchandise_id',
-        'customer_id',
+        'merchandises_id',
+        'customers_id',
     ];
-
-    public function customer()
-    {
-        return $this->belongsTo(customers::class);
-    }
-
-    public function merchandise()
-    {
-        return $this->belongsTo(merchandises::class);
-    }
-
-    public function schedules()
-    {
-        return $this->hasMany(schedules::class);
-    }
 }

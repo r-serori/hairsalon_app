@@ -31,7 +31,6 @@ class CustomersSeeder extends Seeder
                 'customer_name' => 'Customer ' . $i,
                 'phone_number' => '123456789' . $i,
                 'remarks' => 'Regular customer ' . $i,
-                'new_customer' => '既存', // 奇数番目は新規顧客、偶数番目は既存顧客とする
             ]);
 
             // ハンドリングするヘアスタイルを取得

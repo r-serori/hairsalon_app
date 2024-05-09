@@ -30,7 +30,7 @@ return [
         'hairstyles', 'hairstyles/*',
         'monthly_sales', 'monthly_sales/*', 'monthly_sales/update-monthly-sales',
         'options', 'options/*',
-        'schedules', 'schedules/*',  'schedules/update-daily-sales',
+        'schedules', 'schedules/*', 'schedules/update-daily-sales',
         'yearly_sales', 'yearly_sales/*',
         'stocks', 'stocks/*',
         'stock_categories', 'stock_categories/*',

@@ -18,19 +18,4 @@ class course_customers extends Model
         'courses_id',
         'customers_id',
     ];
-
-    public function customer()
-    {
-        return $this->belongsTo(customers::class);
-    }
-
-    public function course()
-    {
-        return $this->belongsTo(courses::class);
-    }
-
-    public function schedules()
-    {
-        return $this->hasMany(schedules::class);
-    }
 }

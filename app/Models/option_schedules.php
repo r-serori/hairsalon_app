@@ -14,9 +14,4 @@ class option_schedules extends Model
         'options_id',
         'schedules_id',
     ];
-
-    public function schedules()
-    {
-        return $this->belongsTo(schedules::class);
-    }
 }

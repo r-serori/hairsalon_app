@@ -27,7 +27,6 @@ class CustomersController extends Controller
             'customer_name' => 'required',
             'phone_number' => 'nullable',
             'remarks' => 'nullable',
-            'new_customer' => 'required',
             'courses_id' => 'required|array',
             'courses_id.*' => 'required|integer|exists:courses,id',
             'options_id' => 'required|array',
@@ -45,7 +44,6 @@ class CustomersController extends Controller
             'customer_name' => $validatedData['customer_name'],
             'phone_number' => $validatedData['phone_number'],
             'remarks' => $validatedData['remarks'],
-            'new_customer' => $validatedData['new_customer'],
         ]);
 
 
@@ -67,7 +65,7 @@ class CustomersController extends Controller
 
         return
             response()->json(
-                ['customer' => $customer, 'courses' => $courseIds, 'options' => $optionIds, 'merchandises' => $merchandiseIds, 'hairstyles' => $hairstyleIds, 'attendances' => $attendanceIds],
+                [],
                 204
             );
     }
@@ -92,7 +90,6 @@ class CustomersController extends Controller
             'customer_name' => 'required',
             'phone_number' => 'nullable',
             'remarks' => 'nullable',
-            'new_customer' => 'required',
             'courses_id' => 'required|array',
             'courses_id.*' => 'required|integer|exists:courses,id',
             'options_id' => 'required|array',
@@ -112,7 +109,6 @@ class CustomersController extends Controller
         $customer->customer_name = $validatedData['customer_name'];
         $customer->phone_number = $validatedData['phone_number'];
         $customer->remarks = $validatedData['remarks'];
-        $customer->new_customer = $validatedData['new_customer'];
 
         // 中間テーブルにデータを挿入
         $courseIds = $validatedData['courses_id'];
@@ -131,9 +127,7 @@ class CustomersController extends Controller
 
 
         return
-            response()->json(
-                ['customer' => $customer, 'courses' => $courseIds, 'options' => $optionIds, 'merchandises' => $merchandiseIds, 'hairstyles' => $hairstyleIds, 'attendances' => $attendanceIds]
-            );
+            response()->json([], 204);
     }
 
     public function destroy($id)

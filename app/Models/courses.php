@@ -15,14 +15,9 @@ class courses extends Model
         'price',
     ];
 
-    public function course_customers()
-    {
-        return $this->hasMany(course_customers::class);
-    }
 
     public function customers()
     {
-        return $this->belongsToMany(customers::class, 'course_customers');
+        return $this->belongsToMany(customers::class, 'course_customers', 'courses_id', 'customers_id');
     }
-
 }

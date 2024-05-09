@@ -17,11 +17,6 @@ class options extends Model
     ];
 
 
-    public function option_customers()
-    {
-        return $this->hasMany(option_customers::class);
-    }
-    
     public function customers()
     {
         return $this->belongsToMany(customers::class, 'option_customers');

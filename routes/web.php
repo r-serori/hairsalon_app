@@ -69,10 +69,13 @@ Route::post('hairstyles/{id}/update', [HairstylesController::class, 'update']);
 Route::post('hairstyles/{id}/delete', [HairstylesController::class, 'destroy']);
 
 
-
+Route::post('schedules/customers/double', [SchedulesController::class, 'double']);
 Route::resource('schedules', SchedulesController::class);
 Route::post('schedules/{id}/update', [SchedulesController::class, 'update']);
 Route::post('schedules/{id}/delete', [SchedulesController::class, 'destroy']);
+
+
+
 
 
 

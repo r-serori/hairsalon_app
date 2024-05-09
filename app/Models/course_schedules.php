@@ -14,9 +14,4 @@ class course_schedules extends Model
         'courses_id',
         'schedules_id',
     ];
-
-    public function schedules()
-    {
-        return $this->belongsTo(schedules::class);
-    }
 }

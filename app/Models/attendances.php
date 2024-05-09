@@ -22,21 +22,11 @@ class attendances extends Model
 
     public function attendance_times()
     {
-        return $this->hasMany(attendance_times::class);
-    }
-
-    public function attendance_attendance_times()
-    {
-        return $this->hasMany(Attendance_AttendanceTimes::class);
+        return $this->belongsToMany(attendance_times::class, 'attendance_attendance_times', 'attendances_id', 'attendance_times_id');
     }
 
     public function customers()
     {
         return $this->belongsToMany(customers::class, 'customer_attendances', 'attendances_id', 'customers_id');
-    }
-
-    public function customer_attendance()
-    {
-        return $this->hasMany(customer_attendances::class);
     }
 }

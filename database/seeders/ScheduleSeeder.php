@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\customer_schedules;
+use App\Models\schedules;
+use App\Models\customers;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -15,69 +18,162 @@ class ScheduleSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('schedules')->insert([
-            'customer_name' => 'John Doe',
-            'date' => '2024-03-12',
-            'start_time' => '08:00:00',
-            'end_time' => '10:00:00',
-            'price' => 10000,
-            'created_at' => now(),
-        ]);
+        // 30個のスケジュールデータを作成
+        for ($i = 0; $i <= 120; $i++) {
+            $schedule = schedules::create([
+                'title' => '',
+                'start_time' => now()->addDays($i),
+                'end_time' => now()->addDays($i)->addHours(1),
+                'allDay' => 0,
+            ]);
 
-        DB::table('schedules')->insert([
-            'customer_name' => 'Jane Doe',
-            'date' => '2024-03-12',
-            'start_time' => '10:00:00',
-            'end_time' => '12:00:00',
-            'price' => 12000,
-            'created_at' => now(),
-        ]);
+            $customerIds = rand(1, 30);
+            $customerId = customers::find($customerIds);
+            $customers = customers::whereIn('id', $customerId)->get();
 
-        DB::table('schedules')->insert([
-            'customer_name' => 'John Doe',
-            'date' => '2024-03-13',
-            'start_time' => '08:00:00',
-            'end_time' => '10:00:00',
-            'price' => 20000,
-            'created_at' => now(),
-        ]);
 
-        DB::table('schedules')->insert([
-            'customer_name' => 'Jane Doe',
-            'date' => '2024-03-13',
-            'start_time' => '10:00:00',
-            'end_time' => '12:00:00',
-            'price' => 18000,
-            'created_at' => now(),
-        ]);
+            // 中間テーブルにデータを追加
 
-        DB::table('schedules')->insert([
-            'customer_name' => 'John Doe',
-            'date' => '2024-03-14',
-            'start_time' => '08:00:00',
-            'end_time' => '10:00:00',
-            'price' => 23000,
-            'created_at' => now(),
-        ]);
+            foreach ($customers as $customer) {
+                customer_schedules::create([
+                    'customers_id' => $customer->id,
+                    'schedules_id' => $schedule->id,
+                ]);
+            }
+        }
+        // 30個のスケジュールデータを作成
+        for ($i = 0; $i <= 120; $i++) {
+            $schedule = schedules::create([
+                'title' => '',
+                'start_time' => now()->addDays($i)->addHours(1),
+                'end_time' => now()->addDays($i)->addHours(2),
+                'allDay' => 0,
+            ]);
 
-        DB::table('schedules')->insert([
-            'customer_name' => 'Jane Doe',
-            'date' => '2024-03-14',
-            'start_time' => '10:00:00',
-            'end_time' => '12:00:00',
-            'price' => 15000,
-            'created_at' => now(),
-        ]);
+            $customerIds = rand(1, 30);
+            $customerId = customers::find($customerIds);
+            $customers = customers::whereIn('id', $customerId)->get();
 
-        DB::table('schedules')->insert([
-            'customer_name' => 'John Doe',
-            'date' => '2024-03-15',
-            'start_time' => '08:00:00',
-            'end_time' => '10:00:00',
-            'price' => 90000,
-            'created_at' => now(),
-        ]);
-        
+
+            // 中間テーブルにデータを追加
+
+            foreach ($customers as $customer) {
+                customer_schedules::create([
+                    'customers_id' => $customer->id,
+                    'schedules_id' => $schedule->id,
+                ]);
+            }
+        }
+        // 30個のスケジュールデータを作成
+        for ($i = 0; $i <= 120; $i++) {
+            $schedule = schedules::create([
+                'title' => '',
+                'start_time' => now()->addDays($i)->addHours(2),
+                'end_time' => now()->addDays($i)->addHours(3),
+                'allDay' => 0,
+            ]);
+
+            $customerIds = rand(1, 30);
+            $customerId = customers::find($customerIds);
+            $customers = customers::whereIn('id', $customerId)->get();
+
+
+            // 中間テーブルにデータを追加
+
+            foreach ($customers as $customer) {
+                customer_schedules::create([
+                    'customers_id' => $customer->id,
+                    'schedules_id' => $schedule->id,
+                ]);
+            }
+        }
+        for ($i = 0; $i <= 120; $i++) {
+            $schedule = schedules::create([
+                'title' => '',
+                'start_time' => now()->addDays($i)->addHours(3),
+                'end_time' => now()->addDays($i)->addHours(4),
+                'allDay' => 0,
+            ]);
+
+            $customerIds = rand(1, 30);
+            $customerId = customers::find($customerIds);
+            $customers = customers::whereIn('id', $customerId)->get();
+
+
+            // 中間テーブルにデータを追加
+
+            foreach ($customers as $customer) {
+                customer_schedules::create([
+                    'customers_id' => $customer->id,
+                    'schedules_id' => $schedule->id,
+                ]);
+            }
+        }
+        for ($i = 0; $i <= 120; $i++) {
+            $schedule = schedules::create([
+                'title' => '',
+                'start_time' => now()->addDays($i)->addHours(4),
+                'end_time' => now()->addDays($i)->addHours(5),
+                'allDay' => 0,
+            ]);
+
+            $customerIds = rand(1, 30);
+            $customerId = customers::find($customerIds);
+            $customers = customers::whereIn('id', $customerId)->get();
+
+
+            // 中間テーブルにデータを追加
+
+            foreach ($customers as $customer) {
+                customer_schedules::create([
+                    'customers_id' => $customer->id,
+                    'schedules_id' => $schedule->id,
+                ]);
+            }
+        }
+        for ($i = 0; $i <= 120; $i++) {
+            $schedule = schedules::create([
+                'title' => '',
+                'start_time' => now()->addDays($i)->addHours(5),
+                'end_time' => now()->addDays($i)->addHours(6),
+                'allDay' => 0,
+            ]);
+
+            $customerIds = rand(1, 30);
+            $customerId = customers::find($customerIds);
+            $customers = customers::whereIn('id', $customerId)->get();
+
+
+            // 中間テーブルにデータを追加
+
+            foreach ($customers as $customer) {
+                customer_schedules::create([
+                    'customers_id' => $customer->id,
+                    'schedules_id' => $schedule->id,
+                ]);
+            }
+        }
+        for ($i = 0; $i <= 120; $i++) {
+            $schedule = schedules::create([
+                'title' => '',
+                'start_time' => now()->addDays($i)->addHours(6),
+                'end_time' => now()->addDays($i)->addHours(7),
+                'allDay' => 0,
+            ]);
+
+            $customerIds = rand(1, 30);
+            $customerId = customers::find($customerIds);
+            $customers = customers::whereIn('id', $customerId)->get();
+
+
+            // 中間テーブルにデータを追加
+
+            foreach ($customers as $customer) {
+                customer_schedules::create([
+                    'customers_id' => $customer->id,
+                    'schedules_id' => $schedule->id,
+                ]);
+            }
+        }
     }
 }
-

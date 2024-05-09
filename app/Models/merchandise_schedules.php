@@ -14,9 +14,4 @@ class merchandise_schedules extends Model
         'merchandises_id',
         'schedules_id',
     ];
-
-    public function schedules()
-    {
-        return $this->belongsTo(schedules::class);
-    }
 }

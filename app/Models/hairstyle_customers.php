@@ -17,19 +17,4 @@ class hairstyle_customers extends Model
         'hairstyles_id',
         'customers_id',
     ];
-
-    public function hairstyle()
-    {
-        return $this->belongsTo(hairstyles::class);
-    }
-
-    public function customer()
-    {
-        return $this->belongsTo(customers::class);
-    }
-
-    public function schedules()
-    {
-        return $this->hasMany(schedules::class);
-    }
 }
