@@ -10,94 +10,132 @@ class StockCategoriesController extends Controller
 {
     public function index()
     {
+        try {
+            // カテゴリー一覧を取得
+            $stock_categories = stock_categories::all();
 
-        // カテゴリー一覧を取得
-        $stock_categories = stock_categories::all();
-
-        // 在庫一覧ページにデータを渡して表示
-        return response()->json(['stock_categories' => $stock_categories]);
+            // 在庫一覧ページにデータを渡して表示
+            return response()->json([
+                "resStatus" => "success",
+                'stockCategories' => $stock_categories
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                'message' => 'ストックカテゴリーが見つかりません。'
+            ], 500);
+        }
     }
 
     public function store(Request $request)
     {
-        // バリデーションルールを定義する
-        $validatedData = $request->validate([
-            'category' => 'required|string',
-        ]);
+        try {
+            // バリデーションルールを定義する
+            $validatedData = $request->validate([
+                'category' => 'required|string',
+            ]);
 
 
-        // 在庫モデルを作成して保存する
-        stock_categories::create([
-            'category' => $validatedData['category'],
-        ]);
+            // 在庫モデルを作成して保存する
+            $stock_category = stock_categories::create([
+                'category' => $validatedData['category'],
+            ]);
 
 
-        // 成功したらリダイレクト
-        return response()->json([], 204);
+            // 成功したらリダイレクト
+            return response()->json([
+                "resStatus" => "success",
+                "stockCategory" => $stock_category
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => "在庫カテゴリーの作成に失敗しました。"
+            ], 500);
+        }
     }
 
 
     public function show($id)
     {
-        // 指定されたIDの在庫カテゴリーを取得
-        $stock_category = stock_categories::find($id);
+        try {
+            // 指定されたIDの在庫カテゴリーを取得
+            $stock_category = stock_categories::find($id);
 
-        // 在庫カテゴリーを表示
-        return response()->json(['stock_category' => $stock_category]);
-    }
-
-    public function edit($id)
-    {
-        // 指定されたIDの在庫カテゴリーを取得
-        $stock_category = stock_categories::find($id);
-
-        // 在庫カテゴリーを表示
-        return response()->json(['stock_category' => $stock_category]);
+            // 在庫カテゴリーを表示
+            return response()->json([
+                "resStatus" => "success",
+                'stockCategory' => $stock_category
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                'message' => 'ストックカテゴリーが見つかりません。'
+            ], 500);
+        }
     }
 
 
 
     public function update(Request $request, $id)
     {
-        // バリデーションルールを定義する
-        $validatedData = $request->validate([
-            'category' => 'required|string',
-        ]);
+        try {
+            // バリデーションルールを定義する
+            $validatedData = $request->validate([
+                'category' => 'required|string',
+            ]);
+
+            // 在庫を取得する
+            $stock_category = stock_categories::find($id);
+
+            // 在庫の属性を更新する
+            $stock_category->category = $validatedData['category'];
 
 
-        // 在庫を取得する
-        $stock_category = stock_categories::findOrFail($id);
+            // 在庫を保存する
+            $stock_category->save();
 
-        // 在庫の属性を更新する
-        $stock_category->category = $validatedData['category'];
-
-
-        // 在庫を保存する
-        $stock_category->save();
-
-        // 成功したらリダイレクト
-        return response()->json([], 204);
+            // 成功したらリダイレクト
+            return response()->json([
+                "resStatus" => "success",
+                "stockCategory" => $stock_category
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => "在庫カテゴリーの更新に失敗しました。"
+            ], 500);
+        }
     }
 
     public function destroy($id)
     {
-        // 指定されたIDの在庫カテゴリーを取得
-        $stock_category = stock_categories::find($id);
-
-        // 在庫カテゴリーが見つからない場合は404エラーを返す
-        if (!$stock_category) {
-            return response()->json(['message' =>
-            'stock_category not found'], 404);
-        }
-
         try {
+            // 指定されたIDの在庫カテゴリーを取得
+            $stock_category = stock_categories::find($id);
+
+            // 在庫カテゴリーが見つからない場合は404エラーを返す
+            if (!$stock_category) {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' =>
+                    'ストックカテゴリーが見つかりません。'
+                ], 500);
+            }
+
             // 在庫カテゴリーを削除する
             $stock_category->delete();
-            return response()->json([], 204);
+            return response()->json([
+                "resStatus" => "success",
+                "deleteId" => $id
+            ], 200);
         } catch (\Exception $e) {
             // エラーが発生した場合は500エラーを返す
-            return response()->json(['message' =>
-            'failed to delete the stock_category'], 500);
+            return response()->json([
+                "resStatus" => "error",
+                'message' =>
+                'ストックカテゴリーの削除に失敗しました。'
+            ], 500);
         }
     }
 }

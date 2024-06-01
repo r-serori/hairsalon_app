@@ -10,8 +10,7 @@ class monthly_sales extends Model
     use HasFactory;
     protected $fillable = [
         'id',
-        'year',
-        'month',
+        'year_month',
         'monthly_sales',
         'created_at'
     ];

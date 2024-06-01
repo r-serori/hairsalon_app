@@ -15,11 +15,11 @@ return new class extends Migration
     {
         Schema::create('attendance_times', function (Blueprint $table) {
             $table->id();
-            $table->date('date');
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->integer('break_time')->nullable();
-            $table->foreignId('attendance_id')->constrained()->onDelete('cascade');
+            $table->string('start_time')->nullable();
+            $table->string('end_time')->nullable();
+            $table->string('start_photo_path')->nullable();
+            $table->string('end_photo_path')->nullable();
+            $table->foreignId('attendance_id')->constrained('attendances')->onDelete('cascade');
             $table->timestamps();
         });
     }

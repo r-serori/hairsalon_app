@@ -14,71 +14,116 @@ class HairstylesController extends Controller
      */
     public function index()
     {
-        $hairstyles = hairstyles::all();
-        return response()->json(['hairstyles' => $hairstyles]);
+        try {
+            $hairstyles = hairstyles::all();
+            return response()->json([
+                "resStatus" => "success",
+                'hairstyles' => $hairstyles
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                'message' => "ヘアスタイルが見つかりませんでした。"
+            ], 500);
+        }
     }
 
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'hairstyle_name' => 'required',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'hairstyle_name' => 'required',
+            ]);
 
-        hairstyles::create([
-            'hairstyle_name' => $validatedData['hairstyle_name'],
-        ]);
+            $hairstyle = hairstyles::create([
+                'hairstyle_name' => $validatedData['hairstyle_name'],
+            ]);
 
-        return response()->json([], 204);
+            return response()->json([
+                "resStatus" => "success",
+                "hairstyle" => $hairstyle
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => "ヘアスタイルの作成に失敗しました。"
+            ], 500);
+        }
     }
-
 
     public function show($id)
     {
-        $hairstyle = \App\Models\hairstyles::find($id);
-        return response()->json(['hairstyle' => $hairstyle]);
-    }
+        try {
+            $hairstyle = hairstyles::find($id);
+            if (!$hairstyle) {
+                return response()->json([
+                    'resStatus' => 'error',
+                    'message' => 'ヘアスタイルが見つかりません。'
+                ], 404);
+            }
 
-    public function edit($id)
-    {
-        $hairstyle = hairstyles::find($id);
-        if (!$hairstyle) {
-            return response()->json(['message' => 'hairstyle not found'], 404);
+            return response()->json([
+                "resStatus" => "success",
+                'hairstyle' => $hairstyle
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                'message' => 'ヘアスタイルが見つかりません。'
+            ], 500);
         }
-
-        return response()->json(['hairstyle' => $hairstyle]);
     }
+
 
 
     public function update(Request $request, $id)
     {
-        $validatedData = $request->validate([
-            'hairstyle_name' => 'required',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'hairstyle_name' => 'required',
+            ]);
 
-        $hairstyle = hairstyles::find($id);
-        $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
+            $hairstyle = hairstyles::find($id);
+            $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
 
-        $hairstyle->save();
+            $hairstyle->save();
 
-        return response()->json(
-            [],
-            204
-        );
+            return response()->json(
+                [
+                    "resStatus" => "success",
+                    "hairstyle" => $hairstyle
+                ],
+                200
+            );
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => "ヘアスタイルの更新に失敗しました。"
+            ], 500);
+        }
     }
 
     public function destroy($id)
     {
-        $hairstyle = hairstyles::find($id);
-        if (!$hairstyle) {
-            return response()->json(['message' => 'hairstyle not found'], 404);
-        }
-
         try {
+            $hairstyle = hairstyles::find($id);
+            if (!$hairstyle) {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' => 'ヘアスタイルが見つかりません。'
+                ], 500);
+            }
             $hairstyle->delete();
-            return response()->json([], 204);
+            return response()->json([
+                "resStatus" => "success",
+                "deleteId" => $id
+            ], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'hairstyle cannot be deleted'], 400);
+            return response()->json([
+                "resStatus" => "error",
+                'message' => 'ヘアスタイルの削除に失敗しました。'
+            ], 500);
         }
     }
 }

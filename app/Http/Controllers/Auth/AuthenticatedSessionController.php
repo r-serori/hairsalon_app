@@ -4,51 +4,89 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Illuminate\Support\Js;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Models\User;
+
 
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
-     */
-    public function create(): View
-    {
-        return view('auth.login');
-    }
-
-    /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->only('login_id', 'password');
-
-        if (!Auth::attempt($credentials, $request->has('remember'))) {
-            return back()->withErrors([
-                'login_id' => 'ログインIDまたはパスワードが正しくありません。',
+        try {
+            $request->validate([
+                'login_id' => ['required', 'string', 'max:50'],
+                // 'unique:users'
+                'password' => [
+                    'required',
+                ],
             ]);
+
+            // ユーザーが存在するかどうかを確認
+            $userExists = Auth::attempt($request->only('login_id', 'password'));
+
+            if (!$userExists) {
+                // ユーザーが存在しない場合はエラーレスポンスを返す
+                return response()->json([
+                    'resStatus' => 'error',
+                    'message' => 'ログインIDまたはパスワードが間違っています。'
+                ], 400);
+            } else {
+
+                $request->authenticate();
+
+                $request->session()->regenerate();
+
+                $user = Auth::user();
+
+                $responseUser = [
+                    'id' => $user->id,
+                    'login_id' => $user->login_id,
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
+                ];
+
+                return  response()->json([
+                    'resStatus' => "success",
+                    'message' => 'ログインに成功しました。',
+                    'responseUser' => $responseUser,
+                ], 200);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => 'error',
+                'message' => 'ログインに失敗しました。',
+            ], 400);
         }
-
-        $request->session()->regenerate();
-
-        return redirect(RouteServiceProvider::HOME);
     }
 
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request): JsonResponse
     {
-        Auth::guard('web')->logout();
+        try {
+            Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
+            $request->session()->invalidate();
 
-        $request->session()->regenerateToken();
+            $request->session()->regenerateToken();
 
-        return redirect('/login');
+            return response()->json([
+                'resStatus' => "success",
+                'message' => 'ログアウトに成功しました。',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => 'error',
+                'message' => 'ログアウトに失敗しました。',
+            ], 400);
+        }
     }
 }

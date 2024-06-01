@@ -16,13 +16,14 @@ class attendances extends Model
         'position',
         'phone_number',
         'address',
+        'isAttendance',
         'created_at',
         'updated_at',
     ];
 
     public function attendance_times()
     {
-        return $this->belongsToMany(attendance_times::class, 'attendance_attendance_times', 'attendances_id', 'attendance_times_id');
+        return $this->hasMany(attendance_times::class);
     }
 
     public function customers()

@@ -15,8 +15,7 @@ return new class extends Migration
     {
         Schema::create('monthly_sales', function (Blueprint $table) {
             $table->id();
-            $table->integer('year');
-            $table->integer('month');
+            $table->string('year_month');
             $table->integer('monthly_sales');
             $table->timestamps();
         });

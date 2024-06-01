@@ -10,86 +10,124 @@ class CoursesController extends Controller
 
     public function index()
     {
-        $courses = courses::all();
-        return response()->json(['courses' => $courses]);
+        try {
+            $courses = courses::all();
+            return response()->json([
+                "resStatus" => "success",
+                'courses' => $courses
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => "コースの取得に失敗しました。"
+            ], 500);
+        }
     }
 
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'course_name' => 'required',
-            'price' => 'required',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'course_name' => 'required',
+                'price' => 'required',
+            ]);
 
-        courses::create([
-            'course_name' => $validatedData['course_name'],
-            'price' => $validatedData['price'],
+            $course = courses::create([
+                'course_name' => $validatedData['course_name'],
+                'price' => $validatedData['price'],
+            ]);
 
-        ]);
-
-        return response()->json([], 204);
+            return response()->json([
+                "resStatus" => "success",
+                "course" => $course
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => "コースの作成に失敗しました。"
+            ], 500);
+        }
     }
 
     public function show($id)
     {
-        $course = courses::find($id);
-        if (!$course) {
-            return response()->json(['message' =>
-            'course not found'], 404);
+        try {
+            $course = courses::find($id);
+            if (!$course) {
+                return response()->json([
+                    'resStatus' => 'error',
+                    'message' =>
+                    'コースが見つかりません。'
+                ], 500);
+            }
+            return response()->json([
+                'resStatus' => 'success',
+                'course' => $course
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => "コースの取得に失敗しました。"
+            ], 500);
         }
-
-        return response()->json(['course' => $course]);
     }
-
-    public function edit($id)
-    {
-        $course = courses::find($id);
-        if (!$course) {
-            return response()->json(['message' =>
-            'course not found'], 404);
-        }
-
-        return response()->json(['course' => $course]);
-    }
-
 
     public function update(Request $request, $id)
     {
-        $validatedData = $request->validate([
-            'course_name' => 'required',
-            'price' => 'required',
-        ]);
+        try {
+            $validatedData = $request->validate([
+                'course_name' => 'required',
+                'price' => 'required',
+            ]);
 
-        $course = courses::find($id);
+            $course = courses::find($id);
 
-        $course->course_name = $validatedData['course_name'];
-        $course->price = $validatedData['price'];
+            $course->course_name = $validatedData['course_name'];
+            $course->price = $validatedData['price'];
 
-        $course->save();
+            $course->save();
 
-        return response()->json(
-            [],
-            204
-        );
+            return response()->json(
+                [
+                    "resStatus" => "success",
+                    "course" => $course
+                ],
+                200
+            );
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => $e->getMessage()
+            ], 500);
+        }
     }
     public function destroy($id)
     {
-        $course = courses::find($id);
-        if (!$course) {
-            return response()->json(['message' =>
-            'course not found'], 404);
-        }
-
         try {
-            $course->delete();
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to delete course ', 'error' => $e->getMessage()], 500);
-        }
+            $course = courses::find($id);
+            if (!$course) {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' =>
+                    'コースが見つかりません。'
+                ], 500);
+            }
 
-        return response()->json(
-            [],
-            204
-        );
+            $course->delete();
+
+            return response()->json(
+                [
+                    "resStatus" => "success",
+                    "deleteId"  => $id
+                ],
+                200
+            );
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                "message" => "コースの削除に失敗しました。"
+            ], 500);
+        }
     }
 }

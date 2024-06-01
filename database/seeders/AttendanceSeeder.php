@@ -21,6 +21,7 @@ class AttendanceSeeder extends Seeder
             'position' => 'オーナー',
             'phone_number' => '09012345678',
             'address' => '東京都渋谷区',
+            'isAttendance' => 0, // Add this line   
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -29,6 +30,7 @@ class AttendanceSeeder extends Seeder
             'position' => '社員',
             'phone_number' => '09012345678',
             'address' => '東京都渋谷区',
+            'isAttendance' => 0, // Add this line   
             'created_at' => now(),
             'updated_at' => now(),
         ]);

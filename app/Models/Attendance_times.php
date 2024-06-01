@@ -12,10 +12,11 @@ class attendance_times extends Model
     use HasFactory;
     protected $fillable = [
         'id',
-        'date',
         'start_time',
         'end_time',
-        'break_time',
+        'start_photo_path',
+        'end_photo_path',
+        'attendance_id',
         'created_at',
         'updated_at',
     ];
@@ -23,6 +24,6 @@ class attendance_times extends Model
 
     public function attendances()
     {
-        return $this->belongsToMany(attendances::class, 'attendance_attendance_times', 'attendance_times_id', 'attendances_id');
+        return $this->belongsTo(attendances::class);
     }
 }

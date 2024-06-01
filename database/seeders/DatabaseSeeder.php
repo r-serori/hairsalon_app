@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
-        
+
 
         $this->call([
             UserSeeder::class,
@@ -38,18 +38,18 @@ class DatabaseSeeder extends Seeder
             StockCategoriesSeeder::class,
             StocksSeeder::class,
             ScheduleSeeder::class,
-            DailySalesSeeder::class,
-            MonthlySalesSeeder::class,
-            YearlySalesSeeder::class,
-
-        
+            // DailySalesSeeder::class,
+            // MonthlySalesSeeder::class,
+            // YearlySalesSeeder::class,
 
 
-            
+
+
+
 
         ]);
 
-        \App\Models\Attendance_times::factory(50)->create();
+        // \App\Models\Attendance_times::factory(50)->create();
         // \App\Models\attendances::factory(50)->create();
         // \App\Models\courses::factory(50)->create();
         // \App\Models\merchandises::factory(50)->create();

@@ -17,8 +17,9 @@ return new class extends Migration
             $table->id();
             $table->string('attendance_name', 100);
             $table->string('position', 15);
-            $table->string('phone_number',11)->nullable();
+            $table->string('phone_number', 11)->nullable();
             $table->string('address', 200)->nullable();
+            $table->boolean('isAttendance')->default(0);
             $table->timestamps();
         });
     }

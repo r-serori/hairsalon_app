@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('yearly_sales', function (Blueprint $table) {
             $table->id();
-            $table->integer('year');    
+            $table->string('year');
             $table->integer('yearly_sales');
             $table->timestamps();
         });

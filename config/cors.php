@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\attendances;
 
 return [
 
@@ -20,7 +19,8 @@ return [
     'paths' => [
         'api/*', 'sanctum/csrf-cookie',
         'csrf-token',
-        'login', 'register', 'dashboard', 'logout', 'user', 'user/*', 'attendances', 'attendances/*',
+        'login', 'login/*', 'register', 'register/*', 'dashboard', 'dashboard/*', 'logout', 'logout/*',
+        'user', 'user/*', 'attendances', 'attendances/*',
         'attendance_times', 'attendance_times/*',
         'courses', 'courses/*',
         'merchandises', 'merchandises/*',
@@ -46,11 +46,17 @@ return [
         'attendance_attendancesTimes', 'attendance_attendancesTimes/*'
     ],
 
+
+
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
     'allowed_origins' => ['http://localhost:3000'],
 
     'allowed_origins_patterns' => ['*'],
+
+    'paths' => ['*'],
+
+    // 'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
     'allowed_headers' => ['*'],
 
@@ -59,5 +65,4 @@ return [
     'max_age' => 0,
 
     'supports_credentials' => true,
-
 ];
