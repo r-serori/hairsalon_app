@@ -102,22 +102,21 @@ class CustomersController extends Controller
             $hairstyleIds = $validatedData['hairstyles_id'];
             $attendanceIds = $validatedData['attendances_id'];
 
-
             $customer->courses()->sync($courseIds);
             $customer->options()->sync($optionIds);
             $customer->merchandises()->sync($merchandiseIds);
             $customer->hairstyles()->sync($hairstyleIds);
             $customer->attendances()->sync($attendanceIds);
 
-            // $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+            $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
 
-            // $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+            $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
 
-            // $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+            $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
 
-            // $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+            $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
 
-            // $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
+            $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
 
 
             return
@@ -125,11 +124,11 @@ class CustomersController extends Controller
                     [
                         "resStatus" => "success",
                         "customer" => $customer,
-                        // "course_customers" => $courseCustomer,
-                        // "option_customers" => $optionCustomer,
-                        // "merchandise_customers" => $merchandiseCustomer,
-                        // "hairstyle_customers" => $hairstyleCustomer,
-                        // "customer_attendances" => $attendanceCustomer,
+                        "course_customers" => $courseCustomer,
+                        "option_customers" => $optionCustomer,
+                        "merchandise_customers" => $merchandiseCustomer,
+                        "hairstyle_customers" => $hairstyleCustomer,
+                        "customer_attendances" => $attendanceCustomer,
                     ],
                     200
                 );
@@ -207,15 +206,27 @@ class CustomersController extends Controller
             $customer->hairstyles()->sync($hairstyleIds);
             $customer->attendances()->sync($attendanceIds);
 
+            $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+
+            $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+
+            $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+
+            $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+
+            $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
+
+
+
             return
                 response()->json([
                     "resStatus" => "success",
-                    // "customer" =>  $customer,
-                    // "course_customers" => $courseCustomer,
-                    // "option_customers" => $optionCustomer,
-                    // "merchandise_customers" => $merchandiseCustomer,
-                    // "hairstyle_customers" => $hairstyleCustomer,
-                    // "customer_attendances" => $attendanceCustomer,
+                    "customer" =>  $customer,
+                    "course_customers" => $courseCustomer,
+                    "option_customers" => $optionCustomer,
+                    "merchandise_customers" => $merchandiseCustomer,
+                    "hairstyle_customers" => $hairstyleCustomer,
+                    "customer_attendances" => $attendanceCustomer,
                 ], 200);
         } catch (\Exception $e) {
             return response()->json([

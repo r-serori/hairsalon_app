@@ -46,6 +46,6 @@ class customers extends Model
 
     public function schedules()
     {
-        return $this->belongsToMany(schedules::class, 'customer_schedules', 'customers_id', 'schedules_id');
+        return $this->hasMany(schedules::class, 'customers_id');
     }
 }

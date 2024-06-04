@@ -82,6 +82,27 @@ class AttendanceTimesController extends Controller
         }
     }
 
+    // public function manegePhotos($request)
+    // {
+    //     try {
+
+    //         $imagePath = storage_path('app/public/manegePhots/pexels-theshuttervision-9889983.jpg');
+
+
+    //         dd($imagePath);
+
+
+    //         // 画像ファイルが存在するか確認
+    //         if (!file_exists($imagePath)) {
+    //             abort(404);
+    //         }
+
+    //         return response()->file($imagePath);
+    //     } catch (\Exception $e) {
+    //         abort(404);
+    //     }
+    // }
+
 
     public function startTimeShot(Request $request)
     {
@@ -155,34 +176,45 @@ class AttendanceTimesController extends Controller
 
     public function endTimeShot(Request $request)
     {
+
         try {
+            $request->validate([
+                'end_time' => 'required',
+                'end_photo_path' => 'required',
+                'attendance_id' => 'required|exists:attendances,id',
+            ]);
             $endTime = Carbon::parse($request->end_time);
 
-            $existAttendance = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('end_time', $endTime->format('Y-m-d'))->get();
+            $yesterday = $endTime->subDay()->format('Y-m-d');
 
-            $existStartTime = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('start_time', $endTime->format('Y-m-d'))->get();
+            $existYesterdayStartTime = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('start_time', $yesterday)->latest()->first();
 
-            if ($existAttendance->count() > 0) {
+
+            $existYesterdayEndTime = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('end_time', $yesterday)->latest()->first();
+
+
+            if (!empty($existYesterdayEndTime) && empty($existYesterdayStartTime)) {
+
+                // リクエストから受け取ったデータを使用してレコードを更新
+                $existYesterdayStartTime->end_time = "9999-12-31 23:59:59";
+
+                $existYesterdayStartTime->save();
+
+                $attendance = attendances::find($request->attendance_id);
+
+                $attendance->isAttendance = 0;
+
+                $attendance->save();
                 return
                     response()->json(
-                        ["resStatus" => "error", "message" => "すでに退勤時間が登録されています。"],
-                        500
+                        [
+                            "resStatus" => "success",
+                            "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、今は編集依頼を押した後に出勤ボタンを押してください！",
+                            "attendanceTime" => $existYesterdayStartTime, "attendance" => $attendance
+                        ],
+                        200
                     );
-            } else if ($existStartTime->count() == 0) {
-                return
-                    response()->json(
-                        ["resStatus" => "error", "message" => "出勤時間が登録されていません。"],
-                        500
-                    );
-            } else {
-                // リクエストからデータを検証
-                $request->validate([
-                    'end_time' => 'required',
-                    'end_photo_path' => 'required',
-                    'attendance_id' => 'required|exists:attendances,id',
-                ]);
-
-                $endTime = Carbon::parse($request->end_time);
+            } else if (empty($existYesterdayEndTime) && empty($existYesterdayStartTime) || !empty($existYesterdayEndTime) && !empty($existYesterdayStartTime)) {
 
                 // Base64データの取得
                 $base64Image = $request->input('end_photo_path');
@@ -200,16 +232,17 @@ class AttendanceTimesController extends Controller
                 // ファイルを保存
                 Storage::disk('public')->put($fileName, $data);
 
+                $today = Carbon::now()->format('Y-m-d');
+
                 $attendanceTime = attendance_times::where('attendance_id', $request->attendance_id)
-                    ->whereDate('start_time', $endTime->format('Y-m-d'))
+                    ->whereDate('start_time', $today)
                     ->latest()
                     ->first();
-                // リクエストから受け取ったデータを使用してレコードを更新
+
                 $attendanceTime->end_time = $request->end_time;
                 $attendanceTime->end_photo_path = $fileName;
 
                 $attendanceTime->save();
-
 
                 $attendance = attendances::find($request->attendance_id);
 
@@ -226,8 +259,8 @@ class AttendanceTimesController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
-                'message' => '退勤時間と写真の登録に失敗しました。'
-            ], 500);
+                'message' => $e->getMessage()
+            ], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }
 
@@ -265,7 +298,6 @@ class AttendanceTimesController extends Controller
 
             // ファイルを保存
             Storage::disk('public')->put($fileName, $data);
-
 
 
             $attendanceTime->start_time = $request->start_time;

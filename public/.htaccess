@@ -18,4 +18,10 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    # Cache images for one month
+<FilesMatch "\.(jpg|jpeg|png|gif|ico)$">
+  Header set Cache-Control "max-age=2592000, public"
+</FilesMatch>
+
 </IfModule>

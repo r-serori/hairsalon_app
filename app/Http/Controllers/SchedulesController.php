@@ -52,9 +52,6 @@ class SchedulesController extends Controller
 
             $attendanceCustomer = customer_attendances::all();
 
-            $customerSchedule = customer_schedules::all();
-
-
             return response()->json([
                 "resStatus" => "success",
                 'schedules' => $selectSchedules,
@@ -69,7 +66,6 @@ class SchedulesController extends Controller
                 'merchandise_customers' => $merchandiseCustomer,
                 'hairstyle_customers' => $hairstyleCustomer,
                 'customer_attendances' => $attendanceCustomer,
-                'customer_schedules' => $customerSchedule,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -83,51 +79,46 @@ class SchedulesController extends Controller
     {
         try {
 
-            $selectSchedules = schedules::where('start_time', 'like', $request->year . '%')->get();
+            $selectSchedules = schedules::where('start_time', 'like', '%' . $request->year)->get();
 
-            $customerSchedule = $selectSchedules->map(function ($schedule) {
-                return customer_schedules::where('schedules_id', $schedule->id)->get();
-            });
+            // $customers = customers::all();
 
-            $customers = customers::all();
+            // $courses = courses::all();
 
-            $courses = courses::all();
+            // $options = options::all();
 
-            $options = options::all();
+            // $merchandises = merchandises::all();
 
-            $merchandises = merchandises::all();
+            // $hairstyles = hairstyles::all();
 
-            $hairstyles = hairstyles::all();
+            // $attendances = attendances::all();
 
-            $attendances = attendances::all();
+            // $courseCustomer = course_customers::all();
 
-            $courseCustomer = course_customers::all();
+            // $optionCustomer = option_customers::all();
 
-            $optionCustomer = option_customers::all();
+            // $merchandiseCustomer = merchandise_customers::all();
 
-            $merchandiseCustomer = merchandise_customers::all();
+            // $hairstyleCustomer = hairstyle_customers::all();
 
-            $hairstyleCustomer = hairstyle_customers::all();
-
-            $attendanceCustomer = customer_attendances::all();
+            // $attendanceCustomer = customer_attendances::all();
 
 
 
             return response()->json([
                 "resStatus" => "success",
                 'schedules' => $selectSchedules,
-                'customers' => $customers,
-                'courses' => $courses,
-                'options' => $options,
-                'merchandises' => $merchandises,
-                'hairstyles' => $hairstyles,
-                'attendances' => $attendances,
-                'course_customers' => $courseCustomer,
-                'option_customers' => $optionCustomer,
-                'merchandise_customers' => $merchandiseCustomer,
-                'hairstyle_customers' => $hairstyleCustomer,
-                'customer_attendances' => $attendanceCustomer,
-                'customer_schedules' => $customerSchedule,
+                // 'customers' => $customers,
+                // 'courses' => $courses,
+                // 'options' => $options,
+                // 'merchandises' => $merchandises,
+                // 'hairstyles' => $hairstyles,
+                // 'attendances' => $attendances,
+                // 'course_customers' => $courseCustomer,
+                // 'option_customers' => $optionCustomer,
+                // 'merchandise_customers' => $merchandiseCustomer,
+                // 'hairstyle_customers' => $hairstyleCustomer,
+                // 'customer_attendances' => $attendanceCustomer,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -291,7 +282,6 @@ class SchedulesController extends Controller
                 'customers_id' => 'nullable',
             ]);
 
-            $customerId = $validatedData['customers_id'];
 
             // 顧客を作成
             $customer = customers::create([
@@ -308,11 +298,21 @@ class SchedulesController extends Controller
             $attendanceIds = $validatedData['attendances_id'];
 
 
-            $courseCustomer = $customer->courses()->sync($courseIds);
-            $optionCustomer = $customer->options()->sync($optionIds);
-            $merchandiseCustomer = $customer->merchandises()->sync($merchandiseIds);
-            $hairstyleCustomer = $customer->hairstyles()->sync($hairstyleIds);
-            $attendanceCustomer = $customer->attendances()->sync($attendanceIds);
+            $customer->courses()->sync($courseIds);
+            $customer->options()->sync($optionIds);
+            $customer->merchandises()->sync($merchandiseIds);
+            $customer->hairstyles()->sync($hairstyleIds);
+            $customer->attendances()->sync($attendanceIds);
+
+            $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+
+            $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+
+            $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+
+            $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+
+            $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
 
 
             $validatedData = $request->validate([
@@ -327,13 +327,20 @@ class SchedulesController extends Controller
                 'start_time' => $validatedData['start_time'],
                 'end_time' => $validatedData['end_time'],
                 'allDay' => $validatedData['allDay'],
+                'customers_id' => $customer->id,
             ]);
 
-            $customerSchedule = $schedule->customer()->sync($customerId);
 
             return response()->json(
                 [
                     "resStatus" => "success",
+                    "customer" => $customer,
+                    "schedule" => $schedule,
+                    "course_customers" => $courseCustomer,
+                    "option_customers" => $optionCustomer,
+                    "merchandise_customers" => $merchandiseCustomer,
+                    "hairstyle_customers" => $hairstyleCustomer,
+                    "customer_attendances" => $attendanceCustomer,
                 ],
                 200
             );
@@ -390,14 +397,24 @@ class SchedulesController extends Controller
             $hairstyleIds = $validatedData['hairstyles_id'];
             $attendanceIds = $validatedData['attendances_id'];
 
-
-            $courseCustomer = $customer->courses()->sync($courseIds);
-            $optionCustomer = $customer->options()->sync($optionIds);
-            $merchandiseCustomer = $customer->merchandises()->sync($merchandiseIds);
-            $hairstyleCustomer = $customer->hairstyles()->sync($hairstyleIds);
-            $attendanceCustomer = $customer->attendances()->sync($attendanceIds);
+            $customer->courses()->sync($courseIds);
+            $customer->options()->sync($optionIds);
+            $customer->merchandises()->sync($merchandiseIds);
+            $customer->hairstyles()->sync($hairstyleIds);
+            $customer->attendances()->sync($attendanceIds);
 
             $customer->save();
+
+            $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+
+            $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+
+            $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+
+            $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+
+            $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
+
 
             $schedule = schedules::find($validatedData['Sid']);
 
@@ -405,13 +422,20 @@ class SchedulesController extends Controller
             $schedule->start_time = $validatedData['start_time'];
             $schedule->end_time = $validatedData['end_time'];
             $schedule->allDay = $validatedData['allDay'];
-
-            $customerSchedule = $schedule->customer()->sync($customerId);
+            $schedule->customers_id = $customerId;
 
             $schedule->save();
+
             return response()->json(
                 [
                     "resStatus" => "success",
+                    "customer" => $customer,
+                    "schedule" => $schedule,
+                    "course_customers" => $courseCustomer,
+                    "option_customers" => $optionCustomer,
+                    "merchandise_customers" => $merchandiseCustomer,
+                    "hairstyle_customers" => $hairstyleCustomer,
+                    "customer_attendances" => $attendanceCustomer,
                 ],
                 200
             );
@@ -457,14 +481,12 @@ class SchedulesController extends Controller
             $customer->phone_number = $validatedData['phone_number'];
             $customer->remarks = $validatedData['remarks'];
 
-
             // 中間テーブルにデータを挿入
             $courseIds = $validatedData['courses_id'];
             $optionIds = $validatedData['options_id'];
             $merchandiseIds = $validatedData['merchandises_id'];
             $hairstyleIds = $validatedData['hairstyles_id'];
             $attendanceIds = $validatedData['attendances_id'];
-
 
             $courseCustomer = $customer->courses()->sync($courseIds);
             $optionCustomer = $customer->options()->sync($optionIds);
@@ -474,19 +496,34 @@ class SchedulesController extends Controller
 
             $customer->save();
 
+            $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+
+            $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+
+            $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+
+            $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+
+            $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
+
             $schedule = schedules::create([
                 'title' => $validatedData['title'],
                 'start_time' => $validatedData['start_time'],
                 'end_time' => $validatedData['end_time'],
                 'allDay' => $validatedData['allDay'],
+                'customers_id' => $customerId,
             ]);
-
-            $customerSchedule = $schedule->customer()->sync($customerId);
-
 
             return response()->json(
                 [
                     "resStatus" => "success",
+                    "customer" => $customer,
+                    "schedule" => $schedule,
+                    "course_customers" => $courseCustomer,
+                    "option_customers" => $optionCustomer,
+                    "merchandise_customers" => $merchandiseCustomer,
+                    "hairstyle_customers" => $hairstyleCustomer,
+                    "customer_attendances" => $attendanceCustomer,
                 ],
                 200
             );

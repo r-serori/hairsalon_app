@@ -19,73 +19,197 @@ class ScheduleSeeder extends Seeder
      */
     public function run()
     {
-        // 30個のスケジュールデータを作成
-        for ($i = 0; $i <= 30; $i++) {
-            $schedule = schedules::create([
+
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
                 'title' => '',
-                'start_time' => Carbon::parse('2024-6-1 10:00:00')->addDays($i)->addHours($i),
-                'end_time' => Carbon::parse('2024-6-1 11:00:00')->addDays($i)->addHours($i),
+                'start_time' => Carbon::now()->addDay($i),
+                'end_time' => Carbon::now()->addHours(1)->addDay($i),
                 'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
-
-            $customerIds = rand(1, 30);
-            $customerId = customers::find($customerIds);
-            $customers = customers::whereIn('id', $customerId)->get();
-
-
-            // 中間テーブルにデータを追加
-
-            foreach ($customers as $customer) {
-                customer_schedules::create([
-                    'customers_id' => $customer->id,
-                    'schedules_id' => $schedule->id,
-                ]);
-            }
         }
-        // 30個のスケジュールデータを作成
-        for ($i = 0; $i <= 30; $i++) {
-            $schedule = schedules::create([
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
                 'title' => '',
-                'start_time' => Carbon::parse('2024-7-1 10:00:00')->addDays($i)->addHours($i),
-                'end_time' => Carbon::parse('2024-7-1 11:00:00')->addDays($i)->addHours($i),
+                'start_time' => Carbon::now()->addHours(2)->addDay($i),
+                'end_time' => Carbon::now()->addHours(2)->addDay($i),
                 'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
-
-            $customerIds = rand(1, 30);
-            $customerId = customers::find($customerIds);
-            $customers = customers::whereIn('id', $customerId)->get();
-
-
-            // 中間テーブルにデータを追加
-
-            foreach ($customers as $customer) {
-                customer_schedules::create([
-                    'customers_id' => $customer->id,
-                    'schedules_id' => $schedule->id,
-                ]);
-            }
         }
-
-
-        // 30個のスケジュールデータを作成
-        for ($i = 0; $i <= 30; $i++) {
-            $schedule = schedules::create([
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
                 'title' => '',
-                'start_time' => Carbon::parse('2024-8-1 10:00:00')->addDays($i)->addHours($i),
-                'end_time' => Carbon::parse('2024-8-1 11:00:00')->addDays($i)->addHours($i),
+                'start_time' => Carbon::now()->addHours(3)->addDay($i),
+                'end_time' => Carbon::now()->addHours(3)->addDay($i),
                 'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
-
-            $customerIds = rand(1, 30);
-            $customerId = customers::find($customerIds);
-            $customers = customers::whereIn('id', $customerId)->get();
-
-            foreach ($customers as $customer) {
-                customer_schedules::create([
-                    'customers_id' => $customer->id,
-                    'schedules_id' => $schedule->id,
-                ]);
-            }
         }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(4)->addDay($i),
+                'end_time' => Carbon::now()->addHours(4)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(5)->addDay($i),
+                'end_time' => Carbon::now()->addHours(5)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(6)->addDay($i),
+                'end_time' => Carbon::now()->addHours(6)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(7)->addDay($i),
+                'end_time' => Carbon::now()->addHours(7)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(8)->addDay($i),
+                'end_time' => Carbon::now()->addHours(8)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(9)->addDay($i),
+                'end_time' => Carbon::now()->addHours(9)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(10)->addDay($i),
+                'end_time' => Carbon::now()->addHours(10)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(11)->addDay($i),
+                'end_time' => Carbon::now()->addHours(11)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+        for ($i = 1; $i <= 30; $i++) {
+            DB::table('schedules')->insert([
+                'title' => '',
+                'start_time' => Carbon::now()->addHours(12)->addDay($i),
+                'end_time' => Carbon::now()->addHours(12)->addDay($i),
+                'allDay' => 0,
+                'customers_id' => $i,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
+
+        DB::table('schedules')->insert([
+            'title' => '郵便',
+            'start_time' => '2024-10-04 0:00:00',
+            'end_time' => '2024-10-05 0:00:00',
+            'allDay' => 1,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        DB::table('schedules')->insert([
+            'title' => '',
+            'start_time' => '2020-09-01 10:00:00',
+            'end_time' => '2020-09-01 11:00:00',
+            'allDay' => 0,
+            'customers_id' => 2,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        DB::table('schedules')->insert([
+            'title' => '',
+            'start_time' => '2021-09-01 10:00:00',
+            'end_time' => '2021-09-01 11:00:00',
+            'allDay' => 0,
+            'customers_id' => 2,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        DB::table('schedules')->insert([
+            'title' => '',
+            'start_time' => "2025-09-01 10:00:00", // "2021-09-01 10:00:00
+            'end_time' => "2025-09-01 11:00:00", // "2021-09-01 11:00:00
+            'allDay' => 0,
+            'customers_id' => 3,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        DB::table('schedules')->insert([
+            'title' => '',
+            'start_time' => "2026-09-01 10:00:00", // "2021-09-01 10:00:00
+            'end_time' => "2026-09-01 11:00:00", // "2021-09-01 11:00:00
+            'allDay' => 0,
+            'customers_id' => 4,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        DB::table('schedules')->insert([
+            'title' => '',
+            'start_time' => "2027-09-01 10:00:00", // "2021-09-01 10:00:00
+            'end_time' => "2027-09-01 11:00:00", // "2021-09-01 11:00:00
+            'allDay' => 0,
+            'customers_id' => 5,
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
     }
 }

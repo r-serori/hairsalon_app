@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('start_time')->nullable();
             $table->string('end_time')->nullable();
             $table->boolean('allDay')->default(0);
+            $table->foreignId('customers_id')->nullable()->constrained('customers')->onDelete('cascade');
             $table->timestamps();
         });
     }
