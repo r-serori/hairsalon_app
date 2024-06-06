@@ -45,9 +45,10 @@ class CustomersController extends Controller
 
             $attendanceCustomer = customer_attendances::all();
 
-            return
-                response()->json([
+            if ($customers->isEmpty()) {
+                return response()->json([
                     "resStatus" => "success",
+                    "message" => "初めまして！新規作成ボタンから顧客を作成しましょう！",
                     'customers' => $customers,
                     'courses' => $courses,
                     'options' => $options,
@@ -60,6 +61,23 @@ class CustomersController extends Controller
                     'hairstyle_customers' => $hairstyleCustomer,
                     'customer_attendances' => $attendanceCustomer,
                 ], 200);
+            } else {
+                return
+                    response()->json([
+                        "resStatus" => "success",
+                        'customers' => $customers,
+                        'courses' => $courses,
+                        'options' => $options,
+                        'merchandises' => $merchandises,
+                        'hairstyles' => $hairstyles,
+                        'attendances' => $attendances,
+                        'course_customers' => $courseCustomer,
+                        'option_customers' => $optionCustomer,
+                        'merchandise_customers' => $merchandiseCustomer,
+                        'hairstyle_customers' => $hairstyleCustomer,
+                        'customer_attendances' => $attendanceCustomer,
+                    ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

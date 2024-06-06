@@ -14,12 +14,19 @@ class MonthlySalesController extends Controller
         try {
             // 月別売上一覧を取得
             $monthly_sales = monthly_sales::all();
-
-            // 月別売上一覧ページにデータを渡して表示
-            return response()->json([
-                "resStatus" => "success",
-                'monthlySales' => $monthly_sales
-            ], 200);
+            if ($monthly_sales->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" =>
+                    "初めまして！予約表画面の月次売上更新ボタンから月次売上を作成しましょう！",
+                    'monthlySales' => $monthly_sales
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'monthlySales' => $monthly_sales
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

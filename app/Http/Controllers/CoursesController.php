@@ -12,10 +12,18 @@ class CoursesController extends Controller
     {
         try {
             $courses = courses::all();
-            return response()->json([
-                "resStatus" => "success",
-                'courses' => $courses
-            ], 200);
+            if ($courses->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！新規作成ボタンからコースを作成しましょう！",
+                    'courses' => $courses
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'courses' => $courses
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

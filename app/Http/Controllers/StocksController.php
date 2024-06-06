@@ -18,10 +18,18 @@ class StocksController extends Controller
     {
         try {
             $stocks = stocks::all();
-            return response()->json([
-                "resStatus" => "success",
-                'stocks' => $stocks
-            ], 200);
+            if ($stocks->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！新規作成ボタンから店の在庫を作成しましょう！",
+                    'stocks' => $stocks
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'stocks' => $stocks
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

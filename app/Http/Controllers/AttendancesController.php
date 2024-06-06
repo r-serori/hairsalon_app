@@ -16,11 +16,19 @@ class AttendancesController extends Controller
         try {
 
             $attendances = attendances::all(); // または適切なクエリを使用してデータを取得する
+            if ($attendances->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！新規登録ボタンからスタッフを登録してください！",
+                    'attendances' => $attendances
+                ], 200);
+            } else {
 
-            return response()->json([
-                "resStatus" => "success",
-                'attendances' => $attendances
-            ], 200);
+                return response()->json([
+                    "resStatus" => "success",
+                    'attendances' => $attendances
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

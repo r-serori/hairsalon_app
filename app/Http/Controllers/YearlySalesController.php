@@ -11,10 +11,19 @@ class YearlySalesController extends Controller
     {
         try {
             $yearly_sales = yearly_sales::all();
-            return response()->json([
-                "resStatus" => "success",
-                'yearlySales' => $yearly_sales
-            ], 200);
+            if ($yearly_sales->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" =>
+                    "初めまして！予約表画面の月次売上作成ボタンから月次売上を作成しましょう！",
+                    'yearlySales' => $yearly_sales
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'yearlySales' => $yearly_sales
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

@@ -24,11 +24,85 @@ class SchedulesController extends Controller
     public function index()
     {
         try {
-
-
             $currentYear = Carbon::now()->year;
 
-            $selectSchedules = schedules::where('start_time', 'like', $currentYear . '%')->orWhere('start_time', 'like', $currentYear + 1 . '%')->get();
+            $selectSchedules = schedules::whereRaw('DATE_FORMAT(start_time, "%Y") = ? OR DATE_FORMAT(start_time, "%Y") = ?', [$currentYear, $currentYear + 1])
+                ->get();
+
+            $customers = customers::all();
+
+            $courses = courses::all();
+
+            $options = options::all();
+
+            $merchandises = merchandises::all();
+
+            $hairstyles = hairstyles::all();
+
+            $attendances = attendances::all();
+
+            $courseCustomer = course_customers::all();
+
+            $optionCustomer = option_customers::all();
+
+            $merchandiseCustomer = merchandise_customers::all();
+
+            $hairstyleCustomer = hairstyle_customers::all();
+
+            $attendanceCustomer = customer_attendances::all();
+
+            if ($selectSchedules->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    'message' =>
+                    '初めまして！新規作成ボタンからスケジュールを作成しましょう！',
+                    'schedules' => $selectSchedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'attendances' => $attendances,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_attendances' => $attendanceCustomer,
+                ], 200);
+            } else {
+
+                return response()->json([
+                    "resStatus" => "success",
+                    'schedules' => $selectSchedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'attendances' => $attendances,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_attendances' => $attendanceCustomer,
+                ], 200);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                'message' =>
+                'スケジュールが見つかりません。'
+            ], 500);
+        }
+    }
+
+    public function selectGetYear(Request $request)
+    {
+        try {
+            $selectGetYear = $request->year;
+
+            $selectSchedules = schedules::whereRaw('DATA_FORMAT(start_time, "%Y") = ?', [$selectGetYear])
+                ->get();
 
             $customers = customers::all();
 
@@ -66,59 +140,6 @@ class SchedulesController extends Controller
                 'merchandise_customers' => $merchandiseCustomer,
                 'hairstyle_customers' => $hairstyleCustomer,
                 'customer_attendances' => $attendanceCustomer,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                "resStatus" => "error",
-                'message' =>
-                'スケジュールが見つかりません。'
-            ], 500);
-        }
-    }
-    public function selectGetYear(Request $request)
-    {
-        try {
-
-            $selectSchedules = schedules::where('start_time', 'like', '%' . $request->year)->get();
-
-            // $customers = customers::all();
-
-            // $courses = courses::all();
-
-            // $options = options::all();
-
-            // $merchandises = merchandises::all();
-
-            // $hairstyles = hairstyles::all();
-
-            // $attendances = attendances::all();
-
-            // $courseCustomer = course_customers::all();
-
-            // $optionCustomer = option_customers::all();
-
-            // $merchandiseCustomer = merchandise_customers::all();
-
-            // $hairstyleCustomer = hairstyle_customers::all();
-
-            // $attendanceCustomer = customer_attendances::all();
-
-
-
-            return response()->json([
-                "resStatus" => "success",
-                'schedules' => $selectSchedules,
-                // 'customers' => $customers,
-                // 'courses' => $courses,
-                // 'options' => $options,
-                // 'merchandises' => $merchandises,
-                // 'hairstyles' => $hairstyles,
-                // 'attendances' => $attendances,
-                // 'course_customers' => $courseCustomer,
-                // 'option_customers' => $optionCustomer,
-                // 'merchandise_customers' => $merchandiseCustomer,
-                // 'hairstyle_customers' => $hairstyleCustomer,
-                // 'customer_attendances' => $attendanceCustomer,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([

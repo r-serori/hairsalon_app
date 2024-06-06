@@ -13,12 +13,18 @@ class StockCategoriesController extends Controller
         try {
             // カテゴリー一覧を取得
             $stock_categories = stock_categories::all();
-
-            // 在庫一覧ページにデータを渡して表示
-            return response()->json([
-                "resStatus" => "success",
-                'stockCategories' => $stock_categories
-            ]);
+            if ($stock_categories->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！新規作成ボタンから在庫カテゴリーを作成しましょう！",
+                    'stockCategories' => $stock_categories
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'stockCategories' => $stock_categories
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

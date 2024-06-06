@@ -12,10 +12,19 @@ class MerchandisesController extends Controller
     {
         try {
             $merchandises = merchandises::all();
-            return response()->json([
-                "resStatus" => "success",
-                'merchandises' => $merchandises
-            ], 200);
+
+            if ($merchandises->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！新規作成ボタンから物販商品を作成しましょう！",
+                    'merchandises' => $merchandises
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'merchandises' => $merchandises
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

@@ -12,10 +12,18 @@ class DailySalesController extends Controller
     {
         try {
             $daily_sales = daily_sales::all();
-            return response()->json([
-                "resStatus" => "success",
-                'dailySales' => $daily_sales
-            ], 200);
+            if ($daily_sales->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
+                    'dailySales' => $daily_sales
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'dailySales' => $daily_sales
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json(
                 [

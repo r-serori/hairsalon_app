@@ -12,11 +12,18 @@ class OptionsController extends Controller
     {
         try {
             $options = options::all();
-
-            return response()->json([
-                "resStatus" => "success",
-                'options' => $options
-            ]);
+            if ($options->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！新規作成ボタンからオプションを作成しましょう！",
+                    'options' => $options
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'options' => $options
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

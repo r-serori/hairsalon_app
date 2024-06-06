@@ -16,10 +16,19 @@ class HairstylesController extends Controller
     {
         try {
             $hairstyles = hairstyles::all();
-            return response()->json([
-                "resStatus" => "success",
-                'hairstyles' => $hairstyles
-            ], 200);
+
+            if ($hairstyles->isEmpty()) {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！新規作成ボタンから使用するヘアスタイルを作成しましょう！",
+                    'hairstyles' => $hairstyles
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'hairstyles' => $hairstyles
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",

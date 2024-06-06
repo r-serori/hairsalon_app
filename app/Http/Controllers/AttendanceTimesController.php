@@ -8,26 +8,48 @@ use App\Models\attendances;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use JSON;
 
 class AttendanceTimesController extends Controller
 {
 
-    public function selectedAttendanceTime($id)
+    public function selectedAttendanceTime($id, $yearMonth)
     {
         try {
-            $selectAttendanceTimes = attendance_times::where('attendance_id', $id)->get();
+            if ($yearMonth !== "無し") {
+                $currentYearAndMonth = $yearMonth;
+            } else {
+                $currentYearAndMonth = Carbon::now()->format('Y-m');
+            }
 
-            // 各レコードのstart_photo_pathとend_photo_pathをエンコード
+            $selectAttendanceTimes = attendance_times::where('attendance_id', $id)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$currentYearAndMonth])
+                ->get();
+
+            // 各レコードのstart_photo_pathとend_photos_pathをエンコード
             $selectAttendanceTimes->transform(function ($item) {
                 $item->start_photo_path = urlencode($item->start_photo_path);
                 $item->end_photo_path = urlencode($item->end_photo_path);
                 return $item;
             });
 
-            return response()->json([
-                "resStatus" => "success",
-                'attendanceTimes' => $selectAttendanceTimes
-            ], 200);
+            if ($selectAttendanceTimes->isEmpty() && $yearMonth === "無し") {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "初めまして！勤怠画面から出勤してください！",
+                    'attendanceTimes' => $selectAttendanceTimes
+                ], 200);
+            } else if ($selectAttendanceTimes->isEmpty() && $yearMonth !== "無し") {
+                return response()->json([
+                    "resStatus" => "success",
+                    "message" => "選択した勤怠履歴がありません。",
+                    'attendanceTimes' => $selectAttendanceTimes
+                ], 200);
+            } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'attendanceTimes' => $selectAttendanceTimes
+                ], 200);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
@@ -82,42 +104,26 @@ class AttendanceTimesController extends Controller
         }
     }
 
-    // public function manegePhotos($request)
-    // {
-    //     try {
-
-    //         $imagePath = storage_path('app/public/manegePhots/pexels-theshuttervision-9889983.jpg');
-
-
-    //         dd($imagePath);
-
-
-    //         // 画像ファイルが存在するか確認
-    //         if (!file_exists($imagePath)) {
-    //             abort(404);
-    //         }
-
-    //         return response()->file($imagePath);
-    //     } catch (\Exception $e) {
-    //         abort(404);
-    //     }
-    // }
-
 
     public function startTimeShot(Request $request)
     {
         try {
             $startTime = Carbon::parse($request->start_time);
 
-            $existAttendance = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('start_time', $startTime->format('Y-m-d'))->get();
+            $existAttendanceStart = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('start_time', $startTime->format('Y-m-d'))->latest()->first();
+            $existAttendanceEnd = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('end_time', $startTime->format('Y-m-d'))->latest()->first();
 
-            if ($existAttendance->count() > 0) {
-                return
-                    response()->json(
-                        ["resStatus" => "error", "message" => "既にに出勤時間が登録されています。"],
-                        500
-                    );
-            } else {
+            if (!empty($existAttendanceStart) && !empty($existAttendanceEnd)) {
+                return response()->json(
+                    [
+                        "resStatus" => "error",
+                        "message" => "既にに出勤時間が登録されています。"
+                    ],
+                    500,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                );
+            } else if (empty($existAttendanceStart) && empty($existAttendanceEnd)) {
 
                 // リクエストからデータを検証
                 $request->validate([
@@ -169,7 +175,7 @@ class AttendanceTimesController extends Controller
             return response()->json([
                 "resStatus" => "error",
                 'message' => '出勤時間と写真の登録に失敗しました。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }
 
@@ -189,9 +195,7 @@ class AttendanceTimesController extends Controller
 
             $existYesterdayStartTime = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('start_time', $yesterday)->latest()->first();
 
-
             $existYesterdayEndTime = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('end_time', $yesterday)->latest()->first();
-
 
             if (!empty($existYesterdayEndTime) && empty($existYesterdayStartTime)) {
 
@@ -283,25 +287,9 @@ class AttendanceTimesController extends Controller
 
             $startTime = Carbon::parse($request->start_time);
 
-            // Base64データの取得
-            $base64Image = $request->input('start_photo_path');
-
-            // Base64データからヘッダーを除去し、$typeと$dataに分割します
-            list($type, $data) = explode(';', $base64Image);
-            list(, $data) = explode(',', $data);
-
-            // Base64データをデコード
-            $data = base64_decode($data);
-
-            // 保存するファイル名を生成
-            $fileName = 'startPhotos/' . uniqid() . '.jpg';
-
-            // ファイルを保存
-            Storage::disk('public')->put($fileName, $data);
-
-
             $attendanceTime->start_time = $request->start_time;
-            $attendanceTime->start_photo_path = $fileName;
+            $attendanceTime->start_photo_path =
+                "編集済み";
 
             $attendanceTime->save();
 
@@ -337,24 +325,9 @@ class AttendanceTimesController extends Controller
 
             $endTime = Carbon::parse($request->end_time);
 
-            // Base64データの取得
-            $base64Image = $request->input('end_photo_path');
-
-            // Base64データからヘッダーを除去し、$typeと$dataに分割します
-            list($type, $data) = explode(';', $base64Image);
-            list(, $data) = explode(',', $data);
-
-            // Base64データをデコード
-            $data = base64_decode($data);
-
-            // 保存するファイル名を生成
-            $fileName = 'endPhotos/' . uniqid() . '.jpg';
-
-            // ファイルを保存
-            Storage::disk('public')->put($fileName, $data);
-
             $attendanceTime->end_time = $request->end_time;
-            $attendanceTime->end_photo_path = $fileName;
+            $attendanceTime->end_photo_path =
+                "編集済み";
 
             $attendanceTime->save();
 

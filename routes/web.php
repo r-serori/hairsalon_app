@@ -34,10 +34,9 @@ Route::resource('attendances', AttendancesController::class);
 Route::post('attendances/{id}/update', [AttendancesController::class, 'update']);
 Route::post('attendances/{id}/delete', [AttendancesController::class, 'destroy']);
 
-Route::get("attendance_times/images/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
-Route::get("attendance_times/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');
-// Route::get("attendance_times/manegePhotos/getter", [AttendanceTimesController::class, 'manegePhotos']);
-Route::get('images/selectedAttendanceTimes/{id}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
+Route::get("attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
+Route::get("attendance_times/images/endPhotos/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');
+Route::get('images/selectedAttendanceTimes/{id}/{yearMonth}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
 Route::post('attendance_times/{id}/delete', [AttendanceTimesController::class, 'destroy']);
 Route::post('attendance_times/startTimeShot', [AttendanceTimesController::class, 'startTimeShot']);
 Route::post('attendance_times/endTimeShot', [AttendanceTimesController::class, 'endTimeShot']);
@@ -94,7 +93,6 @@ Route::post('stock_categories/{id}/update', [StockCategoriesController::class, '
 Route::post('stock_categories/{id}/delete', [StockCategoriesController::class, 'destroy']);
 
 
-Route::resource('customer_schedules', CustomerSchedulesController::class);
 Route::resource('course_customers', CourseCustomersController::class);
 Route::resource('customer_attendances', CustomerAttendancesController::class);
 Route::resource('hairstyle_customers', HairstyleCustomersController::class);
