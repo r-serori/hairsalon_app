@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\stock_categories;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,13 +17,13 @@ class stocks extends Model
         'quantity',
         'remarks',
         'supplier',
+        'notice',
         'stock_category_id',
         'created_at'
-    ];              
-    
+    ];
+
     public function stock_category()
     {
         return $this->belongsTo(stock_categories::class);
     }
-
 }

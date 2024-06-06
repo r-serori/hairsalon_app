@@ -50,6 +50,7 @@ class StocksController extends Controller
                 'product_price' => 'required|integer',
                 'supplier' => 'nullable|string',
                 'remarks' => 'nullable|string',
+                "notice" => "required|integer",
                 'stock_category_id' => 'required|exists:stock_categories,id',
             ]);
 
@@ -60,6 +61,7 @@ class StocksController extends Controller
                 'product_price' => $validatedData['product_price'],
                 'supplier' => $validatedData['supplier'],
                 'remarks' => $validatedData['remarks'],
+                'notice' => $validatedData['notice'],
                 'stock_category_id' => $validatedData['stock_category_id'],
             ]);
 
@@ -109,6 +111,7 @@ class StocksController extends Controller
                 'product_price' => 'required|integer',
                 'supplier' => 'nullable|string',
                 'remarks' => 'nullable|string',
+                "notice" => "required|integer",
                 'stock_category_id' => 'required|exists:stock_categories,id',
             ]);
 
@@ -121,6 +124,7 @@ class StocksController extends Controller
             $stock->product_price = $validatedData['product_price'];
             $stock->supplier = $validatedData['supplier'];
             $stock->remarks = $validatedData['remarks'];
+            $stock->notice = $validatedData['notice'];
             $stock->stock_category_id = $validatedData['stock_category_id'];
 
             // 在庫を保存する
