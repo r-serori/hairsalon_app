@@ -21,8 +21,10 @@ class StocksSeeder extends Seeder
             'quantity' => 10,
             'remarks' => '新商品',
             'supplier' => '株式会社A',
+            "notice" => "5",
             'stock_category_id' => 1,
             'created_at' => now(),
+            "updated_at" => now(),
         ]);
         DB::table('stocks')->insert([
             'product_name' => 'スウェット',
@@ -30,8 +32,10 @@ class StocksSeeder extends Seeder
             'quantity' => 20,
             'remarks' => '新商品',
             'supplier' => '株式会社B',
+            "notice" => "10",
             'stock_category_id' => 2,
             'created_at' => now(),
+            "updated_at" => now(),
         ]);
     }
 }
