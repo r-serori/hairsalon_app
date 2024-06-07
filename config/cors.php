@@ -54,7 +54,7 @@ return [
 
     'allowed_origins_patterns' => ['*'],
 
-    'paths' => ['*'],
+    // 'paths' => ['*'],
 
     // 'allowed_origins' => [env('FRONTEND_URL', 'http://localhost:3000')],
 
