@@ -37,6 +37,8 @@ Route::post('attendances/{id}/delete', [AttendancesController::class, 'destroy']
 Route::get("attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
 Route::get("attendance_times/images/endPhotos/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');
 Route::get('images/selectedAttendanceTimes/{id}/{yearMonth}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
+Route::get('firstAttendanceTimes/{id}/firstGet', [AttendanceTimesController::class, 'firstAttendanceTime']);
+Route::post('attendance_times/pleaseEditEndTime', [AttendanceTimesController::class, 'pleaseEditEndTime']);
 Route::post('attendance_times/{id}/delete', [AttendanceTimesController::class, 'destroy']);
 Route::post('attendance_times/startTimeShot', [AttendanceTimesController::class, 'startTimeShot']);
 Route::post('attendance_times/endTimeShot', [AttendanceTimesController::class, 'endTimeShot']);
