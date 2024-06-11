@@ -16,7 +16,7 @@ class ProfileUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'login_id' => ['string', 'max:255'],
+            'email' => ['string', 'max:255'],
         ];
     }
 }

@@ -21,15 +21,17 @@ class AuthenticatedSessionController extends Controller
     {
         try {
             $request->validate([
-                'login_id' => ['required', 'string', 'max:50'],
+
+                'email' => ['required', 'string', 'email'],
                 // 'unique:users'
                 'password' => [
                     'required',
                 ],
+
             ]);
 
             // ユーザーが存在するかどうかを確認
-            $userExists = Auth::attempt($request->only('login_id', 'password'));
+            $userExists = Auth::attempt($request->only('email, password, '));
 
             if (!$userExists) {
                 // ユーザーが存在しない場合はエラーレスポンスを返す
@@ -47,7 +49,7 @@ class AuthenticatedSessionController extends Controller
 
                 $responseUser = [
                     'id' => $user->id,
-                    'login_id' => $user->login_id,
+                    'name' => $user->name,
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
                 ];

@@ -1,0 +1,53 @@
+
+1:users register画面
+
+            $table->id();
+            $table->string('name');
+            $table->string('email');
+            $table->string('password');
+                 $table->string('role')->default('staff');
+
+            登録
+
+owner  or  staff  
+
+
+ownerの場合、ownerテーブルの
+  $table->id();
+            $table->string('store_name');
+            $table->string('address');
+            $table->string('phone_number');
+            $table->string('contact_info');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+
+            を作成
+
+staffの場合staffテーブルの
+
+     Schema::create('staff', function (Blueprint $table) {
+            $table->id();
+            $table->string('position');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
+            $table->timestamps();   
+        });
+    
+
+
+    ownerはアプリ内で権限をいじって、それをstore_permissionに保存
+
+    
+        Schema::create('store_permissions', function (Blueprint $table) {
+            $table->id();
+            $table->string('permission');
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
+        });
+    
+
+
+
+        
+

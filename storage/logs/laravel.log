@@ -863,3 +863,142 @@ Cookie: XSRF-TOKEN=4UA81NBCWRL9uw8e1pbnLvB95fjsptxubvZjXp3i; laravel_session=UeV
 [2024-06-09 16:42:36] local.INFO: imagePath ["imagePath","/Applications/MAMP/htdocs/hairsalon-app/server/storage/app/public/startPhotos/666557a39b49d.jpg"] 
 [2024-06-09 16:45:30] local.INFO: imagePath ["imagePath","/Applications/MAMP/htdocs/hairsalon-app/server/storage/app/public/startPhotos/666557a39b49d.jpg"] 
 [2024-06-09 16:48:04] local.INFO: imagePath ["imagePath","/Applications/MAMP/htdocs/hairsalon-app/server/storage/app/public/startPhotos/666557a39b49d.jpg"] 
+[2024-06-11 12:48:24] local.ERROR: Command "migration" is not defined.
+
+Did you mean one of these?
+    make:migration
+    migrate
+    migrate:fresh
+    migrate:install
+    migrate:refresh
+    migrate:reset
+    migrate:rollback
+    migrate:status {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \"migration\" is not defined.
+
+Did you mean one of these?
+    make:migration
+    migrate
+    migrate:fresh
+    migrate:install
+    migrate:refresh
+    migrate:reset
+    migrate:rollback
+    migrate:status at C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php:737)
+[stacktrace]
+#0 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php(266): Symfony\\Component\\Console\\Application->find()
+#1 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun()
+#2 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Application.php(102): Symfony\\Component\\Console\\Application->run()
+#3 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(155): Illuminate\\Console\\Application->run()
+#4 C:\\MAMP\\htdocs\\app\\server\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle()
+#5 {main}
+"} 
+[2024-06-11 14:18:15] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'login_id' in 'field list' (SQL: insert into `users` (`login_id`, `email`, `password`, `role`, `created_at`) values (tanaka123, aaaaa@hairmail.com, $2y$10$UdwNMoo4DfIAcBxiHip1PuQw3QsKsHbhJczuj1EBv4tvON6vjb6iW, owner, 2024-06-11 14:18:15)) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'login_id' in 'field list' (SQL: insert into `users` (`login_id`, `email`, `password`, `role`, `created_at`) values (tanaka123, aaaaa@hairmail.com, $2y$10$UdwNMoo4DfIAcBxiHip1PuQw3QsKsHbhJczuj1EBv4tvON6vjb6iW, owner, 2024-06-11 14:18:15)) at C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:760)
+[stacktrace]
+#0 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(720): Illuminate\\Database\\Connection->runQueryCallback()
+#1 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(534): Illuminate\\Database\\Connection->run()
+#2 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(498): Illuminate\\Database\\Connection->statement()
+#3 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3272): Illuminate\\Database\\Connection->insert()
+#4 C:\\MAMP\\htdocs\\app\\server\\database\\seeders\\UserSeeder.php(19): Illuminate\\Database\\Query\\Builder->insert()
+#5 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Database\\Seeders\\UserSeeder->run()
+#6 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#7 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#8 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#9 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#10 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(184): Illuminate\\Container\\Container->call()
+#11 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(193): Illuminate\\Database\\Seeder->Illuminate\\Database\\{closure}()
+#12 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(61): Illuminate\\Database\\Seeder->__invoke()
+#13 C:\\MAMP\\htdocs\\app\\server\\database\\seeders\\DatabaseSeeder.php(29): Illuminate\\Database\\Seeder->call()
+#14 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Database\\Seeders\\DatabaseSeeder->run()
+#15 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#16 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#17 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#18 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#19 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(184): Illuminate\\Container\\Container->call()
+#20 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(193): Illuminate\\Database\\Seeder->Illuminate\\Database\\{closure}()
+#21 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Seeds\\SeedCommand.php(81): Illuminate\\Database\\Seeder->__invoke()
+#22 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Concerns\\GuardsAttributes.php(155): Illuminate\\Database\\Console\\Seeds\\SeedCommand->Illuminate\\Database\\Console\\Seeds\\{closure}()
+#23 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Seeds\\SeedCommand.php(80): Illuminate\\Database\\Eloquent\\Model::unguarded()
+#24 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Seeds\\SeedCommand->handle()
+#25 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#26 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#27 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#28 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#29 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(183): Illuminate\\Container\\Container->call()
+#30 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute()
+#31 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(152): Symfony\\Component\\Console\\Command\\Command->run()
+#32 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Concerns\\CallsCommands.php(67): Illuminate\\Console\\Command->run()
+#33 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Concerns\\CallsCommands.php(28): Illuminate\\Console\\Command->runCommand()
+#34 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\FreshCommand.php(93): Illuminate\\Console\\Command->call()
+#35 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\FreshCommand.php(69): Illuminate\\Database\\Console\\Migrations\\FreshCommand->runSeeder()
+#36 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\FreshCommand->handle()
+#37 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#38 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#39 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#40 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#41 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(183): Illuminate\\Container\\Container->call()
+#42 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute()
+#43 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(152): Symfony\\Component\\Console\\Command\\Command->run()
+#44 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php(1078): Illuminate\\Console\\Command->run()
+#45 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand()
+#46 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun()
+#47 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Application.php(102): Symfony\\Component\\Console\\Application->run()
+#48 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(155): Illuminate\\Console\\Application->run()
+#49 C:\\MAMP\\htdocs\\app\\server\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle()
+#50 {main}
+
+[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'login_id' in 'field list' at C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:539)
+[stacktrace]
+#0 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(539): PDO->prepare()
+#1 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(753): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}()
+#2 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(720): Illuminate\\Database\\Connection->runQueryCallback()
+#3 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(534): Illuminate\\Database\\Connection->run()
+#4 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(498): Illuminate\\Database\\Connection->statement()
+#5 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3272): Illuminate\\Database\\Connection->insert()
+#6 C:\\MAMP\\htdocs\\app\\server\\database\\seeders\\UserSeeder.php(19): Illuminate\\Database\\Query\\Builder->insert()
+#7 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Database\\Seeders\\UserSeeder->run()
+#8 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#9 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#10 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#11 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#12 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(184): Illuminate\\Container\\Container->call()
+#13 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(193): Illuminate\\Database\\Seeder->Illuminate\\Database\\{closure}()
+#14 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(61): Illuminate\\Database\\Seeder->__invoke()
+#15 C:\\MAMP\\htdocs\\app\\server\\database\\seeders\\DatabaseSeeder.php(29): Illuminate\\Database\\Seeder->call()
+#16 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Database\\Seeders\\DatabaseSeeder->run()
+#17 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#18 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#19 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#20 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#21 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(184): Illuminate\\Container\\Container->call()
+#22 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Seeder.php(193): Illuminate\\Database\\Seeder->Illuminate\\Database\\{closure}()
+#23 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Seeds\\SeedCommand.php(81): Illuminate\\Database\\Seeder->__invoke()
+#24 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Concerns\\GuardsAttributes.php(155): Illuminate\\Database\\Console\\Seeds\\SeedCommand->Illuminate\\Database\\Console\\Seeds\\{closure}()
+#25 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Seeds\\SeedCommand.php(80): Illuminate\\Database\\Eloquent\\Model::unguarded()
+#26 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Seeds\\SeedCommand->handle()
+#27 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#28 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#29 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#30 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#31 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(183): Illuminate\\Container\\Container->call()
+#32 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute()
+#33 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(152): Symfony\\Component\\Console\\Command\\Command->run()
+#34 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Concerns\\CallsCommands.php(67): Illuminate\\Console\\Command->run()
+#35 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Concerns\\CallsCommands.php(28): Illuminate\\Console\\Command->runCommand()
+#36 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\FreshCommand.php(93): Illuminate\\Console\\Command->call()
+#37 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\FreshCommand.php(69): Illuminate\\Database\\Console\\Migrations\\FreshCommand->runSeeder()
+#38 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\FreshCommand->handle()
+#39 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#40 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure()
+#41 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(35): Illuminate\\Container\\BoundMethod::callBoundMethod()
+#42 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(661): Illuminate\\Container\\BoundMethod::call()
+#43 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(183): Illuminate\\Container\\Container->call()
+#44 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute()
+#45 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(152): Symfony\\Component\\Console\\Command\\Command->run()
+#46 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php(1078): Illuminate\\Console\\Command->run()
+#47 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand()
+#48 C:\\MAMP\\htdocs\\app\\server\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun()
+#49 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Application.php(102): Symfony\\Component\\Console\\Application->run()
+#50 C:\\MAMP\\htdocs\\app\\server\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(155): Illuminate\\Console\\Application->run()
+#51 C:\\MAMP\\htdocs\\app\\server\\artisan(35): Illuminate\\Foundation\\Console\\Kernel->handle()
+#52 {main}
+"} 

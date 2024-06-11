@@ -26,8 +26,8 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'email' => ['required', 'string', 'email'],
-            "login_id" => ['required', 'string'],
+            'email' => ['required', 'string', 'email'],
+            // "email" => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -46,11 +46,11 @@ class LoginRequest extends FormRequest
         //         'email' => __('auth.failed'),
         //     ]);
         // }
-        if (!Auth::attempt($this->only('login_id', 'password'), $this->boolean('remember'))) {
+        if (!Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'login_id' => __('auth.failed'),
+                'email' => __('auth.failed'),
             ]);
         }
 
@@ -79,7 +79,7 @@ class LoginRequest extends FormRequest
         // ]);
 
         throw ValidationException::withMessages([
-            'login_id' => trans('auth.throttle', [
+            'email' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -91,6 +91,6 @@ class LoginRequest extends FormRequest
     public function throttleKey(): string
     {
         // return Str::transliterate(Str::lower($this->input('email')) . '|' . $this->ip());
-        return Str::transliterate(Str::lower($this->input('login_id')) . '|' . $this->ip());
+        return Str::transliterate(Str::lower($this->input('email')) . '|' . $this->ip());
     }
 }

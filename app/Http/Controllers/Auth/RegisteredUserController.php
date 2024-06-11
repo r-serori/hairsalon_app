@@ -26,14 +26,16 @@ class RegisteredUserController extends Controller
             Log::info('リクエストデータ: ' . $request);
 
             $request->validate([
-                'login_id' => ['required', 'string', 'max:50'],
+                'name' => ['required', 'string', 'max:50'],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
                 // 'unique:users'
                 'password' => [
                     'required',
                 ],
+                'role' => ['required', 'string', 'max:10'],
             ]);
 
-            $userID = User::where('login_id', $request->login_id)->first();
+            $userID = User::where('email', $request->email)->first();
 
 
             if ($userID) {
@@ -44,8 +46,10 @@ class RegisteredUserController extends Controller
                     ], 400);
             } else {
                 $user = User::create([
-                    'login_id' => $request->login_id,
+                    'name' => $request->name,
+                    'email' => $request->email,
                     'password' => Hash::make($request->password),
+                    'role' => $request->role,
                 ]);
 
                 event(new Registered($user));
@@ -54,7 +58,9 @@ class RegisteredUserController extends Controller
 
                 $responseUser = [
                     'id' => $user->id,
-                    'login_id' => $user->login_id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
                 ];
