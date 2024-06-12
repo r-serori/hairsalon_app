@@ -11,6 +11,8 @@ class TrustHosts extends Middleware
      *
      * @return array<int, string|null>
      */
+    //全てのサブドメインを信頼する
+    //お金を払ってドメイン名を購入すると、そのドメイン名にはサブドメインが付与される
     public function hosts()
     {
         return [

@@ -14,50 +14,5 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'api/*',
         'sanctum/csrf-cookie',
-        'login',
-        'register',
-        'dashboard',
-        'logout',
-        'user',
-        'user/*',
-        'attendances',
-        'attendances/*',
-        'attendance_times',
-        'attendance_times/*',
-        'attendance_times/*/search',
-        'courses',
-        'courses/*',
-        'customers',
-        'customers/*',
-        'customers/*/schedule',
-        'daily_sales',
-        'daily_sales/*',
-        'daily_sales/update-daily-sales',
-        'hairstyles',
-        'hairstyles/*',
-        'monthly_sales',
-        'monthly_sales/*',
-        'monthly_sales/update-monthly-sales',
-        'options',
-        'options/*',
-        'schedules',
-        'schedules/*',
-        'schedules/create/*',
-        'schedules/update-daily-sales',
-        'yearly_sales',
-        'yearly_sales/*',
-        'stocks',
-        'stocks/*',
-        'stocks/*/search',
-        'stock_categories',
-        'stock_categories/*',
-        'stock_categories/*/search',
-
-
-
-
-
-
-
     ];
 }
