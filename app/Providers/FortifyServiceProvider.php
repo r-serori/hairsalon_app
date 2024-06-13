@@ -28,16 +28,20 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // registerと一緒
         Fortify::createUsersUsing(CreateNewUser::class);
+        //プロフィール更新
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
+        //パスワード更新
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
+        //パスワードリセット
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
 
+        //ログインの制限5回/1分
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });
-
     }
 }

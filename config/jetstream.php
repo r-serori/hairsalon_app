@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'stack' => 'livewire',
+    'stack' => 'inertia',
 
     /*
      |--------------------------------------------------------------------------
@@ -58,11 +58,16 @@ return [
     */
 
     'features' => [
-        // Features::termsAndPrivacyPolicy(),
-        // Features::profilePhotos(),
-        // Features::api(),
-        // Features::teams(['invitations' => true]),
-        // Features::accountDeletion(),
+        //利用規約とプライバシーポリシーに同意してもらう機能
+        Features::termsAndPrivacyPolicy(),
+        //プロフィール写真を使用できる
+        Features::profilePhotos(),
+        //APIを使用できる
+        Features::api(),
+        //チームを使用できる。招待機能も使用できる。権限付与も可能
+        Features::teams(['invitations' => true]),
+        //アカウントを削除できる
+        Features::accountDeletion(),
     ],
 
     /*

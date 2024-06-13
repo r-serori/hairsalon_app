@@ -19,7 +19,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('register', [RegisteredUserController::class, 'store'])
+Route::post('/register', [RegisteredUserController::class, 'store'])
     ->middleware('guest');
 
 Route::post('/secondRegister', [RegisteredUserController::class, 'secondStore'])->middleware('auth.session');

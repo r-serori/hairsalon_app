@@ -12,6 +12,8 @@ class BroadcastServiceProvider extends ServiceProvider
      *
      * @return void
      */
+
+    //リアルタイムの通知やチャットなどを実装するためのもの
     public function boot()
     {
         Broadcast::routes();

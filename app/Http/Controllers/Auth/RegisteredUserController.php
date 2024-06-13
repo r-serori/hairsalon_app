@@ -15,71 +15,32 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
+use App\Actions\Fortify\CreateNewUser;
 
 class RegisteredUserController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
         try {
-
-
             Log::info('ユーザー登録処理を開始します。');
-            Log::info('リクエストデータ: ' . $request);
 
-            $request->validate([
-                'name' => ['required', 'string', 'max:50'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                'phone_number' => ['required', 'string', 'max:13'],
-                'password' => [
-                    'required',
+            // ユーザーの作成とバリデーションはCreateNewUserクラスに任せる
+            $user = (new CreateNewUser())->create($request->all());
+
+            // ここで追加の処理（例: ログイン、イベントの発行など）
+            Auth::login($user);
+            event(new Registered($user));
+
+            // $request->session()->regenerate();
+
+            return response()->json(
+                [
+                    'resStatus' => "success",
+                    'message' => 'ユーザー登録に成功しました!',
+                    'responseUser' => $user
                 ],
-                'role' => ['required', 'string', 'max:10'],
-            ]);
-
-            $userID = User::where('email', $request->email)->first();
-
-
-            if ($userID) {
-                return
-                    response()->json([
-                        "resStatus" => 'error',
-                        'message' => 'ログインIDが既に存在しています。',
-                    ], 400);
-            } else {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'phone_number' => $request->phone_number,
-                    'password' => Hash::make($request->password),
-                    'role' => $request->role,
-                ]);
-
-                event(new Registered($user));
-                //ここでメールを送る処理などができる
-
-                Auth::login($user);
-
-                // $request->session()->regenerate();
-
-                $responseUser = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone_number' => $user->phone_number,
-                    'role' => $user->role,
-                    'created_at' => $user->created_at,
-                    'updated_at' => $user->updated_at,
-                ];
-                return response()->json(
-                    [
-                        'resStatus' => "success",
-                        'message' => 'ユーザー登録に成功しました!',
-                        'responseUser' => $responseUser,
-                    ],
-                    200
-                );
-            }
+                200
+            );
         } catch (\Exception $e) {
             Log::error('ユーザー登録処理中にエラーが発生しました。');
             Log::error('エラー内容: ' . $e);
