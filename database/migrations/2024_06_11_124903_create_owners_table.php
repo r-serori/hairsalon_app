@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('store_name');
             $table->string('address');
             $table->string('phone_number');
-            $table->string('contact_info');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });

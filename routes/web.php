@@ -103,23 +103,4 @@ Route::middleware("auth.session")->group(function () {
     Route::resource('option_customers', OptionCustomersController::class);
 });
 
-Route::get('sanctum/csrf-cookie', function () {
-    try {
-        return response()->json(
-            [
-                "resStatus" => "success",
-                'message' =>
-                'CSRF tokenの設定に成功しました。'
-            ],
-            200
-        );
-    } catch (\Exception $e) {
-        return response()->json([
-            "resStatus" => "error",
-            'message' =>
-            'CSRF tokenの設定に失敗しました。'
-        ], 500);
-    }
-})->middleware('guest');
-
 // require __DIR__ . '/auth.php';

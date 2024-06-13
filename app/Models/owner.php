@@ -13,7 +13,6 @@ class owner extends Model
         'store_name',
         'address',
         'phone_number',
-        'contact_info',
         'user_id',
     ];
 }

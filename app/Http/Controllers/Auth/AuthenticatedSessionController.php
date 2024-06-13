@@ -31,7 +31,7 @@ class AuthenticatedSessionController extends Controller
             ]);
 
             // ユーザーが存在するかどうかを確認
-            $userExists = Auth::attempt($request->only('email, password, '));
+            $userExists = Auth::attempt($request->only('email, password'));
 
             if (!$userExists) {
                 // ユーザーが存在しない場合はエラーレスポンスを返す

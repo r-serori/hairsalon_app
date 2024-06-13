@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\owner;
 use App\Models\staff;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -29,6 +30,7 @@ class RegisteredUserController extends Controller
             $request->validate([
                 'name' => ['required', 'string', 'max:50'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'phone_number' => ['required', 'string', 'max:13'],
                 'password' => [
                     'required',
                 ],
@@ -48,18 +50,23 @@ class RegisteredUserController extends Controller
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
+                    'phone_number' => $request->phone_number,
                     'password' => Hash::make($request->password),
                     'role' => $request->role,
                 ]);
 
                 event(new Registered($user));
+                //ここでメールを送る処理などができる
 
                 Auth::login($user);
+
+                // $request->session()->regenerate();
 
                 $responseUser = [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'phone_number' => $user->phone_number,
                     'role' => $user->role,
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
@@ -90,6 +97,7 @@ class RegisteredUserController extends Controller
             $request->validate([
                 'name' => ['required', 'string', 'max:50'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                'phone_number' => ['required', 'string', 'max:13'],
                 'password' => [
                     'required',
                 ],
@@ -109,6 +117,7 @@ class RegisteredUserController extends Controller
                 $user = User::create([
                     'name' => $request->name,
                     'email' => $request->email,
+                    'phone_number' => $request->phone_number,
                     'password' => Hash::make($request->password),
                     'role' => $request->role,
                 ]);
@@ -127,6 +136,7 @@ class RegisteredUserController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'phone_number' => $user->phone_number,
                     'role' => $user->role,
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
@@ -136,6 +146,7 @@ class RegisteredUserController extends Controller
                         'resStatus' => "success",
                         'message' => 'スタッフ用ユーザー登録に成功しました!',
                         'responseUser' => $responseUser,
+                        'responseStaff' => $staff,
                     ],
                     200
                 );
@@ -147,6 +158,62 @@ class RegisteredUserController extends Controller
                 "resStatus" => 'error',
                 'message' => 'ユーザー登録に失敗しました。',
             ], 400);
+        }
+    }
+
+    public function ownerStore(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'store_name' => ['required', 'string', 'max:50'],
+                'address' => ['required', 'string', 'max:255'],
+                'phone_number' => ['required', 'string', 'max:13'],
+                'user_id' => ['required', 'integer'],
+            ]);
+
+            $user = User::where('id', $request->user_id)->first();
+
+            if ($user) {
+                $owner = owner::create([
+                    'store_name' => $request->store_name,
+                    'address' => $request->address,
+                    'phone_number' => $request->phone_number,
+                    'user_id' => $request->user_id,
+                ]);
+
+                $responseOwner = [
+                    'id' => $owner->id,
+                    'store_name' => $owner->store_name,
+                    'address' => $request->address,
+                    'phone_number' => $request->phone_number,
+                    'user_id' => $request->user_id,
+                ];
+
+                return response()->json(
+                    [
+                        'resStatus' => "success",
+                        'message' => 'オーナー用ユーザー登録に成功しました!',
+                        'responseOwner' => $responseOwner,
+                    ],
+                    200
+                );
+            } else {
+                return response()->json(
+                    [
+                        'resStatus' => "error",
+                        "message" => "もう一度最初からやり直してください。",
+                    ],
+                    404
+                );
+            }
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'resStatus' => "error",
+                    "message" => $e->getMessage(),
+                ],
+                500
+            );
         }
     }
 }
