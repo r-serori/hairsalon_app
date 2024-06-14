@@ -40,4 +40,14 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function ownedTeams()
+    {
+        return $this->teams()->where('user_id', $this->id)->orderBy('id', 'desc');
+    }
+
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class)->withPivot('role')->withTimestamps();
+    }
 }

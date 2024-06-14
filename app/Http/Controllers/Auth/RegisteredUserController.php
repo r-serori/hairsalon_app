@@ -31,13 +31,13 @@ class RegisteredUserController extends Controller
             Auth::login($user);
             event(new Registered($user));
 
-            // $request->session()->regenerate();
+            $request->session()->regenerate();
 
             return response()->json(
                 [
                     'resStatus' => "success",
                     'message' => 'ユーザー登録に成功しました!',
-                    'responseUser' => $user
+                    'responseUser' => $user->only(['id', 'name', 'email', 'phone_number', 'role', 'created_at', 'updated_at'])
                 ],
                 200
             );
@@ -125,11 +125,11 @@ class RegisteredUserController extends Controller
     public function ownerStore(Request $request): JsonResponse
     {
         try {
-            $request->validate([
+            $validate = $request->validate([
                 'store_name' => ['required', 'string', 'max:50'],
                 'address' => ['required', 'string', 'max:255'],
                 'phone_number' => ['required', 'string', 'max:13'],
-                'user_id' => ['required', 'integer'],
+                'user_id' => ['required', 'integer', 'unique:owners,user_id'],
             ]);
 
             $user = User::where('id', $request->user_id)->first();

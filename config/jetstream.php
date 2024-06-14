@@ -65,7 +65,7 @@ return [
         //APIを使用できる
         Features::api(),
         //チームを使用できる。招待機能も使用できる。権限付与も可能
-        Features::teams(['invitations' => true]),
+        // Features::teams(['invitations' => true]),
         //アカウントを削除できる
         Features::accountDeletion(),
     ],

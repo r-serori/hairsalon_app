@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Actions\Jetstream\DeleteUser;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Jetstream\Jetstream;
+use App\Enums\Roles;
+use App\Enums\Permissions;
 
 class JetstreamServiceProvider extends ServiceProvider
 {
@@ -31,13 +33,25 @@ class JetstreamServiceProvider extends ServiceProvider
      */
     protected function configurePermissions(): void
     {
-        Jetstream::defaultApiTokenPermissions(['read']);
-
-        Jetstream::permissions([
-            'create',
-            'read',
-            'update',
-            'delete',
+        Jetstream::defaultApiTokenPermissions([
+            Roles::STAFF, 'staff',
+            Permissions::ALL_PERMISSION,
         ]);
+
+        Jetstream::role(Roles::OWNER, 'Owner', [
+            Permissions::ALL_PERMISSION,
+            Permissions::OWNER_PERMISSION,
+            Permissions::MANAGER_PERMISSION,
+
+        ])->description('オーナー権限。全ての権限を持つ。');
+
+        Jetstream::role(Roles::MANAGER, 'manager', [
+            Permissions::MANAGER_PERMISSION,
+            Permissions::ALL_PERMISSION,
+        ])->description('マネージャー権限。削除機能とusers編集権限以外の全ての権限を持つ。');
+
+        Jetstream::role(Roles::STAFF, 'staff', [
+            Permissions::ALL_PERMISSION,
+        ])->description('全員が触れるメソッドしか使えない権限。');
     }
 }

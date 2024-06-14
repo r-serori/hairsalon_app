@@ -1,3 +1,5 @@
+
+
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -22,10 +24,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/register', [RegisteredUserController::class, 'store'])
     ->middleware('guest');
 
-Route::post('/secondRegister', [RegisteredUserController::class, 'secondStore'])->middleware('auth.session');
-
 Route::post('/ownerRegister', [RegisteredUserController::class, 'ownerStore'])
     ->middleware('auth.session');
+
+Route::post('/secondRegister', [RegisteredUserController::class, 'secondStore'])->middleware('auth.session');
+
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->middleware('guest');
