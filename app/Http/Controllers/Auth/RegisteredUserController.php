@@ -22,31 +22,44 @@ class RegisteredUserController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            Log::info('ユーザー登録処理を開始します。');
+            Log::info('ユーザー登録処理を開始します。', $request->all());
 
-            // ユーザーの作成とバリデーションはCreateNewUserクラスに任せる
-            $user = (new CreateNewUser())->create($request->all());
 
-            // ここで追加の処理（例: ログイン、イベントの発行など）
-            Auth::login($user);
-            event(new Registered($user));
+            $response = (new CreateNewUser())->create($request->only([
+                'name', 'email', 'phone_number', 'password', 'role', 'isAttendance'
+            ]));
+            // CreateNewUserのcreateメソッドがJSONレスポンスを返すため、その内容を確認
+            if ($response->status() !== 201) {
+                return response()->json([
+                    "resStatus" => 'error',
+                    'message' => 'ユーザー登録に失敗しました。初めからやり直してください。',
+                ], 400);
+            } else {
 
-            $request->session()->regenerate();
+                $user = User::find($response->getData()->user->id);
 
-            return response()->json(
-                [
-                    'resStatus' => "success",
-                    'message' => 'ユーザー登録に成功しました!',
-                    'responseUser' => $user->only(['id', 'name', 'email', 'phone_number', 'role', 'created_at', 'updated_at'])
-                ],
-                200
-            );
+                // ここで追加の処理（例: ログイン、イベントの発行など）
+                Auth::login($user);
+
+                event(new Registered($user));
+
+                $request->session()->regenerate();
+
+                return response()->json(
+                    [
+                        'resStatus' => "success",
+                        'message' => 'ユーザー登録に成功しました!',
+                        'responseUser' => $user->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'])
+                    ],
+                    200
+                );
+            }
         } catch (\Exception $e) {
             Log::error('ユーザー登録処理中にエラーが発生しました。');
             Log::error('エラー内容: ' . $e);
             return response()->json([
                 "resStatus" => 'error',
-                'message' => 'ユーザー登録に失敗しました。',
+                'message' => 'エラーが発生しました。 エラー内容：' . $e->getMessage(),
             ], 400);
         }
     }
@@ -63,6 +76,7 @@ class RegisteredUserController extends Controller
                     'required',
                 ],
                 'role' => ['required', 'string', 'max:10'],
+                'isAttendance' => ['required', 'boolean'],
             ]);
 
             $userID = User::where('email', $request->email)->first();
@@ -81,6 +95,7 @@ class RegisteredUserController extends Controller
                     'phone_number' => $request->phone_number,
                     'password' => Hash::make($request->password),
                     'role' => $request->role,
+                    'isAttendance' => $request->isAttendance,
                 ]);
 
                 event(new Registered($user));
@@ -99,6 +114,7 @@ class RegisteredUserController extends Controller
                     'email' => $user->email,
                     'phone_number' => $user->phone_number,
                     'role' => $user->role,
+                    'isAttendance' => $user->isAttendance,
                     'created_at' => $user->created_at,
                     'updated_at' => $user->updated_at,
                 ];

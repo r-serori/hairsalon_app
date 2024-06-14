@@ -23,31 +23,27 @@ class CreateNewUser implements CreatesNewUsers
      *
      * @param  array<string, string>  $input
      */
-    public function create(array $input): JsonResponse
+    public function create(array $input): User
     {
+        Log::info('ユーザー登録処理を開始します。', $input);
         try {
             $validator = Validator::make($input, [
-                'name' => ['required', 'string', 'max:50'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                'phone_number' => ['required', 'string', 'max:13'],
-                'password' => ['required'],
-                'role' => ['required', 'string', 'max:10'],
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email', 'max:255'],
+                'phone_number' => ['required', 'string', 'max:255'],
+                'password' => $this->passwordRules(),
+                'role' => ['required', 'string', 'max:255'],
+                'isAttendance' => ['required', 'boolean'],
             ]);
 
             if ($validator->fails()) {
-                return response()->json([
-                    'resStatus' => 'error',
-                    'message' => '入力内容をご確認ください。',
-                    'errors' => $validator->errors()->first(),
-                ], 400);
+                $errors = $validator->errors()->all();
+                throw new \Exception('バリデーションエラー: ' . implode(', ', $errors));
             }
             $existUser = User::where('email', $input['email'])->first();
 
             if ($existUser) {
-                return response()->json([
-                    'resStatus' => 'error',
-                    'message' => '既にこのメールアドレスは使用されています。'
-                ], 400);
+                throw new \Exception('このメールアドレスは既に登録されています。');
             } else {
                 $user = User::create([
                     'name' => $input['name'],
@@ -55,6 +51,7 @@ class CreateNewUser implements CreatesNewUsers
                     'phone_number' => $input['phone_number'],
                     'password' => Hash::make($input['password']),
                     'role' => $input['role'],
+                    'isAttendance' => $input['isAttendance'],
                 ]);
 
                 if (Features::enabled(Features::registration())) {
@@ -66,10 +63,7 @@ class CreateNewUser implements CreatesNewUsers
         } catch (\Exception $e) {
             Log::error('ユーザー登録処理中にエラーが発生しました。');
             Log::error('エラー内容: ' . $e);
-            return response()->json([
-                "resStatus" => 'error',
-                'message' => 'ユーザー登録に失敗しました。',
-            ], 400);
+            throw $e;
         }
     }
 }

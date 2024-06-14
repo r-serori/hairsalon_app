@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\attendance_times;
-use App\Models\attendances;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -22,7 +22,7 @@ class AttendanceTimesController extends Controller
                 $currentYearAndMonth = Carbon::now()->format('Y-m');
             }
 
-            $selectAttendanceTimes = attendance_times::where('attendance_id', $id)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$currentYearAndMonth])
+            $selectAttendanceTimes = attendance_times::where('user_id', $id)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$currentYearAndMonth])
                 ->get();
 
             // 各レコードのstart_photo_pathとend_photos_pathをエンコード
@@ -61,20 +61,19 @@ class AttendanceTimesController extends Controller
     public function firstAttendanceTime($id)
     {
         try {
-            $firstAttendanceTime = attendance_times::where('attendance_id', $id)->latest('created_at')->first();
+            $firstAttendanceTime = attendance_times::where('user_id', $id)->latest('created_at')->first();
 
             return response()->json([
                 "resStatus" => "success",
-                'attendanceTime'=> $firstAttendanceTime,
-                ], 200);
+                'attendanceTime' => $firstAttendanceTime,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                "resStatus" => "error",
+                'message' => '勤怠時間の取得に失敗しました。'
+            ], 500);
+        }
     }
-    catch (\Exception $e) {
-        return response()->json([
-            "resStatus" => "error",
-            'message' => '勤怠時間の取得に失敗しました。'
-        ], 500);
-    }
-}
 
 
     public function startPhotos($fileName)
@@ -128,8 +127,8 @@ class AttendanceTimesController extends Controller
         try {
             $startTime = Carbon::parse($request->start_time);
 
-            $existAttendanceStart = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('start_time', $startTime->format('Y-m-d'))->latest()->first();
-            $existAttendanceEnd = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('end_time', $startTime->format('Y-m-d'))->latest()->first();
+            $existAttendanceStart = attendance_times::where('user_id', $request->user_id)->whereDate('start_time', $startTime->format('Y-m-d'))->latest()->first();
+            $existAttendanceEnd = attendance_times::where('user_id', $request->user_id)->whereDate('end_time', $startTime->format('Y-m-d'))->latest()->first();
 
             if (!empty($existAttendanceStart) && !empty($existAttendanceEnd)) {
                 return response()->json(
@@ -147,7 +146,7 @@ class AttendanceTimesController extends Controller
                 $request->validate([
                     'start_time' => 'required',
                     'start_photo_path' => 'required',
-                    'attendance_id' => 'required|exists:attendances,id',
+                    'user_id' => 'required|exists:users,id',
                 ]);
                 // Base64データの取得
                 $base64Image = $request->input('start_photo_path');
@@ -169,21 +168,21 @@ class AttendanceTimesController extends Controller
                 $attendanceTime = attendance_times::create([
                     'start_time' => $request->start_time,
                     'start_photo_path' =>  $fileName,
-                    'attendance_id' => $request->attendance_id,
+                    'user_id' => $request->user_id,
                 ]);
 
 
-                $attendance = attendances::find($request->attendance_id);
+                $user = User::find($request->user_id);
 
-                $attendance->isAttendance = 1;
+                $user->isAttendance = 1;
 
-                $attendance->save();
+                $user->save();
 
                 return
                     response()->json(
                         [
                             "resStatus" => "success",
-                            "attendance" => $attendance,
+                            "attendance" => $user,
                             "attendanceTime" => $attendanceTime,
                         ],
                         200
@@ -197,20 +196,20 @@ class AttendanceTimesController extends Controller
         }
     }
 
-    public function pleaseEditEndTime(Request $request )
+    public function pleaseEditEndTime(Request $request)
     {
         try {
             $request->validate([
                 'end_time' => 'required',
                 'end_photo_path' => 'required',
-                'attendance_id' => 'required|exists:attendances,id',
+                'user_id' => 'required|exists:users,id',
             ]);
 
             $endTime = Carbon::parse($request->end_time);
 
             $yesterday = $endTime->subDay()->format('Y-m-d');
 
-            $existYesterdayStartTime = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('start_time', $yesterday)->latest()->first();
+            $existYesterdayStartTime = attendance_times::where('user_id', $request->user_id)->whereDate('start_time', $yesterday)->latest()->first();
 
             $existYesterdayStartTime->end_time = $request->end_time;
 
@@ -218,17 +217,17 @@ class AttendanceTimesController extends Controller
 
             $existYesterdayStartTime->save();
 
-            $attendance = attendances::find($request->attendance_id);
+            $user = User::find($request->user_id);
 
-            $attendance->isAttendance = 0;
+            $user->isAttendance = 0;
 
-            $attendance->save();
+            $user->save();
 
             return response()->json(
                 [
                     "resStatus" => "success",
                     "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、その後出勤ボタンを押してください！",
-                    "attendanceTime" => $existYesterdayStartTime, "attendance" => $attendance
+                    "attendanceTime" => $existYesterdayStartTime, "attendance" => $user
                 ],
                 200
             );
@@ -248,36 +247,36 @@ class AttendanceTimesController extends Controller
             $request->validate([
                 'end_time' => 'required',
                 'end_photo_path' => 'required',
-                'attendance_id' => 'required|exists:attendances,id',
+                'user_id' => 'required|exists:users,id',
             ]);
             $endTime = Carbon::parse($request->end_time);
 
             $yesterday = $endTime->subDay()->format('Y-m-d');
 
-            $existYesterdayStartTime = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('start_time', $yesterday)->latest()->first();
+            $existYesterdayStartTime = attendance_times::where('user_id', $request->user_id)->whereDate('start_time', $yesterday)->latest()->first();
 
-            $existYesterdayEndTime = attendance_times::where('attendance_id', $request->attendance_id)->whereDate('end_time', $yesterday)->latest()->first();
+            $existYesterdayEndTime = attendance_times::where('user_id', $request->user_id)->whereDate('end_time', $yesterday)->latest()->first();
 
             if (!empty($existYesterdayEndTime) && empty($existYesterdayStartTime)) {
 
                 // リクエストから受け取ったデータを使用してレコードを更新
                 $existYesterdayStartTime->end_time = "9999-12-31 23:59:59";
 
-                $existYesterdayEndTime->end_photo_path = "編集済み";    
+                $existYesterdayEndTime->end_photo_path = "編集済み";
 
                 $existYesterdayStartTime->save();
 
-                $attendance = attendances::find($request->attendance_id);
+                $user = User::find($request->user_id);
 
-                $attendance->isAttendance = 0;
+                $user->isAttendance = 0;
 
-                $attendance->save();
+                $user->save();
                 return
                     response()->json(
                         [
                             "resStatus" => "success",
                             "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、今は編集依頼を押した後に出勤ボタンを押してください！",
-                            "attendanceTime" => $existYesterdayStartTime, "attendance" => $attendance
+                            "attendanceTime" => $existYesterdayStartTime, "attendance" => $user
                         ],
                         200
                     );
@@ -301,7 +300,7 @@ class AttendanceTimesController extends Controller
 
                 $today = Carbon::now()->format('Y-m-d');
 
-                $attendanceTime = attendance_times::where('attendance_id', $request->attendance_id)
+                $attendanceTime = attendance_times::where('user_id', $request->user_id)
                     ->whereDate('start_time', $today)
                     ->latest()
                     ->first();
@@ -311,15 +310,15 @@ class AttendanceTimesController extends Controller
 
                 $attendanceTime->save();
 
-                $attendance = attendances::find($request->attendance_id);
+                $user = User::find($request->user_id);
 
-                $attendance->isAttendance = 0;
+                $user->isAttendance = 0;
 
-                $attendance->save();
+                $user->save();
 
                 return
                     response()->json(
-                        ["resStatus" => "success", "attendanceTime" => $attendanceTime, "attendance" => $attendance],
+                        ["resStatus" => "success", "attendanceTime" => $attendanceTime, "attendance" => $user],
                         200
                     );
             }
@@ -345,7 +344,7 @@ class AttendanceTimesController extends Controller
             $request->validate([
                 'start_time' => 'required',
                 'start_photo_path' => 'required',
-                'attendance_id' => 'required|exists:attendances,id',
+                'user_id' => 'required|exists:users,id',
             ]);
 
             $startTime = Carbon::parse($request->start_time);
@@ -383,7 +382,7 @@ class AttendanceTimesController extends Controller
             $request->validate([
                 'end_time' => 'required',
                 'end_photo_path' => 'required',
-                'attendance_id' => 'required|exists:attendances,id',
+                'user_id' => 'required|exists:users,id',
             ]);
 
             $endTime = Carbon::parse($request->end_time);
@@ -412,14 +411,14 @@ class AttendanceTimesController extends Controller
     {
 
         try {
-            $attendance = attendance_times::find($id);
+            $user = attendance_times::find($id);
 
-            if ($attendance->end_photo_path) {
-                Storage::disk('public')->delete($attendance->end_photo_path);
+            if ($user->end_photo_path) {
+                Storage::disk('public')->delete($user->end_photo_path);
             }
 
-            if ($attendance->start_photo_path) {
-                Storage::disk('public')->delete($attendance->start_photo_path);
+            if ($user->start_photo_path) {
+                Storage::disk('public')->delete($user->start_photo_path);
             }
 
             // レコードを削除

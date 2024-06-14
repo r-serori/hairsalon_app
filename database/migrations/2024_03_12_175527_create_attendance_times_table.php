@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('end_time')->nullable();
             $table->string('start_photo_path')->nullable();
             $table->string('end_photo_path')->nullable();
-            $table->foreignId('attendance_id')->constrained('attendances')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

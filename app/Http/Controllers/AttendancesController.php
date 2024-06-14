@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
-
+use App\Enums\Permissions;
 use Illuminate\Http\Request;
 use App\Models\attendances;
 
@@ -14,6 +13,7 @@ class AttendancesController extends Controller
     public function index()
     {
         try {
+
 
             $attendances = attendances::all(); // または適切なクエリを使用してデータを取得する
             if ($attendances->isEmpty()) {

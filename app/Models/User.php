@@ -41,6 +41,18 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+
+    public function attendance_times()
+    {
+        return $this->hasMany(attendance_times::class);
+    }
+
+
+    public function customers()
+    {
+        return $this->belongsToMany(customers::class, 'customer_attendances', 'attendances_id', 'customers_id');
+    }
+
     public function ownedTeams()
     {
         return $this->teams()->where('user_id', $this->id)->orderBy('id', 'desc');

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('phone_number');
             $table->string('password');
             $table->string('role')->default('staff');
+            $table->boolean('isAttendance')->default(0);
             // $table->rememberToken();
             $table->timestamps();
         });

@@ -7,7 +7,7 @@ use App\Models\customers;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class customer_attendances extends Model
+class customer_users extends Model
 {
 
     public $timestamps = false;
@@ -15,6 +15,6 @@ class customer_attendances extends Model
     use HasFactory;
     protected $fillable = [
         'customers_id',
-        'attendances_id',
+        'users_id',
     ];
 }

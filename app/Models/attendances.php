@@ -20,14 +20,4 @@ class attendances extends Model
         'created_at',
         'updated_at',
     ];
-
-    public function attendance_times()
-    {
-        return $this->hasMany(attendance_times::class);
-    }
-
-    public function customers()
-    {
-        return $this->belongsToMany(customers::class, 'customer_attendances', 'attendances_id', 'customers_id');
-    }
 }

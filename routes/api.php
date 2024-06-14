@@ -10,6 +10,8 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use Illuminate\Http\Request; // Add this line to import the Request class
+use App\Http\Controllers\Auth\UserGetController; // Add this line to import the UserGetController class
+use App\Http\Controllers\Auth\UserPostController; // Add this line to import the UserPostController class
 
 Route::get('/sanctum/csrf-cookie', function (Request $request) {
     return response()->json([
@@ -17,37 +19,58 @@ Route::get('/sanctum/csrf-cookie', function (Request $request) {
     ]);
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
 Route::post('/register', [RegisteredUserController::class, 'store'])
     ->middleware('guest');
-
-Route::post('/ownerRegister', [RegisteredUserController::class, 'ownerStore'])
-    ->middleware('auth.session');
-
-Route::post('/secondRegister', [RegisteredUserController::class, 'secondStore'])->middleware('auth.session');
-
 
 Route::post('/login', [AuthenticatedSessionController::class, 'store'])
     ->middleware('guest');
 
-Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
-    ->middleware('guest')
-    ->name('password.email');
+Route::prefix('/user')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
 
-Route::post('/reset-password', [NewPasswordController::class, 'store'])
-    ->middleware('guest')
-    ->name('password.store');
+        Route::post('/ownerRegister/{user_id}', [RegisteredUserController::class, 'ownerStore'])
+            ->middleware('auth.session');
 
-Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
-    ->middleware(['auth', 'signed', 'throttle:6,1'])
-    ->name('verification.verify');
+        //ユーザーが自分の個人情報を変更
+        Route::post('/updateUser/{user_id}', [UserPostController::class, 'updateUser'])
+            ->middleware('auth.session');
 
-Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
-    ->middleware(['auth', 'throttle:6,1'])
-    ->name('verification.send');
+        Route::post('/forgot-password/{user_id}', [PasswordResetLinkController::class, 'store'])
+            ->middleware('guest')
+            ->name('password.email');
 
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
-    ->middleware('auth.session');
+        Route::post('/reset-password/{user_id}', [NewPasswordController::class, 'store'])
+            ->middleware('guest')
+            ->name('password.store');
+
+        Route::get('/verify-email/{user_id}/{hash}', VerifyEmailController::class)
+            ->middleware(['auth', 'signed', 'throttle:6,1'])
+            ->name('verification.verify');
+
+        Route::post('/email/verification-notification/{user_id}', [EmailVerificationNotificationController::class, 'store'])
+            ->middleware(['auth', 'throttle:6,1'])
+            ->name('verification.send');
+
+        Route::post('/logout}', [AuthenticatedSessionController::class, 'destroy'])
+            ->middleware('auth.session');
+    });
+});
+
+
+
+Route::prefix('user/{owner_id}')->group(function () {
+
+    Route::middleware('auth:sanctum')->group(function () {
+
+        Route::get('/getUsers/{user_id}', [UserGetController::class, 'getUsers'])
+            ->middleware('auth.session');
+
+        Route::get('/showUser/{user_id}', [UserGetController::class, 'show'])
+            ->middleware('auth.session');
+
+        Route::post('/updatePermission/{user_id}', [UserPostController::class, 'updatePermission'])
+            ->middleware('auth.session');
+
+        Route::post('/secondRegister', [RegisteredUserController::class, 'secondStore'])->middleware('auth.session');
+    });
+});

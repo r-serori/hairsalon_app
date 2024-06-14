@@ -16,14 +16,14 @@ class attendance_times extends Model
         'end_time',
         'start_photo_path',
         'end_photo_path',
-        'attendance_id',
+        'user_id',
         'created_at',
         'updated_at',
     ];
 
 
-    public function attendances()
+    public function users()
     {
-        return $this->belongsTo(attendances::class);
+        return $this->belongsTo(User::class);
     }
 }

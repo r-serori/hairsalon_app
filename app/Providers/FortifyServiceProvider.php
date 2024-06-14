@@ -30,7 +30,7 @@ class FortifyServiceProvider extends ServiceProvider
     {
         // registerと一緒
         Fortify::createUsersUsing(CreateNewUser::class);
-        //プロフィール更新
+        //プロフィール更新  
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         //パスワード更新
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);

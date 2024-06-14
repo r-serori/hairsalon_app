@@ -38,9 +38,9 @@ class customers extends Model
         return $this->belongsToMany(hairstyles::class, 'hairstyle_customers');
     }
 
-    public function attendances()
+    public function users()
     {
-        return $this->belongsToMany(attendances::class, 'customer_attendances', 'customers_id', 'attendances_id');
+        return $this->belongsToMany(User::class, 'customer_users', 'customers_id', 'users_id');
     }
 
 

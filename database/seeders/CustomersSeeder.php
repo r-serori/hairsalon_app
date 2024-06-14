@@ -11,8 +11,8 @@ use App\Models\hairstyles;
 use App\Models\options;
 use App\Models\courses;
 use App\Models\merchandises;
-use App\Models\attendances;
-use App\Models\customer_attendances; // customer_attendance モデルを追加
+use App\Models\User;
+use App\Models\customer_users; // customer_user モデルを追加
 
 use Illuminate\Database\Seeder;
 
@@ -78,13 +78,13 @@ class CustomersSeeder extends Seeder
             }
 
             // ハンドリングする出席を取得
-            $attendances = attendances::whereIn('id', [1, 2])->get();
+            $users = User::whereIn('id', [1, 2])->get();
 
             // 中間テーブルにデータを追加
-            foreach ($attendances as $attendance) {
-                customer_attendances::create([
+            foreach ($users as $user) {
+                customer_users::create([
                     'customers_id' => $customer->id,
-                    'attendances_id' => $attendance->id,
+                    'users_id' => $user->id,
                 ]);
             }
         }

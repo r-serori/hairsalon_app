@@ -31,7 +31,6 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 Route::middleware("auth.session")->group(function () {
 
     Route::resource('attendances', AttendancesController::class);
-    // Route::get('attendances', [AttendancesController::class, 'index']);
     Route::post('attendances/{id}/update', [AttendancesController::class, 'update']);
     Route::post('attendances/{id}/delete', [AttendancesController::class, 'destroy']);
 
