@@ -13,7 +13,7 @@ use JSON;
 class AttendanceTimesController extends Controller
 {
 
-    public function selectedAttendanceTime($id, $yearMonth)
+    public function selectedAttendanceTime($ownerId, $id, $yearMonth)
     {
         try {
             if ($yearMonth !== "無し") {

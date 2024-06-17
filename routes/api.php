@@ -2,6 +2,7 @@
 
 <?php
 
+use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
@@ -12,6 +13,9 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use Illuminate\Http\Request; // Add this line to import the Request class
 use App\Http\Controllers\Auth\UserGetController; // Add this line to import the UserGetController class
 use App\Http\Controllers\Auth\UserPostController; // Add this line to import the UserPostController class
+use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Actions\Fortify\UpdateUserPassword;
+use App\Actions\Jetstream\DeleteUserMain;
 
 Route::middleware('api')->group(
     function () {
@@ -35,15 +39,17 @@ Route::middleware('api')->group(
 
                 Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
 
-                //ユーザーが自分の個人情報を変更
-                Route::post('/updateUser/{user_id}', [UserPostController::class, 'updateUser']);
+                Route::get('/showUser/{user_id}', [UserGetController::class, 'show']);
 
-                Route::post('/forgot-password/{user_id}', [PasswordResetLinkController::class, 'store'])
-                    ->middleware('guest')
+                //ユーザーが自分の個人情報を変更
+                Route::post('/updateUser/{user_id}', [UpdateUserProfileInformation::class, 'update']);
+                //ユーザーが自分のパスワードを変更
+                Route::post('/updateUserPassword/{user_id}', [UpdateUserPassword::class, 'update']);
+
+                Route::post('/forgotPassword/{user_id}', [PasswordResetLinkController::class, 'store'])
                     ->name('password.email');
 
-                Route::post('/reset-password/{user_id}', [NewPasswordController::class, 'store'])
-                    ->middleware('guest')
+                Route::post('/resetPassword/{user_id}', [ResetUserPassword::class, 'reset'])
                     ->name('password.store');
 
                 Route::get('/verify-email/{user_id}/{hash}', VerifyEmailController::class)
@@ -59,15 +65,15 @@ Route::middleware('api')->group(
         });
 
 
-        Route::prefix('user/{owner_id}')->group(function () {
+        Route::prefix('/user/{owner_id}')->group(function () {
 
             Route::get('/getUsers/{user_id}', [UserGetController::class, 'getUsers']);
-
-            Route::get('/showUser/{user_id}', [UserGetController::class, 'show']);
 
             Route::post('/updatePermission/{user_id}', [UserPostController::class, 'updatePermission']);
 
             Route::post('/staffRegister', [UserPostController::class, 'staffStore']);
+
+            Route::post('/deleteUser/{user_id}', [DeleteUserMain::class, 'delete']);
         });
     }
 );

@@ -29,80 +29,87 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\UserPostController;
 
-Route::middleware("auth.session")->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('web')->group(function () {
 
-    // Route::post('ownerRegister', [UserPostController::class, 'ownerStore']);
+        Route::get("/attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
+        Route::get("/attendance_times/images/endPhotos/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');
 
-    Route::resource('attendances', AttendancesController::class);
-    Route::post('attendances/{id}/update', [AttendancesController::class, 'update']);
-    Route::post('attendances/{id}/delete', [AttendancesController::class, 'destroy']);
+        Route::prefix('/{user_id}')->group(function () {
 
-    Route::get("attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
-    Route::get("attendance_times/images/endPhotos/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');
-    Route::get('images/selectedAttendanceTimes/{id}/{yearMonth}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
-    Route::get('firstAttendanceTimes/{id}/firstGet', [AttendanceTimesController::class, 'firstAttendanceTime']);
-    Route::post('attendance_times/pleaseEditEndTime', [AttendanceTimesController::class, 'pleaseEditEndTime']);
-    Route::post('attendance_times/{id}/delete', [AttendanceTimesController::class, 'destroy']);
-    Route::post('attendance_times/startTimeShot', [AttendanceTimesController::class, 'startTimeShot']);
-    Route::post('attendance_times/endTimeShot', [AttendanceTimesController::class, 'endTimeShot']);
-    Route::post('attendance_times/{id}/updateStartTime', [AttendanceTimesController::class, 'updateStartTime']);
-    Route::post('attendance_times/{id}/updateEndTime', [AttendanceTimesController::class, 'updateEndTime']);
+            // Route::post('ownerRegister', [UserPostController::class, 'ownerStore']);
 
+            Route::resource('/attendances', AttendancesController::class);
+            Route::post('/attendances/{id}/update', [AttendancesController::class, 'update']);
+            Route::post('/attendances/{id}/delete', [AttendancesController::class, 'destroy']);
 
-
-    Route::resource('customers', CustomersController::class);
-    Route::post('customers/{id}/update', [CustomersController::class, 'update']);
-    Route::post('customers/{id}/delete', [CustomersController::class, 'destroy']);
-
-
-    Route::resource('courses', CoursesController::class);
-    Route::post('courses/{id}/update', [CoursesController::class, 'update']);
-    Route::post('courses/{id}/delete', [CoursesController::class, 'destroy']);
-    Route::resource('options', OptionsController::class);
-    Route::post('options/{id}/update', [OptionsController::class, 'update']);
-    Route::post('options/{id}/delete', [OptionsController::class, 'destroy']);
-    Route::resource('merchandises', MerchandisesController::class);
-    Route::post('merchandises/{id}/update', [MerchandisesController::class, 'update']);
-    Route::post('merchandises/{id}/delete', [MerchandisesController::class, 'destroy']);
-    Route::resource('hairstyles', HairstylesController::class);
-    Route::post('hairstyles/{id}/update', [HairstylesController::class, 'update']);
-    Route::post('hairstyles/{id}/delete', [HairstylesController::class, 'destroy']);
-
-
-    Route::get('schedules/customers/selectGetYear', [SchedulesController::class, 'selectGetYear']);
-    Route::post('schedules/customers/double', [SchedulesController::class, 'double']);
-    Route::post('schedules/{id}/customers/doubleUpdate', [SchedulesController::class, 'doubleUpdate']);
-    Route::post('schedules/{id}/customers/customerOnlyUpdate', [SchedulesController::class, 'customerOnlyUpdate']);
-    Route::resource('schedules', SchedulesController::class);
-
-    Route::post('schedules/{id}/update', [SchedulesController::class, 'update']);
-    Route::post('schedules/{id}/delete', [SchedulesController::class, 'destroy']);
+            Route::get('/images/selectedAttendanceTimes/{id}/{yearMonth}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
+            Route::get('/firstAttendanceTimes/{id}/firstGet', [AttendanceTimesController::class, 'firstAttendanceTime']);
+            Route::post('/attendance_times/pleaseEditEndTime', [AttendanceTimesController::class, 'pleaseEditEndTime']);
+            Route::post('/attendance_times/{id}/delete', [AttendanceTimesController::class, 'destroy']);
+            Route::post('/attendance_times/startTimeShot', [AttendanceTimesController::class, 'startTimeShot']);
+            Route::post('/attendance_times/endTimeShot', [AttendanceTimesController::class, 'endTimeShot']);
+            Route::post('/attendance_times/{id}/updateStartTime', [AttendanceTimesController::class, 'updateStartTime']);
+            Route::post('/attendance_times/{id}/updateEndTime', [AttendanceTimesController::class, 'updateEndTime']);
 
 
 
-
-    Route::resource('daily_sales', DailySalesController::class);
-    Route::post('daily_sales/{id}/update', [DailySalesController::class, 'update']);
-    Route::post('daily_sales/{id}/delete', [DailySalesController::class, 'destroy']);
-    Route::resource('monthly_sales', MonthlySalesController::class);
-    Route::post('monthly_sales/{id}/update', [MonthlySalesController::class, 'update']);
-    Route::post('monthly_sales/{id}/delete', [MonthlySalesController::class, 'destroy']);
-    Route::resource('yearly_sales', YearlySalesController::class);
-    Route::post('yearly_sales/{id}/update', [YearlySalesController::class, 'update']);
-    Route::post('yearly_sales/{id}/delete', [YearlySalesController::class, 'destroy']);
-    Route::resource('stocks', StocksController::class);
-    Route::post('stocks/{id}/update', [StocksController::class, 'update']);
-    Route::post('stocks/{id}/delete', [StocksController::class, 'destroy']);
-    Route::resource('stock_categories', StockCategoriesController::class);
-    Route::post('stock_categories/{id}/update', [StockCategoriesController::class, 'update']);
-    Route::post('stock_categories/{id}/delete', [StockCategoriesController::class, 'destroy']);
+            Route::resource('/customers', CustomersController::class);
+            Route::post('/customers/{id}/update', [CustomersController::class, 'update']);
+            Route::post('/customers/{id}/delete', [CustomersController::class, 'destroy']);
 
 
-    Route::resource('course_customers', CourseCustomersController::class);
-    Route::resource('customer_attendances', CustomerAttendancesController::class);
-    Route::resource('hairstyle_customers', HairstyleCustomersController::class);
-    Route::resource('merchandise_customers', MerchandiseCustomersController::class);
-    Route::resource('option_customers', OptionCustomersController::class);
+            Route::resource('/courses', CoursesController::class);
+            Route::post('/courses/{id}/update', [CoursesController::class, 'update']);
+            Route::post('/courses/{id}/delete', [CoursesController::class, 'destroy']);
+            Route::resource('/options', OptionsController::class);
+            Route::post('/options/{id}/update', [OptionsController::class, 'update']);
+            Route::post('/options/{id}/delete', [OptionsController::class, 'destroy']);
+            Route::resource('/merchandises', MerchandisesController::class);
+            Route::post('/merchandises/{id}/update', [MerchandisesController::class, 'update']);
+            Route::post('/merchandises/{id}/delete', [MerchandisesController::class, 'destroy']);
+            Route::resource('/hairstyles', HairstylesController::class);
+            Route::post('/hairstyles/{id}/update', [HairstylesController::class, 'update']);
+            Route::post('/hairstyles/{id}/delete', [HairstylesController::class, 'destroy']);
+
+
+            Route::get('/schedules/customers/selectGetYear', [SchedulesController::class, 'selectGetYear']);
+            Route::post('/schedules/customers/double', [SchedulesController::class, 'double']);
+            Route::post('/schedules/{id}/customers/doubleUpdate', [SchedulesController::class, 'doubleUpdate']);
+            Route::post('/schedules/{id}/customers/customerOnlyUpdate', [SchedulesController::class, 'customerOnlyUpdate']);
+            Route::resource('/schedules', SchedulesController::class);
+
+            Route::post('/schedules/{id}/update', [SchedulesController::class, 'update']);
+            Route::post('/schedules/{id}/delete', [SchedulesController::class, 'destroy']);
+
+
+
+
+            Route::resource('/daily_sales', DailySalesController::class);
+            Route::post('/daily_sales/{id}/update', [DailySalesController::class, 'update']);
+            Route::post('/daily_sales/{id}/delete', [DailySalesController::class, 'destroy']);
+            Route::resource('monthly_sales', MonthlySalesController::class);
+            Route::post('/monthly_sales/{id}/update', [MonthlySalesController::class, 'update']);
+            Route::post('/monthly_sales/{id}/delete', [MonthlySalesController::class, 'destroy']);
+            Route::resource('/yearly_sales', YearlySalesController::class);
+            Route::post('/yearly_sales/{id}/update', [YearlySalesController::class, 'update']);
+            Route::post('/yearly_sales/{id}/delete', [YearlySalesController::class, 'destroy']);
+            Route::resource('/stocks', StocksController::class);
+            Route::post('/stocks/{id}/update', [StocksController::class, 'update']);
+            Route::post('/stocks/{id}/delete', [StocksController::class, 'destroy']);
+            Route::resource('/stock_categories', StockCategoriesController::class);
+            Route::post('/stock_categories/{id}/update', [StockCategoriesController::class, 'update']);
+            Route::post('/stock_categories/{id}/delete', [StockCategoriesController::class, 'destroy']);
+
+
+            Route::resource('/course_customers', CourseCustomersController::class);
+            Route::resource('/customer_attendances', CustomerAttendancesController::class);
+            Route::resource('/hairstyle_customers', HairstyleCustomersController::class);
+            Route::resource('/merchandise_customers', MerchandiseCustomersController::class);
+            Route::resource('/option_customers', OptionCustomersController::class);
+        });
+    });
 });
+
 
 // require __DIR__ . '/auth.php';

@@ -3,9 +3,11 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
+
 
 class ResetUserPassword implements ResetsUserPasswords
 {
@@ -16,7 +18,7 @@ class ResetUserPassword implements ResetsUserPasswords
      *
      * @param  array<string, string>  $input
      */
-    public function reset(User $user, array $input): void
+    public function reset($user, array $input): JsonResponse
     {
         Validator::make($input, [
             'password' => $this->passwordRules(),
@@ -25,5 +27,10 @@ class ResetUserPassword implements ResetsUserPasswords
         $user->forceFill([
             'password' => Hash::make($input['password']),
         ])->save();
+
+        return response()->json([
+            'resStatus' => 'success',
+            'message' => 'パスワードのリセットに成功しました!'
+        ], 200);
     }
 }

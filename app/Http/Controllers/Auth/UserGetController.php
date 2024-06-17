@@ -36,4 +36,22 @@ class UserGetController extends Controller
             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
+
+    public function show($user_id): JsonResponse
+    {
+        $user = User::where('id', $user_id)->first();
+
+        if (!empty($user)) {
+            return response()->json([
+                'resStatus' => 'success',
+                'message' => 'ユーザー情報を取得しました。',
+                'responseUser' => $user->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'),
+            ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+        } else {
+            return response()->json([
+                'resStatus' => 'error',
+                'message' => 'ユーザー情報がありません。',
+            ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+        }
+    }
 }

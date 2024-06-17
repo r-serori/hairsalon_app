@@ -38,11 +38,10 @@ class JetstreamServiceProvider extends ServiceProvider
             Permissions::ALL_PERMISSION,
         ]);
 
-        Jetstream::role(Roles::OWNER, 'Owner', [
+        Jetstream::role(Roles::OWNER, 'owner', [
             Permissions::ALL_PERMISSION,
             Permissions::OWNER_PERMISSION,
             Permissions::MANAGER_PERMISSION,
-
         ])->description('オーナー権限。全ての権限を持つ。');
 
         Jetstream::role(Roles::MANAGER, 'manager', [
