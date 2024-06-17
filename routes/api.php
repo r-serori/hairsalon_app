@@ -29,14 +29,11 @@ Route::middleware('api')->group(
 
         Route::middleware('auth:sanctum')->group(function () {
 
-
             Route::prefix('/user')->group(function () {
 
                 // Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
 
-
                 Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
-
 
                 //ユーザーが自分の個人情報を変更
                 Route::post('/updateUser/{user_id}', [UserPostController::class, 'updateUser']);
@@ -70,7 +67,7 @@ Route::middleware('api')->group(
 
             Route::post('/updatePermission/{user_id}', [UserPostController::class, 'updatePermission']);
 
-            Route::post('/secondRegister', [UserPostController::class, 'secondStore']);
+            Route::post('/staffRegister', [UserPostController::class, 'staffStore']);
         });
     }
 );

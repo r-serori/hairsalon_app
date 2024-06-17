@@ -32,8 +32,8 @@ class UserGetController extends Controller
                 'message' => 'ユーザー情報を取得しました。',
                 'responseUsers' => $users->map(function ($user) {
                     return $user->only(['id', 'name', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']);
-                })
-            ]);
+                }),
+            ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 }

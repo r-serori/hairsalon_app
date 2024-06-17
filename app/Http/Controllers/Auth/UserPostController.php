@@ -61,8 +61,10 @@ class UserPostController extends Controller
                         'resStatus' => "error",
                         "message" => "もう一度最初からやり直してください。",
                     ],
-                    404
-                );
+                    404,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json(
@@ -70,12 +72,14 @@ class UserPostController extends Controller
                     'resStatus' => "error",
                     "message" => $e->getMessage(),
                 ],
-                500
-            );
+                500,
+                [],
+                JSON_UNESCAPED_UNICODE
+            )->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
-    public function secondStore(Request $request): JsonResponse
+    public function staffStore(Request $request): JsonResponse
     {
         try {
 
@@ -89,6 +93,7 @@ class UserPostController extends Controller
                 ],
                 'role' => ['required', 'string', 'max:10'],
                 'isAttendance' => ['required', 'boolean'],
+                'owner_id' => ['required', 'integer', 'exists:owners,id'],
             ]);
 
             $userID = User::where('email', $request->email)->first();
@@ -99,7 +104,7 @@ class UserPostController extends Controller
                     response()->json([
                         "resStatus" => 'error',
                         'message' => 'メールアドレスが既に存在しています。',
-                    ], 400);
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 $user = User::create([
                     'name' => $request->name,
@@ -137,8 +142,10 @@ class UserPostController extends Controller
                         'responseUser' => $responseUser,
                         'responseStaff' => $staff,
                     ],
-                    200
-                );
+                    200,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             Log::error('ユーザー登録処理中にエラーが発生しました。');
@@ -146,7 +153,7 @@ class UserPostController extends Controller
             return response()->json([
                 "resStatus" => 'error',
                 'message' => 'ユーザー登録に失敗しました。',
-            ], 400);
+            ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 }

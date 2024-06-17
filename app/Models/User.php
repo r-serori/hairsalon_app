@@ -28,7 +28,8 @@ class User extends Authenticatable
         "email",
         'phone_number',
         "password",
-        "role"
+        "role",
+        "isAttendance"
     ];
 
     /**
@@ -40,6 +41,12 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    // 型キャストの設定
+    protected $casts = [
+        'isAttendance' => 'boolean',
+    ];
+
 
 
     public function attendance_times()

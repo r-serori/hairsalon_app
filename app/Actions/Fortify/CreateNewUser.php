@@ -48,7 +48,7 @@ class CreateNewUser implements CreatesNewUsers
                 'phone_number' => $input['phone_number'],
                 'password' => Hash::make($input['password']),
                 'role' => $input['role'],
-                'isAttendance' => $input['isAttendance'],
+                'isAttendance' => $input['isAttendance'] ? 1 : 0,
             ]);
 
             // ユーザーが作成された場合のレスポンス
@@ -64,9 +64,9 @@ class CreateNewUser implements CreatesNewUsers
 
             // ログイン処理
 
-            Auth::login($user);
+            // Auth::login($user);
 
-            Auth::guard('web')->login($user);
+            // Auth::guard('web')->login($user);
 
             return $user;
         } catch (\Exception $e) {

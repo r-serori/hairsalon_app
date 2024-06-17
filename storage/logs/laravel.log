@@ -6749,3 +6749,17 @@ Stack trace:
 #55 /Applications/MAMP/htdocs/hairsalon-app/server/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/M...')
 #56 {main}
 "} 
+[2024-06-17 10:25:20] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 10:27:44] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 11:24:29] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 11:30:28] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 11:36:30] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 11:41:33] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 12:00:59] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 12:10:01] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 12:23:27] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 12:25:42] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 12:33:22] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 12:34:22] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 12:35:03] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 
+[2024-06-17 12:45:01] local.INFO: ユーザー登録処理を開始します。 {"name":"testerOwner","email":"testerowner@hairsaron.com","phone_number":"08012345678","password":"password123","role":"オーナー","isAttendance":false,"password_confirmation":"password123"} 

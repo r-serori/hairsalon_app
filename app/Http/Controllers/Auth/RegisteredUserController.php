@@ -23,7 +23,7 @@ class RegisteredUserController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            Log::info('ユーザー登録処理を開始します。', $request);
+            Log::info('ユーザー登録処理を開始します。', $request->toArray());
 
             $input = $request->all();
 
