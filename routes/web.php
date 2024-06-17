@@ -27,8 +27,11 @@ use App\Http\Controllers\OptionCustomersController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\UserPostController;
 
 Route::middleware("auth.session")->group(function () {
+
+    // Route::post('ownerRegister', [UserPostController::class, 'ownerStore']);
 
     Route::resource('attendances', AttendancesController::class);
     Route::post('attendances/{id}/update', [AttendancesController::class, 'update']);

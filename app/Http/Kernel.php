@@ -63,6 +63,7 @@ class Kernel extends HttpKernel
             //プリロードされたアセットのリンクヘッダーを追加するためのミドルウェア
             //高速にページを表示するために使用
             // \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+            \App\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ],
         //apiミドルウェアグループ
         //CSRFトークンの検証、モデルのバインディング、フロントエンドリクエストの状態を確認、APIのスロットリング
@@ -75,6 +76,7 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\ThrottleRequests::class,
             //モデルのバインディング
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ],
     ];
 
@@ -86,8 +88,8 @@ class Kernel extends HttpKernel
         'auth' => \App\Http\Middleware\Authenticate::class,
         //平文での認証ミドルウェア　危ないので使用しない
         // 'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        //セッションでのユーザー認証の管理　一番強固な認証方法
-        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
+        //セッションでのユーザー認証の管理　一番強固な認証方法 、　クラス内にエラーが発生しているので、コメントアウト。　見直し必要
+        // 'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
         //キャッシュをヘッダーに含めるかどうか。ブラウザのキャッシュを有効にする
         'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
         //権限を付与しているかどうかを確認するミドルウェア

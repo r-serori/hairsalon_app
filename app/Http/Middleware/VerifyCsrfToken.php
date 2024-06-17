@@ -13,8 +13,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         'sanctum/csrf-cookie',
-        '/register',
-        '/login',
-
+        'api/register',
+        'api/login',
     ];
 }

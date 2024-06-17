@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Laravel\Fortify\Http\Requests\LoginRequest;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -30,7 +33,18 @@ class FortifyServiceProvider extends ServiceProvider
     {
         // registerと一緒
         Fortify::createUsersUsing(CreateNewUser::class);
-        //プロフィール更新  
+
+        // 認証の処理
+        //class AuthenticatedSessionControllerの AttemptToAuthenticate::classを上書き
+        Fortify::authenticateUsing(function (LoginRequest $request) {
+            $user = User::where('email', $request->email)->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                return $user;
+            }
+        });
+
+        //プロフィール更新
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         //パスワード更新
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);

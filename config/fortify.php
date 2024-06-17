@@ -157,4 +157,9 @@ return [
         ]),
     ],
 
+    'redirects' => [
+        'login' => '/dashboard',
+        'register' => '/registration-successful', // 登録成功時のリダイレクト先
+    ],
+
 ];

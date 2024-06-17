@@ -19,7 +19,8 @@ return [
     'paths' => [
         'api/*', 'sanctum/csrf-cookie',
         'csrf-token',
-        'login', 'login/*', 'register', 'register/*', 'dashboard', 'dashboard/*', 'logout', 'logout/*',
+        'login', 'login/*', 'register', 'register/*', 'dashboard', 'ownerRegister', 'ownerRegister/*',
+        'dashboard/*', 'logout', 'logout/*',
         'user', 'user/*', 'attendances', 'attendances/*',
         'attendance_times', 'attendance_times/*',
         'courses', 'courses/*',
@@ -60,7 +61,7 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers' => ['*'],
 
     'max_age' => 0,
 
