@@ -14,12 +14,17 @@ class options extends Model
         'id',
         'option_name',
         'price',
-        'created_at'
+        'owner_id'
     ];
 
 
     public function customers()
     {
         return $this->belongsToMany(customers::class, 'option_customers');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(owner::class, 'owner_id');
     }
 }

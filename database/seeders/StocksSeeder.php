@@ -23,6 +23,7 @@ class StocksSeeder extends Seeder
             'supplier' => '株式会社A',
             "notice" => "5",
             'stock_category_id' => 1,
+            'owner_id' => 1,
             'created_at' => now(),
             "updated_at" => now(),
         ]);
@@ -34,6 +35,7 @@ class StocksSeeder extends Seeder
             'supplier' => '株式会社B',
             "notice" => "10",
             'stock_category_id' => 2,
+            'owner_id' => 1,
             'created_at' => now(),
             "updated_at" => now(),
         ]);

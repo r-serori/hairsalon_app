@@ -19,11 +19,16 @@ class stocks extends Model
         'supplier',
         'notice',
         'stock_category_id',
-        'created_at'
+        'owner_id'
     ];
 
     public function stock_category()
     {
         return $this->belongsTo(stock_categories::class);
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(owner::class, 'owner_id');
     }
 }

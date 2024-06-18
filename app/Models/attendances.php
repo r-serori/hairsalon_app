@@ -17,7 +17,5 @@ class attendances extends Model
         'phone_number',
         'address',
         'isAttendance',
-        'created_at',
-        'updated_at',
     ];
 }

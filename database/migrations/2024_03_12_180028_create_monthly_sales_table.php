@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('year_month');
             $table->integer('monthly_sales');
+            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
             $table->timestamps();
         });
     }

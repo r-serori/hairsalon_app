@@ -14,7 +14,7 @@ class merchandises extends Model
         'id',
         'merchandise_name',
         'price',
-        'created_at'
+        'owner_id',
     ];
 
 
@@ -22,5 +22,10 @@ class merchandises extends Model
     public function customers()
     {
         return $this->belongsToMany(customers::class, 'merchandise_customers', 'merchandises_id', 'customers_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(owner::class, 'owner_id');
     }
 }

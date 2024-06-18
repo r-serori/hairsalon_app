@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use App\Models\stocks;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,12 +13,17 @@ class stock_categories extends Model
     protected $fillable = [
         'id',
         'category',
-        'created_at',
+        'owner_id',
     ];
 
-    
+
     public function stocks()
     {
         return $this->hasMany(stocks::class);
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(owner::class, 'owner_id');
     }
 }

@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('supplier')->nullable(); //仕入先
             $table->integer('notice');
             $table->foreignId('stock_category_id')->constrained('stock_categories')->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
             $table->timestamps();
         });
     }

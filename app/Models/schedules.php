@@ -16,13 +16,17 @@ class schedules extends Model
         "end_time",
         'allDay',
         'customers_id',
-        'created_at',
-        'updated_at',
+        'owner_id',
     ];
 
 
     public function customer()
     {
         return $this->belongsTo(customers::class);
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(owner::class, 'owner_id');
     }
 }

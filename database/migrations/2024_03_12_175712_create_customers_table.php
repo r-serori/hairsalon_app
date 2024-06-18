@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('customer_name', 100);
             $table->string('phone_number', 100)->nullable();
             $table->string('remarks', 300)->nullable();
+            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
             $table->timestamps();
         });
     }

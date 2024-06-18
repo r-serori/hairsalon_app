@@ -19,6 +19,7 @@ class MonthlySalesSeeder extends Seeder
             'year' => 2024,
             'month' => 3,
             'monthly_sales' => 211000,
+            'owner_id' => 1,
             'created_at' => now(),
         ]);
 
@@ -26,6 +27,7 @@ class MonthlySalesSeeder extends Seeder
             'year' => 2024,
             'month' => 4,
             'monthly_sales' => 250000,
+            'owner_id' => 1,
             'created_at' => now(),
         ]);
 
@@ -33,6 +35,7 @@ class MonthlySalesSeeder extends Seeder
             'year' => 2024,
             'month' => 5,
             'monthly_sales' => 300000,
+            'owner_id' => 1,
             'created_at' => now(),
         ]);
 
@@ -40,6 +43,7 @@ class MonthlySalesSeeder extends Seeder
             'year' => 2024,
             'month' => 6,
             'monthly_sales' => 350000,
+            'owner_id' => 1,
             'created_at' => now(),
         ]);
     }

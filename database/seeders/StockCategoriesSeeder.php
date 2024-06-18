@@ -18,11 +18,23 @@ class StockCategoriesSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\stock_categories::create(['category' => '化粧品']);
-        \App\Models\stock_categories::create(['category' => '頭髪系']);
-        \App\Models\stock_categories::create(['category' => '整髪料']);
-        \App\Models\stock_categories::create(['category' => 'カラー材']);
-        \App\Models\stock_categories::create(['category' => 'パーマ材']);
-        \App\Models\stock_categories::create(['category' => '顧客飲料']);
+        stock_categories::create([
+            'category' => '化粧品', 'owner_id' => 1,
+        ]);
+        stock_categories::create([
+            'category' => '頭髪系', 'owner_id' => 1,
+        ]);
+        stock_categories::create([
+            'category' => '整髪料', 'owner_id' => 1,
+        ]);
+        stock_categories::create([
+            'category' => 'カラー材', 'owner_id' => 1,
+        ]);
+        stock_categories::create([
+            'category' => 'パーマ材', 'owner_id' => 1,
+        ]);
+        stock_categories::create([
+            'category' => '顧客飲料', 'owner_id' => 1,
+        ]);
     }
 }

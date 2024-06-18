@@ -13,6 +13,7 @@ class hairstyles extends Model
     protected $fillable = [
 
         'hairstyle_name',
+        'owner_id',
     ];
 
 
@@ -20,5 +21,10 @@ class hairstyles extends Model
     public function customers()
     {
         return $this->belongsToMany(customers::class, 'hairstyle_customers', 'hairstyles_id', 'customers_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(owner::class, 'owner_id');
     }
 }

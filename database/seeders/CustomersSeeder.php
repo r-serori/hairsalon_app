@@ -31,6 +31,7 @@ class CustomersSeeder extends Seeder
                 'customer_name' => 'Customer ' . $i,
                 'phone_number' => '123456789' . $i,
                 'remarks' => 'Regular customer ' . $i,
+                'owner_id' => 1,
             ]);
 
             // ハンドリングするヘアスタイルを取得

@@ -27,6 +27,7 @@ class ScheduleSeeder extends Seeder
                 'end_time' => Carbon::now()->addHours(1)->addDay($i),
                 'allDay' => 0,
                 'customers_id' => $i,
+                'owner_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
@@ -38,6 +39,7 @@ class ScheduleSeeder extends Seeder
                 'end_time' => Carbon::now()->addHours(2)->addDay($i),
                 'allDay' => 0,
                 'customers_id' => $i,
+                'owner_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
@@ -49,6 +51,7 @@ class ScheduleSeeder extends Seeder
                 'end_time' => Carbon::now()->addHours(3)->addDay($i),
                 'allDay' => 0,
                 'customers_id' => $i,
+                'owner_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
@@ -60,6 +63,7 @@ class ScheduleSeeder extends Seeder
                 'end_time' => Carbon::now()->addHours(4)->addDay($i),
                 'allDay' => 0,
                 'customers_id' => $i,
+                'owner_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
@@ -71,6 +75,7 @@ class ScheduleSeeder extends Seeder
                 'end_time' => Carbon::now()->addHours(5)->addDay($i),
                 'allDay' => 0,
                 'customers_id' => $i,
+                'owner_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);
@@ -82,6 +87,7 @@ class ScheduleSeeder extends Seeder
                 'end_time' => Carbon::now()->addHours(6)->addDay($i),
                 'allDay' => 0,
                 'customers_id' => $i,
+                'owner_id' => 1,
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ]);

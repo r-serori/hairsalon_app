@@ -13,8 +13,11 @@ class yearly_sales extends Model
         'id',
         'year',
         'yearly_sales',
-        'created_at',
+        'owner_id',
     ];
 
-    
+    public function owner()
+    {
+        return $this->belongsTo(owner::class, 'owner_id');
+    }
 }

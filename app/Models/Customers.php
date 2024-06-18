@@ -14,8 +14,7 @@ class customers extends Model
         'customer_name',
         'phone_number',
         'remarks',
-        'created_at',
-        'updated_at',
+        'owner_id',
     ];
 
     public function courses()
@@ -43,9 +42,13 @@ class customers extends Model
         return $this->belongsToMany(User::class, 'customer_users', 'customers_id', 'users_id');
     }
 
-
     public function schedules()
     {
         return $this->hasMany(schedules::class, 'customers_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(owner::class, 'owner_id');
     }
 }

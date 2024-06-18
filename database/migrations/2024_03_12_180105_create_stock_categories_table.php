@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('stock_categories', function (Blueprint $table) {
             $table->id();
             $table->string('category');
+            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
             $table->timestamps();
         });
     }

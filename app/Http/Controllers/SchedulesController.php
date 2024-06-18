@@ -10,367 +10,430 @@ use App\Models\customers;
 use App\Models\options;
 use App\Models\merchandises;
 use App\Models\hairstyles;
-use App\Models\attendances;
+use App\Models\users;
 use App\Models\course_customers;
 use App\Models\option_customers;
 use App\Models\merchandise_customers;
 use App\Models\hairstyle_customers;
-use App\Models\customer_attendances;
+use App\Models\customer_users;
 use App\Models\customer_schedules;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Gate;
+use App\Enums\Permissions;
+use App\Models\User;
 
 class SchedulesController extends Controller
 {
-    public function index()
+    public function index($id)
     {
         try {
-            $currentYear = Carbon::now()->year;
+            if (Gate::allows(Permissions::ALL_PERMISSION)) {
 
-            $selectSchedules = schedules::whereRaw('DATE_FORMAT(start_time, "%Y") = ? OR DATE_FORMAT(start_time, "%Y") = ?', [$currentYear, $currentYear + 1])
-                ->get();
+                $currentYear = Carbon::now()->year;
 
-            $customers = customers::all();
+                $selectSchedules = schedules::whereRaw('DATE_FORMAT(start_time, "%Y") = ? OR DATE_FORMAT(start_time, "%Y") = ?', [$currentYear, $currentYear + 1])
+                    ->get();
 
-            $courses = courses::all();
+                $customers = customers::all();
 
-            $options = options::all();
+                $courses = courses::all();
 
-            $merchandises = merchandises::all();
+                $options = options::all();
 
-            $hairstyles = hairstyles::all();
+                $merchandises = merchandises::all();
 
-            $attendances = attendances::all();
+                $hairstyles = hairstyles::all();
 
-            $courseCustomer = course_customers::all();
+                $users = User::all();
 
-            $optionCustomer = option_customers::all();
+                $courseCustomer = course_customers::all();
 
-            $merchandiseCustomer = merchandise_customers::all();
+                $optionCustomer = option_customers::all();
 
-            $hairstyleCustomer = hairstyle_customers::all();
+                $merchandiseCustomer = merchandise_customers::all();
 
-            $attendanceCustomer = customer_attendances::all();
+                $hairstyleCustomer = hairstyle_customers::all();
 
-            if ($selectSchedules->isEmpty()) {
-                return response()->json([
-                    "resStatus" => "success",
-                    'message' =>
-                    '初めまして！新規作成ボタンからスケジュールを作成しましょう！',
-                    'schedules' => $selectSchedules,
-                    'customers' => $customers,
-                    'courses' => $courses,
-                    'options' => $options,
-                    'merchandises' => $merchandises,
-                    'hairstyles' => $hairstyles,
-                    'attendances' => $attendances,
-                    'course_customers' => $courseCustomer,
-                    'option_customers' => $optionCustomer,
-                    'merchandise_customers' => $merchandiseCustomer,
-                    'hairstyle_customers' => $hairstyleCustomer,
-                    'customer_attendances' => $attendanceCustomer,
-                ], 200);
+                $userCustomer = customer_users::all();
+
+                if ($selectSchedules->isEmpty()) {
+                    return response()->json([
+                        "resStatus" => "success",
+                        'message' =>
+                        '初めまして！新規作成ボタンからスケジュールを作成しましょう！',
+                        'schedules' => $selectSchedules,
+                        'customers' => $customers,
+                        'courses' => $courses,
+                        'options' => $options,
+                        'merchandises' => $merchandises,
+                        'hairstyles' => $hairstyles,
+                        'users' => $users,
+                        'course_customers' => $courseCustomer,
+                        'option_customers' => $optionCustomer,
+                        'merchandise_customers' => $merchandiseCustomer,
+                        'hairstyle_customers' => $hairstyleCustomer,
+                        'customer_users' => $userCustomer,
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else {
+
+                    return response()->json([
+                        "resStatus" => "success",
+                        'schedules' => $selectSchedules,
+                        'customers' => $customers,
+                        'courses' => $courses,
+                        'options' => $options,
+                        'merchandises' => $merchandises,
+                        'hairstyles' => $hairstyles,
+                        'users' => $users,
+                        'course_customers' => $courseCustomer,
+                        'option_customers' => $optionCustomer,
+                        'merchandise_customers' => $merchandiseCustomer,
+                        'hairstyle_customers' => $hairstyleCustomer,
+                        'customer_users' => $userCustomer,
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
             } else {
-
                 return response()->json([
-                    "resStatus" => "success",
-                    'schedules' => $selectSchedules,
-                    'customers' => $customers,
-                    'courses' => $courses,
-                    'options' => $options,
-                    'merchandises' => $merchandises,
-                    'hairstyles' => $hairstyles,
-                    'attendances' => $attendances,
-                    'course_customers' => $courseCustomer,
-                    'option_customers' => $optionCustomer,
-                    'merchandise_customers' => $merchandiseCustomer,
-                    'hairstyle_customers' => $hairstyleCustomer,
-                    'customer_attendances' => $attendanceCustomer,
-                ], 200);
+                    "resStatus" => "error",
+                    'message' =>
+                    '権限がありません。'
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
                 'スケジュールが見つかりません。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
-    public function selectGetYear(Request $request)
+    public function selectGetYear(Request $request, $id)
     {
         try {
-            $selectGetYear = $request->year;
+            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+                $selectGetYear = $request->year;
 
-            $selectSchedules = schedules::whereRaw('DATA_FORMAT(start_time, "%Y") = ?', [$selectGetYear])
-                ->get();
+                $selectSchedules = schedules::whereRaw('DATA_FORMAT(start_time, "%Y") = ?', [$selectGetYear])
+                    ->get();
 
-            $customers = customers::all();
+                $customers = customers::all();
 
-            $courses = courses::all();
+                $courses = courses::all();
 
-            $options = options::all();
+                $options = options::all();
 
-            $merchandises = merchandises::all();
+                $merchandises = merchandises::all();
 
-            $hairstyles = hairstyles::all();
+                $hairstyles = hairstyles::all();
 
-            $attendances = attendances::all();
+                $users = User::all();
 
-            $courseCustomer = course_customers::all();
+                $courseCustomer = course_customers::all();
 
-            $optionCustomer = option_customers::all();
+                $optionCustomer = option_customers::all();
 
-            $merchandiseCustomer = merchandise_customers::all();
+                $merchandiseCustomer = merchandise_customers::all();
 
-            $hairstyleCustomer = hairstyle_customers::all();
+                $hairstyleCustomer = hairstyle_customers::all();
 
-            $attendanceCustomer = customer_attendances::all();
+                $userCustomer = customer_users::all();
 
-            return response()->json([
-                "resStatus" => "success",
-                'schedules' => $selectSchedules,
-                'customers' => $customers,
-                'courses' => $courses,
-                'options' => $options,
-                'merchandises' => $merchandises,
-                'hairstyles' => $hairstyles,
-                'attendances' => $attendances,
-                'course_customers' => $courseCustomer,
-                'option_customers' => $optionCustomer,
-                'merchandise_customers' => $merchandiseCustomer,
-                'hairstyle_customers' => $hairstyleCustomer,
-                'customer_attendances' => $attendanceCustomer,
-            ], 200);
+                return response()->json([
+                    "resStatus" => "success",
+                    'schedules' => $selectSchedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'users' => $users,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_users' => $userCustomer,
+                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            } else {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' =>
+                    '権限がありません。'
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
                 'スケジュールが見つかりません。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $id)
     {
         try {
-            $validatedData = $request->validate([
-                'title' => 'nullable',
-                'start_time' => 'nullable',
-                'end_time' => 'nullable',
-                'allDay' =>
-                'nullable|in:0,1',
-                'customers_id' => 'nullable',
-                'customers_id.*' => 'nullable|integer|exists:customers,id',
-            ]);
+            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+                $validatedData = $request->validate([
+                    'title' => 'nullable',
+                    'start_time' => 'nullable',
+                    'end_time' => 'nullable',
+                    'allDay' =>
+                    'nullable|in:0,1',
+                    'customers_id' => 'nullable',
+                    'customers_id.*' => 'nullable|integer|exists:customers,id',
+                ]);
 
-            $schedule = schedules::create([
-                'title' => $validatedData['title'],
-                'start_time' => $validatedData['start_time'],
-                'end_time' => $validatedData['end_time'],
-                'allDay' => $validatedData['allDay'],
-            ]);
+                $schedule = schedules::create([
+                    'title' => $validatedData['title'],
+                    'start_time' => $validatedData['start_time'],
+                    'end_time' => $validatedData['end_time'],
+                    'allDay' => $validatedData['allDay'],
+                ]);
 
-            $customerId = $validatedData['customers_id'];
+                $customerId = $validatedData['customers_id'];
 
-            // if ($customerId !== null && $customerId !== 0) {
-            //     $customerSchedule =  $schedule->customer()->sync([$customerId]);
+                // if ($customerId !== null && $customerId !== 0) {
+                //     $customerSchedule =  $schedule->customer()->sync([$customerId]);
 
-            //     return response()->json([
-            //         "resStatus" => "success",
-            //         'schedule' => $schedule,
-            //         'customerSchedule' => $customerSchedule
+                //     return response()->json([
+                //         "resStatus" => "success",
+                //         'schedule' => $schedule,
+                //         'customerSchedule' => $customerSchedule
 
-            //     ], 200);
-            // } else {
-            return response()->json([
-                "resStatus" => "success",
-                'schedule' => $schedule,
-            ], 200);
-            // }
+                //     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                // } else {
+                return response()->json([
+                    "resStatus" => "success",
+                    'schedule' => $schedule,
+                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            } else {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' =>
+                    '権限がありません。'
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
                 'スケジュールの作成に失敗しました。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
-    public function show($id)
-    {
-        try {
-            $schedule = schedules::find($id);
+    // public function show($id)
+    // {
+    //     try {
+    //         if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+    //             $schedule = schedules::find($id);
 
-            return response()->json([
-                "resStatus" => "success",
-                'schedule' => $schedule
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                "resStatus" => "error",
-                'message' =>
-                'スケジュールが見つかりません。'
-            ], 500);
-        }
-    }
+    //             return response()->json([
+    //                 "resStatus" => "success",
+    //                 'schedule' => $schedule
+    //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    //         } else {
+    //             return response()->json([
+    //                 "resStatus" => "error",
+    //                 'message' =>
+    //                 '権限がありません。'
+    //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    //         }
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             "resStatus" => "error",
+    //             'message' =>
+    //             'スケジュールが見つかりません。'
+    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    //     }
+    // }
 
 
     public function update(Request $request, $id)
     {
         try {
-            $validatedData = $request->validate([
-                'Sid' => 'required|integer|exists:schedules,id',
-                'title' => 'nullable',
-                'start_time' => 'nullable',
-                'end_time' => 'nullable',
-                'allDay' => 'required',
-            ]);
+            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+                $validatedData = $request->validate([
+                    'Sid' => 'required|integer|exists:schedules,id',
+                    'title' => 'nullable',
+                    'start_time' => 'nullable',
+                    'end_time' => 'nullable',
+                    'allDay' => 'required',
+                ]);
 
-            $schedule = schedules::find($validatedData['Sid']);
-            // $schedule = schedules::find($id);
+                $schedule = schedules::find($validatedData['Sid']);
+                // $schedule = schedules::find($id);
 
-            $schedule->title = $validatedData['title'];
-            $schedule->start_time = $validatedData['start_time'];
-            $schedule->end_time = $validatedData['end_time'];
-            $schedule->allDay = $validatedData['allDay'];
+                $schedule->title = $validatedData['title'];
+                $schedule->start_time = $validatedData['start_time'];
+                $schedule->end_time = $validatedData['end_time'];
+                $schedule->allDay = $validatedData['allDay'];
 
 
-            $schedule->save();
+                $schedule->save();
 
-            return response()->json(
-                [
-                    "resStatus" => "success",
-                    "schedule" => $schedule
-                ],
-                200
-            );
+                return response()->json(
+                    [
+                        "resStatus" => "success",
+                        "schedule" => $schedule
+                    ],
+                    200,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
+            } else {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' =>
+                    '権限がありません。'
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
                 'スケジュールが見つかりません。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
     public function destroy($id)
     {
         try {
-            $schedule = schedules::find($id);
-            if (!$schedule) {
+            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+                $schedule = schedules::find($id);
+                if (!$schedule) {
+                    return response()->json([
+                        "resStatus" => "error",
+                        'message' =>
+                        'スケジュールが見つかりません。'
+                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $schedule->delete();
+                return response()->json([
+                    "resStatus" => "success",
+                    "deleteId" => $id
+                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            } else {
                 return response()->json([
                     "resStatus" => "error",
                     'message' =>
-                    'スケジュールが見つかりません。'
-                ], 500);
+                    '権限がありません。'
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
-
-            $schedule->delete();
-            return response()->json([
-                "resStatus" => "success",
-                "deleteId" => $id
-            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
                 'スケジュールの削除に失敗しました。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
     public function double(Request $request)
     {
         try {
-            $validatedData = $request->validate([
-                'customer_name' => 'required',
-                'phone_number' => 'nullable',
-                'remarks' => 'nullable',
-                'courses_id' => 'nullable|array',
-                'courses_id.*' => 'nullable|integer|exists:courses,id',
-                'options_id' => 'nullable|array',
-                'options_id.*' => 'nullable|integer|exists:options,id',
-                'merchandises_id' => 'nullable|array',
-                'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
-                'hairstyles_id' => 'nullable|array',
-                'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
-                'attendances_id' => 'nullable|array',
-                'attendances_id.*' => 'nullable|integer|exists:attendances,id',
-                'title' => 'nullable',
-                'start_time' => 'nullable',
-                'end_time' => 'nullable',
-                'allDay' => 'required',
-                'customers_id' => 'nullable',
-            ]);
+            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+                $validatedData = $request->validate([
+                    'customer_name' => 'required',
+                    'phone_number' => 'nullable',
+                    'remarks' => 'nullable',
+                    'courses_id' => 'nullable|array',
+                    'courses_id.*' => 'nullable|integer|exists:courses,id',
+                    'options_id' => 'nullable|array',
+                    'options_id.*' => 'nullable|integer|exists:options,id',
+                    'merchandises_id' => 'nullable|array',
+                    'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
+                    'hairstyles_id' => 'nullable|array',
+                    'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
+                    'users_id' => 'nullable|array',
+                    'users_id.*' => 'nullable|integer|exists:users,id',
+                    'title' => 'nullable',
+                    'start_time' => 'nullable',
+                    'end_time' => 'nullable',
+                    'allDay' => 'required',
+                    'customers_id' => 'nullable',
+                ]);
 
 
-            // 顧客を作成
-            $customer = customers::create([
-                'customer_name' => $validatedData['customer_name'],
-                'phone_number' => $validatedData['phone_number'],
-                'remarks' => $validatedData['remarks'],
-            ]);
+                // 顧客を作成
+                $customer = customers::create([
+                    'customer_name' => $validatedData['customer_name'],
+                    'phone_number' => $validatedData['phone_number'],
+                    'remarks' => $validatedData['remarks'],
+                ]);
 
-            // 中間テーブルにデータを挿入
-            $courseIds = $validatedData['courses_id'];
-            $optionIds = $validatedData['options_id'];
-            $merchandiseIds = $validatedData['merchandises_id'];
-            $hairstyleIds = $validatedData['hairstyles_id'];
-            $attendanceIds = $validatedData['attendances_id'];
-
-
-            $customer->courses()->sync($courseIds);
-            $customer->options()->sync($optionIds);
-            $customer->merchandises()->sync($merchandiseIds);
-            $customer->hairstyles()->sync($hairstyleIds);
-            $customer->attendances()->sync($attendanceIds);
-
-            $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
-
-            $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
-
-            $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
-
-            $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
-
-            $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
+                // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['courses_id'];
+                $optionIds = $validatedData['options_id'];
+                $merchandiseIds = $validatedData['merchandises_id'];
+                $hairstyleIds = $validatedData['hairstyles_id'];
+                $userIds = $validatedData['users_id'];
 
 
-            $validatedData = $request->validate([
-                'title' => 'nullable',
-                'start_time' => 'nullable',
-                'end_time' => 'nullable',
-                'allDay' => 'required',
-            ]);
+                $customer->courses()->sync($courseIds);
+                $customer->options()->sync($optionIds);
+                $customer->merchandises()->sync($merchandiseIds);
+                $customer->hairstyles()->sync($hairstyleIds);
+                $customer->users()->sync($userIds);
 
-            $schedule = schedules::create([
-                'title' => $validatedData['title'],
-                'start_time' => $validatedData['start_time'],
-                'end_time' => $validatedData['end_time'],
-                'allDay' => $validatedData['allDay'],
-                'customers_id' => $customer->id,
-            ]);
+                $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+
+                $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+
+                $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+
+                $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+
+                $userCustomer = customer_users::where('customers_id', $customer->id)->get();
 
 
-            return response()->json(
-                [
-                    "resStatus" => "success",
-                    "customer" => $customer,
-                    "schedule" => $schedule,
-                    "course_customers" => $courseCustomer,
-                    "option_customers" => $optionCustomer,
-                    "merchandise_customers" => $merchandiseCustomer,
-                    "hairstyle_customers" => $hairstyleCustomer,
-                    "customer_attendances" => $attendanceCustomer,
-                ],
-                200
-            );
+                $validatedData = $request->validate([
+                    'title' => 'nullable',
+                    'start_time' => 'nullable',
+                    'end_time' => 'nullable',
+                    'allDay' => 'required',
+                ]);
+
+                $schedule = schedules::create([
+                    'title' => $validatedData['title'],
+                    'start_time' => $validatedData['start_time'],
+                    'end_time' => $validatedData['end_time'],
+                    'allDay' => $validatedData['allDay'],
+                    'customers_id' => $customer->id,
+                ]);
+
+
+                return response()->json(
+                    [
+                        "resStatus" => "success",
+                        "customer" => $customer,
+                        "schedule" => $schedule,
+                        "course_customers" => $courseCustomer,
+                        "option_customers" => $optionCustomer,
+                        "merchandise_customers" => $merchandiseCustomer,
+                        "hairstyle_customers" => $hairstyleCustomer,
+                        "customer_users" => $userCustomer,
+                    ],
+                    200,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
+            } else {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' =>
+                    '権限がありません。'
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
                 'スケジュールと顧客情報の作成に失敗しました。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
@@ -379,93 +442,103 @@ class SchedulesController extends Controller
     public function doubleUpdate(Request $request, $id)
     {
         try {
-            $validatedData = $request->validate([
-                'Sid' => 'required|integer|exists:schedules,id',
-                'customer_name' => 'required',
-                'phone_number' => 'nullable',
-                'remarks' => 'nullable',
-                'courses_id' => 'nullable|array',
-                'courses_id.*' => 'nullable|integer|exists:courses,id',
-                'options_id' => 'nullable|array',
-                'options_id.*' => 'nullable|integer|exists:options,id',
-                'merchandises_id' => 'nullable|array',
-                'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
-                'hairstyles_id' => 'nullable|array',
-                'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
-                'attendances_id' => 'nullable|array',
-                'attendances_id.*' => 'nullable|integer|exists:attendances,id',
-                'title' => 'nullable',
-                'start_time' => 'nullable',
-                'end_time' => 'nullable',
-                'allDay' => 'required',
-                'customers_id' => 'required',
+            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+                $validatedData = $request->validate([
+                    'Sid' => 'required|integer|exists:schedules,id',
+                    'customer_name' => 'required',
+                    'phone_number' => 'nullable',
+                    'remarks' => 'nullable',
+                    'courses_id' => 'nullable|array',
+                    'courses_id.*' => 'nullable|integer|exists:courses,id',
+                    'options_id' => 'nullable|array',
+                    'options_id.*' => 'nullable|integer|exists:options,id',
+                    'merchandises_id' => 'nullable|array',
+                    'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
+                    'hairstyles_id' => 'nullable|array',
+                    'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
+                    'users_id' => 'nullable|array',
+                    'users_id.*' => 'nullable|integer|exists:users,id',
+                    'title' => 'nullable',
+                    'start_time' => 'nullable',
+                    'end_time' => 'nullable',
+                    'allDay' => 'required',
+                    'customers_id' => 'required',
 
-            ]);
+                ]);
 
-            $customerId = $validatedData['customers_id'];
+                $customerId = $validatedData['customers_id'];
 
-            $customer = customers::find($customerId);
+                $customer = customers::find($customerId);
 
-            $customer->customer_name = $validatedData['customer_name'];
-            $customer->phone_number = $validatedData['phone_number'];
-            $customer->remarks = $validatedData['remarks'];
-
-
-            // 中間テーブルにデータを挿入
-            $courseIds = $validatedData['courses_id'];
-            $optionIds = $validatedData['options_id'];
-            $merchandiseIds = $validatedData['merchandises_id'];
-            $hairstyleIds = $validatedData['hairstyles_id'];
-            $attendanceIds = $validatedData['attendances_id'];
-
-            $customer->courses()->sync($courseIds);
-            $customer->options()->sync($optionIds);
-            $customer->merchandises()->sync($merchandiseIds);
-            $customer->hairstyles()->sync($hairstyleIds);
-            $customer->attendances()->sync($attendanceIds);
-
-            $customer->save();
-
-            $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
-
-            $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
-
-            $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
-
-            $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
-
-            $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
+                $customer->customer_name = $validatedData['customer_name'];
+                $customer->phone_number = $validatedData['phone_number'];
+                $customer->remarks = $validatedData['remarks'];
 
 
-            $schedule = schedules::find($validatedData['Sid']);
+                // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['courses_id'];
+                $optionIds = $validatedData['options_id'];
+                $merchandiseIds = $validatedData['merchandises_id'];
+                $hairstyleIds = $validatedData['hairstyles_id'];
+                $userIds = $validatedData['users_id'];
 
-            $schedule->title = $validatedData['title'];
-            $schedule->start_time = $validatedData['start_time'];
-            $schedule->end_time = $validatedData['end_time'];
-            $schedule->allDay = $validatedData['allDay'];
-            $schedule->customers_id = $customerId;
+                $customer->courses()->sync($courseIds);
+                $customer->options()->sync($optionIds);
+                $customer->merchandises()->sync($merchandiseIds);
+                $customer->hairstyles()->sync($hairstyleIds);
+                $customer->users()->sync($userIds);
 
-            $schedule->save();
+                $customer->save();
 
-            return response()->json(
-                [
-                    "resStatus" => "success",
-                    "customer" => $customer,
-                    "schedule" => $schedule,
-                    "course_customers" => $courseCustomer,
-                    "option_customers" => $optionCustomer,
-                    "merchandise_customers" => $merchandiseCustomer,
-                    "hairstyle_customers" => $hairstyleCustomer,
-                    "customer_attendances" => $attendanceCustomer,
-                ],
-                200
-            );
+                $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+
+                $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+
+                $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+
+                $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+
+                $userCustomer = customer_users::where('customers_id', $customer->id)->get();
+
+
+                $schedule = schedules::find($validatedData['Sid']);
+
+                $schedule->title = $validatedData['title'];
+                $schedule->start_time = $validatedData['start_time'];
+                $schedule->end_time = $validatedData['end_time'];
+                $schedule->allDay = $validatedData['allDay'];
+                $schedule->customers_id = $customerId;
+
+                $schedule->save();
+
+                return response()->json(
+                    [
+                        "resStatus" => "success",
+                        "customer" => $customer,
+                        "schedule" => $schedule,
+                        "course_customers" => $courseCustomer,
+                        "option_customers" => $optionCustomer,
+                        "merchandise_customers" => $merchandiseCustomer,
+                        "hairstyle_customers" => $hairstyleCustomer,
+                        "customer_users" => $userCustomer,
+                    ],
+                    200,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
+            } else {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' =>
+                    '権限がありません。'
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
                 'スケジュールと顧客情報の更新に失敗しました。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
@@ -473,87 +546,97 @@ class SchedulesController extends Controller
     public function customerOnlyUpdate(Request $request, $id)
     {
         try {
-            $validatedData = $request->validate([
-                'customer_name' => 'required',
-                'phone_number' => 'nullable',
-                'remarks' => 'nullable',
-                'courses_id' => 'nullable|array',
-                'courses_id.*' => 'nullable|integer|exists:courses,id',
-                'options_id' => 'nullable|array',
-                'options_id.*' => 'nullable|integer|exists:options,id',
-                'merchandises_id' => 'nullable|array',
-                'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
-                'hairstyles_id' => 'nullable|array',
-                'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
-                'attendances_id' => 'nullable|array',
-                'attendances_id.*' => 'nullable|integer|exists:attendances,id',
-                'title' => 'nullable',
-                'start_time' => 'nullable',
-                'end_time' => 'nullable',
-                'allDay' => 'required',
-                'customers_id' => 'required'
-            ]);
+            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+                $validatedData = $request->validate([
+                    'customer_name' => 'required',
+                    'phone_number' => 'nullable',
+                    'remarks' => 'nullable',
+                    'courses_id' => 'nullable|array',
+                    'courses_id.*' => 'nullable|integer|exists:courses,id',
+                    'options_id' => 'nullable|array',
+                    'options_id.*' => 'nullable|integer|exists:options,id',
+                    'merchandises_id' => 'nullable|array',
+                    'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
+                    'hairstyles_id' => 'nullable|array',
+                    'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
+                    'users_id' => 'nullable|array',
+                    'users_id.*' => 'nullable|integer|exists:users,id',
+                    'title' => 'nullable',
+                    'start_time' => 'nullable',
+                    'end_time' => 'nullable',
+                    'allDay' => 'required',
+                    'customers_id' => 'required'
+                ]);
 
-            $customerId = $validatedData['customers_id'];
+                $customerId = $validatedData['customers_id'];
 
-            $customer = customers::find($customerId);
+                $customer = customers::find($customerId);
 
-            $customer->customer_name = $validatedData['customer_name'];
-            $customer->phone_number = $validatedData['phone_number'];
-            $customer->remarks = $validatedData['remarks'];
+                $customer->customer_name = $validatedData['customer_name'];
+                $customer->phone_number = $validatedData['phone_number'];
+                $customer->remarks = $validatedData['remarks'];
 
-            // 中間テーブルにデータを挿入
-            $courseIds = $validatedData['courses_id'];
-            $optionIds = $validatedData['options_id'];
-            $merchandiseIds = $validatedData['merchandises_id'];
-            $hairstyleIds = $validatedData['hairstyles_id'];
-            $attendanceIds = $validatedData['attendances_id'];
+                // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['courses_id'];
+                $optionIds = $validatedData['options_id'];
+                $merchandiseIds = $validatedData['merchandises_id'];
+                $hairstyleIds = $validatedData['hairstyles_id'];
+                $userIds = $validatedData['users_id'];
 
-            $courseCustomer = $customer->courses()->sync($courseIds);
-            $optionCustomer = $customer->options()->sync($optionIds);
-            $merchandiseCustomer = $customer->merchandises()->sync($merchandiseIds);
-            $hairstyleCustomer = $customer->hairstyles()->sync($hairstyleIds);
-            $attendanceCustomer = $customer->attendances()->sync($attendanceIds);
+                $courseCustomer = $customer->courses()->sync($courseIds);
+                $optionCustomer = $customer->options()->sync($optionIds);
+                $merchandiseCustomer = $customer->merchandises()->sync($merchandiseIds);
+                $hairstyleCustomer = $customer->hairstyles()->sync($hairstyleIds);
+                $userCustomer = $customer->users()->sync($userIds);
 
-            $customer->save();
+                $customer->save();
 
-            $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+                $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
 
-            $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+                $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
 
-            $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+                $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
 
-            $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+                $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
 
-            $attendanceCustomer = customer_attendances::where('customers_id', $customer->id)->get();
+                $userCustomer = customer_users::where('customers_id', $customer->id)->get();
 
-            $schedule = schedules::create([
-                'title' => $validatedData['title'],
-                'start_time' => $validatedData['start_time'],
-                'end_time' => $validatedData['end_time'],
-                'allDay' => $validatedData['allDay'],
-                'customers_id' => $customerId,
-            ]);
+                $schedule = schedules::create([
+                    'title' => $validatedData['title'],
+                    'start_time' => $validatedData['start_time'],
+                    'end_time' => $validatedData['end_time'],
+                    'allDay' => $validatedData['allDay'],
+                    'customers_id' => $customerId,
+                ]);
 
-            return response()->json(
-                [
-                    "resStatus" => "success",
-                    "customer" => $customer,
-                    "schedule" => $schedule,
-                    "course_customers" => $courseCustomer,
-                    "option_customers" => $optionCustomer,
-                    "merchandise_customers" => $merchandiseCustomer,
-                    "hairstyle_customers" => $hairstyleCustomer,
-                    "customer_attendances" => $attendanceCustomer,
-                ],
-                200
-            );
+                return response()->json(
+                    [
+                        "resStatus" => "success",
+                        "customer" => $customer,
+                        "schedule" => $schedule,
+                        "course_customers" => $courseCustomer,
+                        "option_customers" => $optionCustomer,
+                        "merchandise_customers" => $merchandiseCustomer,
+                        "hairstyle_customers" => $hairstyleCustomer,
+                        "customer_users" => $userCustomer,
+                    ],
+                    200,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
+            } else {
+                return response()->json([
+                    "resStatus" => "error",
+                    'message' =>
+                    '権限がありません。'
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
         } catch (\Exception $e) {
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
                 'スケジュールと顧客情報の更新に失敗しました。'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 }

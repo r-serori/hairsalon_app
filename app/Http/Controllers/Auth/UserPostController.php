@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Illuminate\Support\Facades\Gate;
+use App\Enums\Permissions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
@@ -13,10 +15,7 @@ use App\Models\staff;
 
 class UserPostController extends Controller
 {
-    public function index(Request $request): JsonResponse
-    {
-        return response()->json($request->user());
-    }
+
 
 
     public function ownerStore(Request $request): JsonResponse
@@ -82,70 +81,77 @@ class UserPostController extends Controller
     public function staffStore(Request $request): JsonResponse
     {
         try {
+            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
 
 
-            $request->validate([
-                'name' => ['required', 'string', 'max:50'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                'phone_number' => ['required', 'string', 'max:13'],
-                'password' => [
-                    'required',
-                ],
-                'role' => ['required', 'string', 'max:10'],
-                'isAttendance' => ['required', 'boolean'],
-                'owner_id' => ['required', 'integer', 'exists:owners,id'],
-            ]);
-
-            $userID = User::where('email', $request->email)->first();
-
-
-            if ($userID) {
-                return
-                    response()->json([
-                        "resStatus" => 'error',
-                        'message' => 'メールアドレスが既に存在しています。',
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'phone_number' => $request->phone_number,
-                    'password' => Hash::make($request->password),
-                    'role' => $request->role,
-                    'isAttendance' => $request->isAttendance,
-                ]);
-
-                // event(new Registered($user));
-
-                // Auth::login($user);
-
-                $staff = staff::create([
-                    'position' => $request->role,
-                    'user_id' => $user->id,
-                    'owner_id' => $request->owner_id,
-                ]);
-
-                $responseUser = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'phone_number' => $user->phone_number,
-                    'role' => $user->role,
-                    'isAttendance' => $user->isAttendance,
-                    'created_at' => $user->created_at,
-                    'updated_at' => $user->updated_at,
-                ];
-                return response()->json(
-                    [
-                        'resStatus' => "success",
-                        'message' => 'スタッフ用ユーザー登録に成功しました!',
-                        'responseUser' => $responseUser,
-                        'responseStaff' => $staff,
+                $request->validate([
+                    'name' => ['required', 'string', 'max:50'],
+                    'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+                    'phone_number' => ['required', 'string', 'max:13'],
+                    'password' => [
+                        'required',
                     ],
-                    200,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
+                    'role' => ['required', 'string', 'max:10'],
+                    'isAttendance' => ['required', 'boolean'],
+                    'owner_id' => ['required', 'integer', 'exists:owners,id'],
+                ]);
+
+                $userID = User::where('email', $request->email)->first();
+
+
+                if ($userID) {
+                    return
+                        response()->json([
+                            "resStatus" => 'error',
+                            'message' => 'メールアドレスが既に存在しています。',
+                        ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else {
+                    $user = User::create([
+                        'name' => $request->name,
+                        'email' => $request->email,
+                        'phone_number' => $request->phone_number,
+                        'password' => Hash::make($request->password),
+                        'role' => $request->role,
+                        'isAttendance' => $request->isAttendance,
+                    ]);
+
+                    // event(new Registered($user));
+
+                    // Auth::login($user);
+
+                    $staff = staff::create([
+                        'position' => $request->role,
+                        'user_id' => $user->id,
+                        'owner_id' => $request->owner_id,
+                    ]);
+
+                    $responseUser = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'phone_number' => $user->phone_number,
+                        'role' => $user->role,
+                        'isAttendance' => $user->isAttendance,
+                        'created_at' => $user->created_at,
+                        'updated_at' => $user->updated_at,
+                    ];
+                    return response()->json(
+                        [
+                            'resStatus' => "success",
+                            'message' => 'スタッフ用ユーザー登録に成功しました!',
+                            'responseUser' => $responseUser,
+                            'responseStaff' => $staff,
+                        ],
+                        200,
+                        [],
+                        JSON_UNESCAPED_UNICODE
+                    )->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+            } else {
+                return response()->json([
+                    "resStatus" => 'error',
+                    'message' => 'あなたは権限がありません。',
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             Log::error('ユーザー登録処理中にエラーが発生しました。');

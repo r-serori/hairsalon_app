@@ -17,8 +17,6 @@ class attendance_times extends Model
         'start_photo_path',
         'end_photo_path',
         'user_id',
-        'created_at',
-        'updated_at',
     ];
 
 

@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
+use App\Enums\Permissions;
+use Spatie\Permission\Contracts\Permission;
 
 class UpdateUserPassword implements UpdatesUserPasswords
 {
@@ -22,20 +25,27 @@ class UpdateUserPassword implements UpdatesUserPasswords
     public function update($user, array $input): JsonResponse
     {
         try {
-            // パスワードのバリデーション
-            Validator::make($input, [
-                'current_password' => ['required', 'string', 'current_password:web'],
-                'password' => $this->passwordRules(),
-            ], [
-                'current_password.current_password' => __('送信されたパスワードが既存のパスワードと一致しません！もう一度試してください！'),
-            ])->validateWithBag('updatePassword');
+            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+                // パスワードのバリデーション
+                Validator::make($input, [
+                    'current_password' => ['required', 'string', 'current_password:web'],
+                    'password' => $this->passwordRules(),
+                ], [
+                    'current_password.current_password' => __('送信されたパスワードが既存のパスワードと一致しません！もう一度試してください！'),
+                ])->validateWithBag('updatePassword');
 
-            // パスワードの更新
-            $user->forceFill([
-                'password' => Hash::make($input['password']),
-            ])->save();
+                // パスワードの更新
+                $user->forceFill([
+                    'password' => Hash::make($input['password']),
+                ])->save();
 
-            return response()->json(['status' => 'success', 'message' => 'Password updated successfully.']);
+                return response()->json(['status' => 'success', 'message' => 'Password updated successfully.']);
+            } else {
+                return response()->json([
+                    'resStatus' => 'error',
+                    'message' => 'あなたは権限がありません。',
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('current_password')) {
                 // パスワードが間違っている場合のエラーメッセージ
@@ -44,7 +54,7 @@ class UpdateUserPassword implements UpdatesUserPasswords
                 return response()->json([
                     'resStatus' => 'error',
                     'message' => $e->validator->errors()->first(),
-                ], 500);
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         }
     }
