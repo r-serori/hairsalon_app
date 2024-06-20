@@ -7,6 +7,9 @@ use App\Models\hairstyles;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Enums\Roles;
 
 class HairstylesController extends Controller
 {
@@ -14,7 +17,8 @@ class HairstylesController extends Controller
     public function index($id): JsonResponse
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $hairstyles = hairstyles::where('owner_id', $id)->get();
 
                 if ($hairstyles->isEmpty()) {
@@ -47,7 +51,8 @@ class HairstylesController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'hairstyle_name' => 'required',
                 ]);
@@ -103,7 +108,8 @@ class HairstylesController extends Controller
     public function update(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'hairstyle_name' => 'required',
                 ]);
@@ -137,7 +143,8 @@ class HairstylesController extends Controller
     public function destroy(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $hairstyle = hairstyles::find($request->id);
                 if (!$hairstyle) {
                     return response()->json([

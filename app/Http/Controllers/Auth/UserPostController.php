@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\owner;
 use App\Models\staff;
+use App\Enums\Roles;
 
 class UserPostController extends Controller
 {
@@ -110,7 +111,7 @@ class UserPostController extends Controller
                         'email' => $request->email,
                         'phone_number' => $request->phone_number,
                         'password' => Hash::make($request->password),
-                        'role' => $request->role,
+                        'role' => $request->role === 'マネージャー' ? Roles::MANAGER : Roles::STAFF,
                         'isAttendance' => $request->isAttendance,
                     ]);
 

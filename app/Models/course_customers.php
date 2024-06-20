@@ -25,6 +25,10 @@ class course_customers extends Model
         parent::boot();
 
         static::creating(function ($model) {
+            // シーダー実行中の場合はスキップ
+            if (app()->runningInConsole() && !app()->runningUnitTests()) {
+                return;
+            }
 
             $staff = staff::where('user_id', auth()->user()->id)->first();
 
@@ -35,11 +39,6 @@ class course_customers extends Model
                 $owner = owner::where('staff_id', $staff->id)->first();
                 $model->owner_id = $owner->owner_id;
             }
-
-
-
-
-            staff::where('user_id', auth()->user()->id)->first();
         });
     }
 }

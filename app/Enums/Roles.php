@@ -4,9 +4,9 @@ namespace App\Enums;
 
 class Roles
 {
-  const OWNER = 'owner';
-  const MANAGER = 'manager';
-  const STAFF = 'staff';
+  const OWNER = 'オーナー';
+  const MANAGER = 'マネージャー';
+  const STAFF = 'スタッフ';
 }
 
 //全員が触れるメソッドにはallPermissionをつける

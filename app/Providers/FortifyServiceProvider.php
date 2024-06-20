@@ -32,7 +32,8 @@ class FortifyServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // registerと一緒
-        // Fortify::createUsersUsing(CreateNewUser::class);
+        Fortify::createUsersUsing(CreateNewUser::class);
+
 
         // 認証の処理
         //class AuthenticatedSessionControllerの AttemptToAuthenticate::classを上書き

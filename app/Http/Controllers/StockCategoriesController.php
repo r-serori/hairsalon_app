@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\stock_categories;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Enums\Roles;
 
 
 class StockCategoriesController extends Controller
@@ -13,7 +16,8 @@ class StockCategoriesController extends Controller
     public function index($id)
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 // カテゴリー一覧を取得
                 $stock_categories = stock_categories::where('owner_id', $id)->get();
@@ -46,7 +50,8 @@ class StockCategoriesController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'category' => 'required|string',
@@ -112,7 +117,8 @@ class StockCategoriesController extends Controller
     public function update(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'category' => 'required|string',
@@ -150,7 +156,8 @@ class StockCategoriesController extends Controller
     public function destroy(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 // 指定されたIDの在庫カテゴリーを取得
                 $stock_category = stock_categories::find($request->id);
 

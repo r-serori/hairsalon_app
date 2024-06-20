@@ -22,6 +22,10 @@ class customer_users extends Model
         parent::boot();
 
         static::creating(function ($model) {
+            // シーダー実行中の場合はスキップ
+            if (app()->runningInConsole() && !app()->runningUnitTests()) {
+                return;
+            }
 
             $staff = staff::where('user_id', auth()->user()->id)->first();
 

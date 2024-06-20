@@ -42,6 +42,7 @@ class CustomersSeeder extends Seeder
                 hairstyle_customers::create([
                     'customers_id' => $customer->id,
                     'hairstyles_id' => $hairstyle->id,
+                    'owner_id' => 1,
                 ]);
             }
 
@@ -53,6 +54,7 @@ class CustomersSeeder extends Seeder
                 course_customers::create([
                     'customers_id' => $customer->id,
                     'courses_id' => $course->id,
+                    'owner_id' => 1,
                 ]);
             }
 
@@ -64,6 +66,7 @@ class CustomersSeeder extends Seeder
                 option_customers::create([
                     'customers_id' => $customer->id,
                     'options_id' => $option->id,
+                    'owner_id' => 1,
                 ]);
             }
 
@@ -75,6 +78,7 @@ class CustomersSeeder extends Seeder
                 merchandise_customers::create([
                     'customers_id' => $customer->id,
                     'merchandises_id' => $merchandise->id,
+                    'owner_id' => 1,
                 ]);
             }
 
@@ -86,6 +90,7 @@ class CustomersSeeder extends Seeder
                 customer_users::create([
                     'customers_id' => $customer->id,
                     'users_id' => $user->id,
+                    'owner_id' => 1,
                 ]);
             }
         }

@@ -20,13 +20,16 @@ use App\Enums\Permissions;
 use App\Models\User;
 use App\Models\owner;
 use App\Models\staff;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\Roles;
 
 class SchedulesController extends Controller
 {
     public function index($id)
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 $currentYear = Carbon::now()->year;
 
@@ -118,7 +121,8 @@ class SchedulesController extends Controller
     public function selectGetYear($id, $year)
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $selectGetYear = $year;
 
                 $selectSchedules = schedules::where('owner_id', $id)->whereRaw('DATA_FORMAT(start_time, "%Y") = ?', [$selectGetYear])
@@ -189,7 +193,8 @@ class SchedulesController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'title' => 'nullable',
                     'start_time' => 'nullable',
@@ -272,7 +277,8 @@ class SchedulesController extends Controller
     public function update(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'Sid' => 'required|integer|exists:schedules,id',
                     'title' => 'nullable',
@@ -320,7 +326,8 @@ class SchedulesController extends Controller
     public function destroy(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $schedule = schedules::find($request->id);
                 if (!$schedule) {
                     return response()->json([
@@ -354,7 +361,8 @@ class SchedulesController extends Controller
     public function double(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'customer_name' => 'required',
                     'phone_number' => 'nullable',
@@ -463,7 +471,8 @@ class SchedulesController extends Controller
     public function doubleUpdate(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'Sid' => 'required|integer|exists:schedules,id',
                     'customer_name' => 'required',
@@ -567,7 +576,8 @@ class SchedulesController extends Controller
     public function customerOnlyUpdate(Request $request, $id)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'customer_name' => 'required',
                     'phone_number' => 'nullable',

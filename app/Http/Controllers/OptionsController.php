@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\options;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Redis;
+use App\Models\User;
+use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
 
 class OptionsController extends Controller
 {
@@ -14,7 +17,8 @@ class OptionsController extends Controller
     public function index($id)
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $options = options::where('owner_id', $id)->get();
                 if ($options->isEmpty()) {
                     return response()->json([
@@ -46,7 +50,8 @@ class OptionsController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'option_name' => 'required',
                     'price' => 'required',
@@ -98,7 +103,8 @@ class OptionsController extends Controller
     {
 
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'option_name' => 'required',
                     'price' => 'required',
@@ -138,7 +144,8 @@ class OptionsController extends Controller
     {
 
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $option = options::find($request->id);
                 if (!$option) {
                     return response()->json([

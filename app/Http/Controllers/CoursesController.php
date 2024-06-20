@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\courses;
-use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Enums\Roles;
+
 
 class CoursesController extends Controller
 {
@@ -13,7 +16,8 @@ class CoursesController extends Controller
     public function index($id)
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $courses = courses::where('owner_id', $id)->get();
                 if ($courses->isEmpty()) {
                     return response()->json([
@@ -45,7 +49,8 @@ class CoursesController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'course_name' => 'required',
                     'price' => 'required',
@@ -79,6 +84,7 @@ class CoursesController extends Controller
     // public function show($id)
     // {
     //     try {
+
     //         $course = courses::find($id);
     //         if (!$course) {
     //             return response()->json([
@@ -102,7 +108,8 @@ class CoursesController extends Controller
     public function update(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'course_name' => 'required',
                     'price' => 'required',
@@ -138,7 +145,8 @@ class CoursesController extends Controller
     public function destroy(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $course = courses::find($request->id);
                 if (!$course) {
                     return response()->json([

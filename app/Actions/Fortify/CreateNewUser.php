@@ -11,6 +11,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Nette\Utils\Json;
+use Laravel\Jetstream\Jetstream;
+use App\Enums\Roles;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -47,35 +49,20 @@ class CreateNewUser implements CreatesNewUsers
                 'email' => $input['email'],
                 'phone_number' => $input['phone_number'],
                 'password' => Hash::make($input['password']),
-                'role' => $input['role'],
+                'role' =>  Roles::OWNER,
                 'isAttendance' => $input['isAttendance'] ? 1 : 0,
             ]);
 
-            // ユーザーが作成された場合のレスポンス
-            if (!$user) {
-                return response()->json([
-                    "resStatus" => 'error',
-                    'message' => 'ユーザー登録に失敗しました。初めからやり直してください。',
-                ], 400);
-            }
 
-            // 登録イベントの発行
-            // event(new Registered($user));
+            // ユーザーにロールを付与   
 
-            // ログイン処理
 
-            // Auth::login($user);
-
-            // Auth::guard('web')->login($user);
 
             return $user;
         } catch (\Exception $e) {
             Log::error('ユーザー登録処理中にエラーが発生しました。');
             Log::error('エラー内容: ' . $e);
-            return response()->json([
-                "resStatus" => 'error',
-                'message' => 'ユーザー登録に失敗しました。初めからやり直してください。',
-            ], 400);
+            return throw new \Exception($e->getMessage());
         }
     }
 }

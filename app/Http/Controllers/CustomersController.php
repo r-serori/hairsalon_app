@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use App\Models\owner;
 use App\Models\staff;
+use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
 
 class CustomersController extends Controller
 {
@@ -26,7 +28,8 @@ class CustomersController extends Controller
     public function index($id)
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 // 顧客データを取得
                 $customers = customers::where('owner_id', $id)->get();
 
@@ -111,7 +114,8 @@ class CustomersController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'customer_name' => 'required',
                     'phone_number' => 'nullable',
@@ -216,7 +220,8 @@ class CustomersController extends Controller
     {
 
         try {
-            if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
                     'customer_name' => 'required',
                     'phone_number' => 'nullable',
@@ -296,7 +301,8 @@ class CustomersController extends Controller
     public function destroy(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 // 指定されたIDの顧客データを取得
                 $customer = customers::find($request->id);
                 if (!$customer) {

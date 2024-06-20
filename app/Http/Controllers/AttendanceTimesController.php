@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceTimesController extends Controller
 {
@@ -19,7 +21,8 @@ class AttendanceTimesController extends Controller
     public function selectedAttendanceTime($id, $yearMonth)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 if ($yearMonth !== "無し") {
                     //わたってきた('Y-m')形式の年月を取得
@@ -76,7 +79,8 @@ class AttendanceTimesController extends Controller
     {
 
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $firstAttendanceTime = attendance_times::where('user_id', $id)->latest('created_at')->first();
 
                 return response()->json([
@@ -148,7 +152,8 @@ class AttendanceTimesController extends Controller
     public function startTimeShot(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $startTime = Carbon::parse($request->start_time);
 
                 $existAttendanceStart = attendance_times::where('user_id', $request->user_id)->whereDate('start_time', $startTime->format('Y-m-d'))->latest()->first();
@@ -232,7 +237,8 @@ class AttendanceTimesController extends Controller
     {
 
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $request->validate([
                     'end_time' => 'required',
                     'end_photo_path' => 'required',
@@ -289,7 +295,8 @@ class AttendanceTimesController extends Controller
     {
 
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $request->validate([
                     'end_time' => 'required',
                     'end_photo_path' => 'required',
@@ -386,12 +393,13 @@ class AttendanceTimesController extends Controller
         }
     }
 
-    public function updateStartTime(Request $request, $id)
+    public function updateStartTime(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 // リクエストから受け取ったデータを使用してレコードを更新
-                $attendanceTime = attendance_times::find($id);
+                $attendanceTime = attendance_times::find($request->id);
 
                 if ($attendanceTime->start_photo_path) {
                     Storage::disk('public')->delete($attendanceTime->start_photo_path);
@@ -433,12 +441,13 @@ class AttendanceTimesController extends Controller
         }
     }
 
-    public function updateEndTime(Request $request, $id)
+    public function updateEndTime(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 // リクエストから受け取ったデータを使用してレコードを更新
-                $attendanceTime = attendance_times::find($id);
+                $attendanceTime = attendance_times::find($request->id);
 
                 if ($attendanceTime->end_photo_path) {
                     Storage::disk('public')->delete($attendanceTime->end_photo_path);
@@ -454,8 +463,7 @@ class AttendanceTimesController extends Controller
                 $endTime = Carbon::parse($request->end_time);
 
                 $attendanceTime->end_time = $request->end_time;
-                $attendanceTime->end_photo_path =
-                    "編集済み";
+                $attendanceTime->end_photo_path = "編集済み";
 
                 $attendanceTime->save();
 
@@ -481,12 +489,13 @@ class AttendanceTimesController extends Controller
     }
 
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
 
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $user = attendance_times::find($id);
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
+                $user = attendance_times::find($request->id);
 
                 if ($user->end_photo_path) {
                     Storage::disk('public')->delete($user->end_photo_path);
@@ -497,7 +506,7 @@ class AttendanceTimesController extends Controller
                 }
 
                 // レコードを削除
-                attendance_times::destroy($id);
+                attendance_times::destroy($request->id);
 
                 // 削除後に index 画面にリダイレクトする
 
@@ -505,7 +514,7 @@ class AttendanceTimesController extends Controller
                     response()->json(
                         [
                             "resStatus" => "success",
-                            "deleteId" => $id
+                            "deleteId" => $request->id
                         ],
                         200,
                         [],

@@ -29,9 +29,15 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\UserPostController;
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::middleware('web')->group(function () {
 
+Route::middleware('web')->group(function () {
+
+    //購入者ownerが店の情報を登録
+    Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
+
+
+
+    Route::middleware('auth:sanctum')->group(function () {
         // imgタグのsrc属性に画像を表示するためのルーティング　startは出勤時の写真、endは退勤時の写真
         Route::get("/attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
         Route::get("/attendance_times/images/endPhotos/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');

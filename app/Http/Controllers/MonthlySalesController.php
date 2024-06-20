@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\monthly_sales;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Enums\Roles;
 
 
 class MonthlySalesController extends Controller
@@ -13,7 +16,8 @@ class MonthlySalesController extends Controller
     public function index($id)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 // 月別売上一覧を取得
                 $monthly_sales = monthly_sales::where('owner_id', $id)->get();
                 if ($monthly_sales->isEmpty()) {
@@ -47,7 +51,8 @@ class MonthlySalesController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'year_month' => 'required|string',
@@ -114,7 +119,8 @@ class MonthlySalesController extends Controller
     public function update(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'year_month' => 'required|string',
@@ -156,7 +162,8 @@ class MonthlySalesController extends Controller
     public function destroy(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $monthly_sale = monthly_sales::find($request->id);
                 if (!$monthly_sale) {
                     return response()->json([

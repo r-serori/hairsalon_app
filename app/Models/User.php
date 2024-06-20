@@ -11,6 +11,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmailContract
 {
@@ -20,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
     use Notifiable;
     use TwoFactorAuthenticatable;
     use Notifiable;
+    use HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -35,6 +37,8 @@ class User extends Authenticatable implements MustVerifyEmailContract
         "isAttendance"
     ];
 
+
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -49,30 +53,6 @@ class User extends Authenticatable implements MustVerifyEmailContract
     protected $casts = [
         'isAttendance' => 'boolean',
     ];
-
-    // ユーザーが登録された後に呼び出される処理
-    protected static function booted()
-    {
-        static::created(function ($user) {
-            // ユーザーのロールに基づいて権限を付与
-            switch ($user->role) {
-                case 'オーナー':
-                    $user->syncRoles([Roles::OWNER]);
-                    break;
-                case 'マネージャー':
-                    $user->syncRoles([Roles::MANAGER]);
-                    break;
-                case 'スタッフ':
-                    $user->syncRoles([Roles::STAFF]);
-                    break;
-                default:
-                    // デフォルトのロールや権限を設定する必要があればここに記述する
-                    break;
-            }
-        });
-    }
-
-
 
 
 
@@ -95,5 +75,18 @@ class User extends Authenticatable implements MustVerifyEmailContract
     public function teams()
     {
         return $this->belongsToMany(Team::class)->withPivot('role')->withTimestamps();
+    }
+
+
+
+    /**
+     * Check if the user has the specified role.
+     *
+     * @param string $role
+     * @return bool
+     */
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
     }
 }

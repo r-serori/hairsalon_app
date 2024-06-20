@@ -6,6 +6,9 @@ use App\Models\daily_sales;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use App\Models\User;
+use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
 
 class DailySalesController extends Controller
 {
@@ -13,7 +16,8 @@ class DailySalesController extends Controller
     public function index($id)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $daily_sales = daily_sales::where('owner_id', $id)->get();
                 if ($daily_sales->isEmpty()) {
                     return response()->json([
@@ -51,7 +55,8 @@ class DailySalesController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $validatedData
                     = $request->validate([
                         'date' => 'required',
@@ -112,7 +117,8 @@ class DailySalesController extends Controller
     public function update(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $validatedData = $request->validate([
                     'date' => 'required',
                     'daily_sales' => 'required',
@@ -151,7 +157,8 @@ class DailySalesController extends Controller
     public function destroy(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $daily_sale = daily_sales::find($request->id);
                 if (!$daily_sale) {
                     return response()->json([

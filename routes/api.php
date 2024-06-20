@@ -33,12 +33,17 @@ Route::middleware('api')->group(
         Route::post('/login', [AuthenticatedSessionController::class, 'store'])
             ->middleware('guest');
 
+
+
+
+
+
         Route::middleware('auth:sanctum')->group(function () {
 
             Route::prefix('/user')->group(function () {
+                //ログアウト処理 Gate,ALL
+                Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
 
-                //購入者ownerが店の情報を登録
-                Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
 
                 //各スタッフが自分の情報を取得 Gate,ALL
                 Route::get('/showUser/{user_id}', [UserGetController::class, 'show']);
@@ -53,16 +58,13 @@ Route::middleware('api')->group(
                 Route::post('/resetPassword', [ResetUserPassword::class, 'reset'])
                     ->name('password.store');
 
-                Route::get('/verify-email/{user_id}/{hash}', VerifyEmailController::class)
+                Route::get('/verify-email', VerifyEmailController::class)
                     ->middleware(['auth', 'signed', 'throttle:6,1'])
                     ->name('verification.verify');
 
                 Route::post('/email/verification-notification/{user_id}', [EmailVerificationNotificationController::class, 'store'])
                     ->middleware(['auth', 'throttle:6,1'])
                     ->name('verification.send');
-
-                //ログアウト処理 Gate,ALL
-                Route::post('/logout}', [AuthenticatedSessionController::class, 'destroy']);
             });
         });
 
