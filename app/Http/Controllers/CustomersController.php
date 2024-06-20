@@ -17,6 +17,8 @@ use App\Models\User;
 use App\Models\users;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use App\Models\owner;
+use App\Models\staff;
 
 class CustomersController extends Controller
 {
@@ -26,27 +28,38 @@ class CustomersController extends Controller
         try {
             if (Gate::allows(Permissions::ALL_PERMISSION)) {
                 // 顧客データを取得
-                $customers = customers::all(); // または適切なクエリを使用してデータを取得する
+                $customers = customers::where('owner_id', $id)->get();
 
-                $courses = courses::all();
+                $courses = courses::where('owner_id', $id)->get();
 
-                $options = options::all();
+                $options =
+                    options::where('owner_id', $id)->get();
 
-                $merchandises = merchandises::all();
+                $merchandises =
+                    merchandises::where('owner_id', $id)->get();
 
-                $hairstyles = hairstyles::all();
+                $hairstyles =
+                    hairstyles::where('owner_id', $id)->get();
 
-                $users = User::all();
+                $owner = owner::where('owner_id', $id)->first();
 
-                $courseCustomer = course_customers::all();
+                $staff = staff::where('owner_id', $id)->pluck('user_id');
 
-                $optionCustomer = option_customers::all();
+                if ($staff->isEmpty()) {
+                    $users = $owner;
+                } else {
+                    $users = User::whereIn('id', $staff)->get();
+                }
 
-                $merchandiseCustomer = merchandise_customers::all();
+                $courseCustomer = course_customers::where('owner_id', $id)->get();
 
-                $hairstyleCustomer = hairstyle_customers::all();
+                $optionCustomer = option_customers::where('owner_id', $id)->get();
 
-                $userCustomer = customer_users::all();
+                $merchandiseCustomer = merchandise_customers::where('owner_id', $id)->get();
+
+                $hairstyleCustomer = hairstyle_customers::where('owner_id', $id)->get();
+
+                $userCustomer = customer_users::where('owner_id', $id)->get();
 
                 if ($customers->isEmpty()) {
                     return response()->json([
@@ -57,7 +70,7 @@ class CustomersController extends Controller
                         'options' => $options,
                         'merchandises' => $merchandises,
                         'hairstyles' => $hairstyles,
-                        'users' => $users,
+                        'users' => $users->only(['id', 'name']),
                         'course_customers' => $courseCustomer,
                         'option_customers' => $optionCustomer,
                         'merchandise_customers' => $merchandiseCustomer,
@@ -67,12 +80,13 @@ class CustomersController extends Controller
                 } else {
                     return response()->json([
                         "resStatus" => "success",
+                        'message' => '顧客情報を取得しました!',
                         'customers' => $customers,
                         'courses' => $courses,
                         'options' => $options,
                         'merchandises' => $merchandises,
                         'hairstyles' => $hairstyles,
-                        'users' => $users,
+                        'users' => $users->only(['id', 'name']),
                         'course_customers' => $courseCustomer,
                         'option_customers' => $optionCustomer,
                         'merchandise_customers' => $merchandiseCustomer,
@@ -94,7 +108,7 @@ class CustomersController extends Controller
         }
     }
 
-    public function store($id, Request $request)
+    public function store(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -112,6 +126,7 @@ class CustomersController extends Controller
                     'hairstyles_id.*' => 'required|integer|exists:hairstyles,id',
                     'users_id' => 'required|array',
                     'users_id.*' => 'required|integer|exists:users,id',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
                 // 顧客を作成
@@ -119,6 +134,7 @@ class CustomersController extends Controller
                     'customer_name' => $validatedData['customer_name'],
                     'phone_number' => $validatedData['phone_number'],
                     'remarks' => $validatedData['remarks'],
+                    'owner_id' => $validatedData['owner_id'],
                 ]);
 
 
@@ -196,7 +212,7 @@ class CustomersController extends Controller
     // }
 
 
-    public function update($id, Request $request)
+    public function update(Request $request)
     {
 
         try {
@@ -226,7 +242,6 @@ class CustomersController extends Controller
                 $customer->remarks = $validatedData['remarks'];
 
                 $customer->save();
-
 
                 // 中間テーブルにデータを挿入
                 $courseIds = $validatedData['courses_id'];
@@ -278,12 +293,12 @@ class CustomersController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
                 // 指定されたIDの顧客データを取得
-                $customer = customers::find($id);
+                $customer = customers::find($request->id);
                 if (!$customer) {
                     return response()->json([
                         "resStatus" => "error",
@@ -295,7 +310,7 @@ class CustomersController extends Controller
                 $customer->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    "deleteId"  => $id
+                    "deleteId"  => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([

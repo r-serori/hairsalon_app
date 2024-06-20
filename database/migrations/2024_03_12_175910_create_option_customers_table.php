@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('option_customers', function (Blueprint $table) {
             $table->foreignId('options_id')->constrained('options')->onDelete('cascade');
             $table->foreignId('customers_id')->constrained('customers')->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
         });
     }
 

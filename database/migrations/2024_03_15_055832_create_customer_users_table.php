@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('customers_id')->constrained('customers')->onDelete('cascade');
             $table->foreignId('users_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
         });
     }
 

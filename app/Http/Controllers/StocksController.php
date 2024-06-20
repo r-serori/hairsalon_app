@@ -21,7 +21,7 @@ class StocksController extends Controller
         try {
             if (Gate::allows(Permissions::ALL_PERMISSION)) {
 
-                $stocks = stocks::all();
+                $stocks = stocks::where('owner_id', $id)->get();
                 if ($stocks->isEmpty()) {
                     return response()->json([
                         "resStatus" => "success",
@@ -50,7 +50,7 @@ class StocksController extends Controller
 
 
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -63,6 +63,7 @@ class StocksController extends Controller
                     'remarks' => 'nullable|string',
                     "notice" => "required|integer",
                     'stock_category_id' => 'required|exists:stock_categories,id',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
                 // 在庫モデルを作成して保存する
@@ -74,6 +75,7 @@ class StocksController extends Controller
                     'remarks' => $validatedData['remarks'],
                     'notice' => $validatedData['notice'],
                     'stock_category_id' => $validatedData['stock_category_id'],
+                    'owner_id' => $validatedData['owner_id'],
                 ]);
 
 
@@ -125,7 +127,7 @@ class StocksController extends Controller
 
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -141,7 +143,7 @@ class StocksController extends Controller
                 ]);
 
                 // 在庫を取得する
-                $stock = stocks::find($id);
+                $stock = stocks::find($request->id);
 
                 // 在庫の属性を更新する
                 $stock->product_name = $validatedData['product_name'];
@@ -175,11 +177,11 @@ class StocksController extends Controller
     }
 
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $stock = stocks::find($id);
+                $stock = stocks::find($request->id);
                 if (!$stock) {
                     return response()->json([
                         "resStatus" => "error",
@@ -190,7 +192,7 @@ class StocksController extends Controller
                 $stock->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    "deleteId"  => $id
+                    "deleteId"  => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([

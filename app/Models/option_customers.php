@@ -17,20 +17,24 @@ class option_customers extends Model
     protected $fillable = [
         'options_id',
         'customers_id',
+        'owner_id'
     ];
 
-    public function customer()
+    protected static function boot()
     {
-        return $this->belongsTo(customers::class);
-    }
+        parent::boot();
 
-    public function option()
-    {
-        return $this->belongsTo(options::class);
-    }
+        static::creating(function ($model) {
 
-    public function schedules()
-    {
-        return $this->hasMany(schedules::class);
+            $staff = staff::where('user_id', auth()->user()->id)->first();
+
+            if (empty($staff)) {
+                $owner = owner::where('user_id', auth()->user()->id)->first();
+                $model->owner_id = $owner->id;
+            } else {
+                $owner = owner::where('staff_id', $staff->id)->first();
+                $model->owner_id = $owner->owner_id;
+            }
+        });
     }
 }

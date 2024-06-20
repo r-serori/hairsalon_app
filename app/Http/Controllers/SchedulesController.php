@@ -5,22 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\courses;
 use Illuminate\Http\Request;
 use App\Models\schedules;
-use Illuminate\Pagination\LengthAwarePaginator;
 use App\Models\customers;
 use App\Models\options;
 use App\Models\merchandises;
 use App\Models\hairstyles;
-use App\Models\users;
 use App\Models\course_customers;
 use App\Models\option_customers;
 use App\Models\merchandise_customers;
 use App\Models\hairstyle_customers;
 use App\Models\customer_users;
-use App\Models\customer_schedules;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use App\Models\User;
+use App\Models\owner;
+use App\Models\staff;
 
 class SchedulesController extends Controller
 {
@@ -31,30 +30,37 @@ class SchedulesController extends Controller
 
                 $currentYear = Carbon::now()->year;
 
-                $selectSchedules = schedules::whereRaw('DATE_FORMAT(start_time, "%Y") = ? OR DATE_FORMAT(start_time, "%Y") = ?', [$currentYear, $currentYear + 1])
-                    ->get();
+                $selectSchedules = schedules::where('owner_id', $id)->whereRaw('DATE_FORMAT(start_time, "%Y") = ? OR DATE_FORMAT(start_time, "%Y") = ?', [$currentYear, $currentYear + 1])->get();
 
-                $customers = customers::all();
+                $customers = customers::where('owner_id', $id)->get();
 
-                $courses = courses::all();
+                $courses = courses::where('owner_id', $id)->get();
 
-                $options = options::all();
+                $options = options::where('owner_id', $id)->get();
 
-                $merchandises = merchandises::all();
+                $merchandises = merchandises::where('owner_id', $id)->get();
 
-                $hairstyles = hairstyles::all();
+                $hairstyles = hairstyles::where('owner_id', $id)->get();
 
-                $users = User::all();
+                $owner = owner::find($id);
 
-                $courseCustomer = course_customers::all();
+                $staff = staff::where('owner_id', $id)->pluck('user_id');
 
-                $optionCustomer = option_customers::all();
+                if ($staff->isEmpty()) {
+                    $users = User::find($owner->user_id);
+                } else {
+                    $users = User::whereIn('id', $staff)->get();
+                }
 
-                $merchandiseCustomer = merchandise_customers::all();
+                $courseCustomer = course_customers::where('owner_id', $id)->get();
 
-                $hairstyleCustomer = hairstyle_customers::all();
+                $optionCustomer = option_customers::where('owner_id', $id)->get();
 
-                $userCustomer = customer_users::all();
+                $merchandiseCustomer = merchandise_customers::where('owner_id', $id)->get();
+
+                $hairstyleCustomer = hairstyle_customers::where('owner_id', $id)->get();
+
+                $userCustomer = customer_users::where('owner_id', $id)->get();
 
                 if ($selectSchedules->isEmpty()) {
                     return response()->json([
@@ -67,7 +73,7 @@ class SchedulesController extends Controller
                         'options' => $options,
                         'merchandises' => $merchandises,
                         'hairstyles' => $hairstyles,
-                        'users' => $users,
+                        'users' => $users->only(['id', 'name']),
                         'course_customers' => $courseCustomer,
                         'option_customers' => $optionCustomer,
                         'merchandise_customers' => $merchandiseCustomer,
@@ -84,7 +90,8 @@ class SchedulesController extends Controller
                         'options' => $options,
                         'merchandises' => $merchandises,
                         'hairstyles' => $hairstyles,
-                        'users' => $users,
+                        'users'
+                        => $users->only(['id', 'name']),
                         'course_customers' => $courseCustomer,
                         'option_customers' => $optionCustomer,
                         'merchandise_customers' => $merchandiseCustomer,
@@ -108,36 +115,45 @@ class SchedulesController extends Controller
         }
     }
 
-    public function selectGetYear(Request $request, $id)
+    public function selectGetYear($id, $year)
     {
         try {
             if (Gate::allows(Permissions::ALL_PERMISSION)) {
-                $selectGetYear = $request->year;
+                $selectGetYear = $year;
 
-                $selectSchedules = schedules::whereRaw('DATA_FORMAT(start_time, "%Y") = ?', [$selectGetYear])
+                $selectSchedules = schedules::where('owner_id', $id)->whereRaw('DATA_FORMAT(start_time, "%Y") = ?', [$selectGetYear])
                     ->get();
 
-                $customers = customers::all();
+                $customers = customers::where('owner_id', $id)->get();
 
-                $courses = courses::all();
+                $courses = courses::where('owner_id', $id)->get();
 
-                $options = options::all();
+                $options = options::where('owner_id', $id)->get();
 
-                $merchandises = merchandises::all();
+                $merchandises = merchandises::where('owner_id', $id)->get();
 
-                $hairstyles = hairstyles::all();
+                $hairstyles = hairstyles::where('owner_id', $id)->get();
 
-                $users = User::all();
 
-                $courseCustomer = course_customers::all();
+                $owner = owner::find($id);
 
-                $optionCustomer = option_customers::all();
+                $staff = staff::where('owner_id', $id)->pluck('user_id');
 
-                $merchandiseCustomer = merchandise_customers::all();
+                if ($staff->isEmpty()) {
+                    $users = User::find($owner->user_id);
+                } else {
+                    $users = User::whereIn('id', $staff)->get();
+                }
 
-                $hairstyleCustomer = hairstyle_customers::all();
+                $courseCustomer = course_customers::where('owner_id', $id)->get();
 
-                $userCustomer = customer_users::all();
+                $optionCustomer = option_customers::where('owner_id', $id)->get();
+
+                $merchandiseCustomer = merchandise_customers::where('owner_id', $id)->get();
+
+                $hairstyleCustomer = hairstyle_customers::where('owner_id', $id)->get();
+
+                $userCustomer = customer_users::where('owner_id', $id)->get();
 
                 return response()->json([
                     "resStatus" => "success",
@@ -147,7 +163,7 @@ class SchedulesController extends Controller
                     'options' => $options,
                     'merchandises' => $merchandises,
                     'hairstyles' => $hairstyles,
-                    'users' => $users,
+                    'users' => $users->only(['id', 'name']),
                     'course_customers' => $courseCustomer,
                     'option_customers' => $optionCustomer,
                     'merchandise_customers' => $merchandiseCustomer,
@@ -170,7 +186,7 @@ class SchedulesController extends Controller
         }
     }
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -182,6 +198,7 @@ class SchedulesController extends Controller
                     'nullable|in:0,1',
                     'customers_id' => 'nullable',
                     'customers_id.*' => 'nullable|integer|exists:customers,id',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
                 $schedule = schedules::create([
@@ -189,9 +206,11 @@ class SchedulesController extends Controller
                     'start_time' => $validatedData['start_time'],
                     'end_time' => $validatedData['end_time'],
                     'allDay' => $validatedData['allDay'],
+                    'owner_id' => $validatedData['owner_id'],
+                    'customers_id' => $validatedData['customers_id'],
                 ]);
 
-                $customerId = $validatedData['customers_id'];
+
 
                 // if ($customerId !== null && $customerId !== 0) {
                 //     $customerSchedule =  $schedule->customer()->sync([$customerId]);
@@ -250,7 +269,7 @@ class SchedulesController extends Controller
     // }
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -298,11 +317,11 @@ class SchedulesController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
-                $schedule = schedules::find($id);
+                $schedule = schedules::find($request->id);
                 if (!$schedule) {
                     return response()->json([
                         "resStatus" => "error",
@@ -314,7 +333,7 @@ class SchedulesController extends Controller
                 $schedule->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    "deleteId" => $id
+                    "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
@@ -355,6 +374,7 @@ class SchedulesController extends Controller
                     'end_time' => 'nullable',
                     'allDay' => 'required',
                     'customers_id' => 'nullable',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
 
@@ -363,6 +383,7 @@ class SchedulesController extends Controller
                     'customer_name' => $validatedData['customer_name'],
                     'phone_number' => $validatedData['phone_number'],
                     'remarks' => $validatedData['remarks'],
+                    'owner_id' => $validatedData['owner_id'],
                 ]);
 
                 // 中間テーブルにデータを挿入
@@ -439,7 +460,7 @@ class SchedulesController extends Controller
 
 
 
-    public function doubleUpdate(Request $request, $id)
+    public function doubleUpdate(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -565,7 +586,8 @@ class SchedulesController extends Controller
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'required',
-                    'customers_id' => 'required'
+                    'customers_id' => 'required',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
                 $customerId = $validatedData['customers_id'];
@@ -607,6 +629,7 @@ class SchedulesController extends Controller
                     'end_time' => $validatedData['end_time'],
                     'allDay' => $validatedData['allDay'],
                     'customers_id' => $customerId,
+                    'owner_id' => $validatedData['owner_id'],
                 ]);
 
                 return response()->json(

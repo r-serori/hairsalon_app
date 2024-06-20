@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\attendances;
-use App\Models\customers;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,5 +14,24 @@ class customer_users extends Model
     protected $fillable = [
         'customers_id',
         'users_id',
+        'owner_id'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+
+            $staff = staff::where('user_id', auth()->user()->id)->first();
+
+            if (empty($staff)) {
+                $owner = owner::where('user_id', auth()->user()->id)->first();
+                $model->owner_id = $owner->id;
+            } else {
+                $owner = owner::where('staff_id', $staff->id)->first();
+                $model->owner_id = $owner->owner_id;
+            }
+        });
+    }
 }

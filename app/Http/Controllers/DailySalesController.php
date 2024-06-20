@@ -14,7 +14,7 @@ class DailySalesController extends Controller
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $daily_sales = daily_sales::all();
+                $daily_sales = daily_sales::where('owner_id', $id)->get();
                 if ($daily_sales->isEmpty()) {
                     return response()->json([
                         "resStatus" => "success",
@@ -48,7 +48,7 @@ class DailySalesController extends Controller
     }
 
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
@@ -56,12 +56,14 @@ class DailySalesController extends Controller
                     = $request->validate([
                         'date' => 'required',
                         'daily_sales' => 'required',
+                        'owner_id' => 'required|integer|exists:owners,id',
                     ]);
 
                 $daily_sales =
                     daily_sales::create([
                         'date' => $validatedData['date'],
                         'daily_sales' => $validatedData['daily_sales'],
+                        'owner_id' => $validatedData['owner_id'],
                     ]);
 
                 return response()->json([
@@ -107,7 +109,7 @@ class DailySalesController extends Controller
     // }
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
@@ -116,7 +118,7 @@ class DailySalesController extends Controller
                     'daily_sales' => 'required',
                 ]);
 
-                $daily_sale = daily_sales::find($id);
+                $daily_sale = daily_sales::find($request->id);
 
                 $daily_sale->date = $validatedData['date'];
                 $daily_sale->daily_sales = $validatedData['daily_sales'];
@@ -146,11 +148,11 @@ class DailySalesController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $daily_sale = daily_sales::find($id);
+                $daily_sale = daily_sales::find($request->id);
                 if (!$daily_sale) {
                     return response()->json([
                         "resStatus" => "error",
@@ -161,7 +163,7 @@ class DailySalesController extends Controller
                 $daily_sale->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    "deleteId" => $id
+                    "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([

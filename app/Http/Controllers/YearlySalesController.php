@@ -13,7 +13,7 @@ class YearlySalesController extends Controller
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $yearly_sales = yearly_sales::all();
+                $yearly_sales = yearly_sales::where('owner_id', $id)->get();
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
                         "resStatus" => "success",
@@ -42,18 +42,20 @@ class YearlySalesController extends Controller
         }
     }
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
                 $validatedData = $request->validate([
                     'year' => 'required|string',
                     'yearly_sales' => 'required|integer',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
                 $yearly_sale = yearly_sales::create([
                     'year' => $validatedData['year'],
                     'yearly_sales' => $validatedData['yearly_sales'],
+                    'owner_id' => $validatedData['owner_id'],
                 ]);
 
                 return response()->json([
@@ -101,7 +103,7 @@ class YearlySalesController extends Controller
 
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
@@ -110,7 +112,7 @@ class YearlySalesController extends Controller
                     'yearly_sales' => 'required|integer',
                 ]);
 
-                $yearly_sale = yearly_sales::find($id);
+                $yearly_sale = yearly_sales::find($request->id);
 
                 $yearly_sale->year = $validatedData['year'];
                 $yearly_sale->yearly_sales = $validatedData['yearly_sales'];
@@ -140,11 +142,11 @@ class YearlySalesController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $yearly_sale = yearly_sales::find($id);
+                $yearly_sale = yearly_sales::find($request->id);
                 if (!$yearly_sale) {
                     return response()->json([
                         "resStatus" => "error",
@@ -156,7 +158,7 @@ class YearlySalesController extends Controller
                 $yearly_sale->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    "deleteId" => $id
+                    "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([

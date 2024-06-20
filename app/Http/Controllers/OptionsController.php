@@ -6,15 +6,16 @@ use App\Enums\Permissions;
 use Illuminate\Http\Request;
 use App\Models\options;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Redis;
 
 class OptionsController extends Controller
 {
 
-    public function index()
+    public function index($id)
     {
         try {
             if (Gate::allows(Permissions::ALL_PERMISSION)) {
-                $options = options::all();
+                $options = options::where('owner_id', $id)->get();
                 if ($options->isEmpty()) {
                     return response()->json([
                         "resStatus" => "success",
@@ -93,7 +94,7 @@ class OptionsController extends Controller
     //     }
     // }
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
 
         try {
@@ -103,7 +104,7 @@ class OptionsController extends Controller
                     'price' => 'required',
                 ]);
 
-                $option = options::find($id);
+                $option = options::find($request->id);
 
                 $option->option_name = $validatedData['option_name'];
                 $option->price = $validatedData['price'];
@@ -133,12 +134,12 @@ class OptionsController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
 
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $option = options::find($id);
+                $option = options::find($request->id);
                 if (!$option) {
                     return response()->json([
                         "resStatus" => "error",
@@ -150,7 +151,8 @@ class OptionsController extends Controller
                 $option->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    'message' => 'オプションを削除しました。'
+                    'message' => 'オプションを削除しました。',
+                    'deleteId' => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([

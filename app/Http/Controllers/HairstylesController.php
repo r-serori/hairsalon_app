@@ -15,7 +15,7 @@ class HairstylesController extends Controller
     {
         try {
             if (Gate::allows(Permissions::ALL_PERMISSION)) {
-                $hairstyles = hairstyles::all();
+                $hairstyles = hairstyles::where('owner_id', $id)->get();
 
                 if ($hairstyles->isEmpty()) {
                     return response()->json([
@@ -44,7 +44,7 @@ class HairstylesController extends Controller
     }
 
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -100,7 +100,7 @@ class HairstylesController extends Controller
 
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -108,7 +108,7 @@ class HairstylesController extends Controller
                     'hairstyle_name' => 'required',
                 ]);
 
-                $hairstyle = hairstyles::find($id);
+                $hairstyle = hairstyles::find($request->id);
                 $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
 
                 $hairstyle->save();
@@ -134,11 +134,11 @@ class HairstylesController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $hairstyle = hairstyles::find($id);
+                $hairstyle = hairstyles::find($request->id);
                 if (!$hairstyle) {
                     return response()->json([
                         "resStatus" => "error",
@@ -148,7 +148,7 @@ class HairstylesController extends Controller
                 $hairstyle->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    "deleteId" => $id
+                    "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([

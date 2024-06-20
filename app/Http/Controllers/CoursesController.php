@@ -10,11 +10,11 @@ use App\Enums\Permissions;
 class CoursesController extends Controller
 {
 
-    public function index()
+    public function index($id)
     {
         try {
             if (Gate::allows(Permissions::ALL_PERMISSION)) {
-                $courses = courses::all();
+                $courses = courses::where('owner_id', $id)->get();
                 if ($courses->isEmpty()) {
                     return response()->json([
                         "resStatus" => "success",
@@ -49,11 +49,13 @@ class CoursesController extends Controller
                 $validatedData = $request->validate([
                     'course_name' => 'required',
                     'price' => 'required',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
                 $course = courses::create([
                     'course_name' => $validatedData['course_name'],
                     'price' => $validatedData['price'],
+                    'owner_id' => $validatedData['owner_id'],
                 ]);
 
                 return response()->json([
@@ -97,7 +99,7 @@ class CoursesController extends Controller
     //     }
     // }
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -106,7 +108,7 @@ class CoursesController extends Controller
                     'price' => 'required',
                 ]);
 
-                $course = courses::find($id);
+                $course = courses::find($request->id);
 
                 $course->course_name = $validatedData['course_name'];
                 $course->price = $validatedData['price'];
@@ -133,11 +135,11 @@ class CoursesController extends Controller
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $course = courses::find($id);
+                $course = courses::find($request->id);
                 if (!$course) {
                     return response()->json([
                         "resStatus" => "error",
@@ -151,7 +153,7 @@ class CoursesController extends Controller
                 return response()->json(
                     [
                         "resStatus" => "success",
-                        "deleteId"  => $id
+                        "deleteId"  => $request->id
                     ],
                     200
                 );

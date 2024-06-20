@@ -83,7 +83,6 @@ class UserPostController extends Controller
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
 
-
                 $request->validate([
                     'name' => ['required', 'string', 'max:50'],
                     'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
@@ -120,7 +119,6 @@ class UserPostController extends Controller
                     // Auth::login($user);
 
                     $staff = staff::create([
-                        'position' => $request->role,
                         'user_id' => $user->id,
                         'owner_id' => $request->owner_id,
                     ]);
@@ -160,6 +158,47 @@ class UserPostController extends Controller
                 "resStatus" => 'error',
                 'message' => 'ユーザー登録に失敗しました。',
             ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+        }
+    }
+
+    public function updatePermission(Request $request)
+    {
+        try {
+            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+
+                $request->validate([
+                    'id' => ['required', 'integer', 'exists:users,id'],
+                    'role' => ['required', 'string', 'max:10'],
+                ]);
+
+                $user = User::where('id', $request->id)->first();
+
+                if (!empty($user)) {
+                    $user->role = $request->role;
+                    $user->save();
+
+                    return response()->json([
+                        'resStatus' => 'success',
+                        'message' => '権限の変更に成功しました。',
+                        'responseUser' => $user->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']),
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else {
+                    return response()->json([
+                        'resStatus' => 'error',
+                        'message' => 'スタッフ情報が見つかりませんでした。',
+                    ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+            } else {
+                return response()->json([
+                    'resStatus' => 'error',
+                    'message' => 'あなたは権限がありません。',
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'resStatus' => 'error',
+                'message' => 'エラーが発生しました。もう一度やり直してください。',
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 }

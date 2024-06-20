@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('hairstyles_id')->constrained('hairstyles')->onDelete('cascade');
             $table->foreignId('customers_id')->constrained('customers')->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained('owner')->onDelete('cascade');
         });
     }
 

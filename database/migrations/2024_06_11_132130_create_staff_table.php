@@ -15,10 +15,9 @@ return new class extends Migration
     {
         Schema::create('staff', function (Blueprint $table) {
             $table->id();
-            $table->string('position');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('owner_id')->constrained()->onDelete('cascade');
-            $table->timestamps();   
+            $table->timestamps();
         });
     }
 

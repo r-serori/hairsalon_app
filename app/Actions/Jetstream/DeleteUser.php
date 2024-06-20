@@ -8,13 +8,15 @@ use Laravel\Jetstream\Contracts\DeletesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use Illuminate\Support\Facades\Auth;
 
 class DeleteUserMain
 {
     public function deleteUser(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+
                 $user = User::find($request->id); // 例: リクエストからユーザーIDを取得
 
                 if (!$user) {

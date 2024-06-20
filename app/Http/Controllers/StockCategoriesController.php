@@ -16,7 +16,7 @@ class StockCategoriesController extends Controller
             if (Gate::allows(Permissions::ALL_PERMISSION)) {
 
                 // カテゴリー一覧を取得
-                $stock_categories = stock_categories::all();
+                $stock_categories = stock_categories::where('owner_id', $id)->get();
                 if ($stock_categories->isEmpty()) {
                     return response()->json([
                         "resStatus" => "success",
@@ -43,19 +43,21 @@ class StockCategoriesController extends Controller
         }
     }
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'category' => 'required|string',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
 
                 // 在庫モデルを作成して保存する
                 $stock_category = stock_categories::create([
                     'category' => $validatedData['category'],
+                    'owner_id' => $validatedData['owner_id'],
                 ]);
 
 
@@ -107,7 +109,7 @@ class StockCategoriesController extends Controller
 
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -117,7 +119,7 @@ class StockCategoriesController extends Controller
                 ]);
 
                 // 在庫を取得する
-                $stock_category = stock_categories::find($id);
+                $stock_category = stock_categories::find($request->id);
 
                 // 在庫の属性を更新する
                 $stock_category->category = $validatedData['category'];
@@ -145,12 +147,12 @@ class StockCategoriesController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
                 // 指定されたIDの在庫カテゴリーを取得
-                $stock_category = stock_categories::find($id);
+                $stock_category = stock_categories::find($request->id);
 
                 // 在庫カテゴリーが見つからない場合は404エラーを返す
                 if (!$stock_category) {
@@ -165,7 +167,7 @@ class StockCategoriesController extends Controller
                 $stock_category->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    "deleteId" => $id
+                    "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([

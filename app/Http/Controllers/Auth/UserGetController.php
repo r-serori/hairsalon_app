@@ -12,11 +12,10 @@ use App\Enums\Permissions;
 
 class UserGetController extends Controller
 {
-    public function getUsers($owner_id, $user_id): JsonResponse
+    public function getUsers($owner_id): JsonResponse
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-
 
                 $staffs = staff::where('owner_id', $owner_id)->get();
 

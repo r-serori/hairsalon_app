@@ -15,7 +15,7 @@ class MerchandisesController extends Controller
         try {
             if (Gate::allows(Permissions::ALL_PERMISSION)) {
 
-                $merchandises = merchandises::all();
+                $merchandises = merchandises::where('owner_id', $id)->get();
 
                 if ($merchandises->isEmpty()) {
                     return response()->json([
@@ -45,18 +45,20 @@ class MerchandisesController extends Controller
     }
 
 
-    public function store(Request $request, $id)
+    public function store(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
                 $validatedData = $request->validate([
                     'merchandise_name' => 'required',
                     'price' => 'required',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
                 $merchandise = merchandises::create([
                     'merchandise_name' => $validatedData['merchandise_name'],
                     'price' => $validatedData['price'],
+                    'owner_id' => $validatedData['owner_id'],
 
                 ]);
 
@@ -99,7 +101,7 @@ class MerchandisesController extends Controller
 
 
 
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         try {
             if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
@@ -109,7 +111,7 @@ class MerchandisesController extends Controller
                     'price' => 'required',
                 ]);
 
-                $merchandise = merchandises::find($id);
+                $merchandise = merchandises::find($request->id);
 
 
                 $merchandise->merchandise_name = $validatedData['merchandise_name'];
@@ -139,11 +141,11 @@ class MerchandisesController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy(Request $request)
     {
         try {
             if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-                $merchandise = merchandises::find($id);
+                $merchandise = merchandises::find($request->id);
                 if (!$merchandise) {
                     return response()->json([
                         "resStatus" => "error",
@@ -155,7 +157,7 @@ class MerchandisesController extends Controller
                 $merchandise->delete();
                 return response()->json([
                     "resStatus" => "success",
-                    "deleteId" => $id
+                    "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
