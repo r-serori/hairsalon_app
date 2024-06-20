@@ -137,11 +137,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/stock_categories/delete', [StockCategoriesController::class, 'destroy']);
 
 
-        Route::get('/course_customers', CourseCustomersController::class);
-        Route::get('/customer_attendances', CustomerAttendancesController::class);
-        Route::get('/hairstyle_customers', HairstyleCustomersController::class);
-        Route::get('/merchandise_customers', MerchandiseCustomersController::class);
-        Route::get('/option_customers', OptionCustomersController::class);
+        // Route::get('/course_customers', CourseCustomersController::class);
+        // Route::get('/customer_attendances', CustomerAttendancesController::class);
+        // Route::get('/hairstyle_customers', HairstyleCustomersController::class);
+        // Route::get('/merchandise_customers', MerchandiseCustomersController::class);
+        // Route::get('/option_customers', OptionCustomersController::class);
     });
 });
 

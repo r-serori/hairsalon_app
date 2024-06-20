@@ -24,10 +24,14 @@ class DatabaseSeeder extends Seeder
         //     'email' => 'test@example.com',
         // ]);
 
+        $this->call([
+            UserSeeder::class,
+            OwnerSeeder::class,
+            StaffSeeder::class,
+        ]);
 
 
         $this->call([
-            UserSeeder::class,
             // AttendanceSeeder::class,
             // Attendance_timesSeeder::class,
             CourseSeeder::class,
@@ -41,12 +45,6 @@ class DatabaseSeeder extends Seeder
             // DailySalesSeeder::class,
             // MonthlySalesSeeder::class,
             // YearlySalesSeeder::class,
-
-
-
-
-
-
         ]);
 
         // \App\Models\Attendance_times::factory(50)->create();

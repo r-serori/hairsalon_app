@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('date');
             $table->integer('daily_sales');
-            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

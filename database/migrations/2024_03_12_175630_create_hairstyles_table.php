@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('hairstyles', function (Blueprint $table) {
             $table->id();
             $table->string('hairstyle_name', 100);
-            $table->foreignId('owner_id')->constrained('owners')->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
