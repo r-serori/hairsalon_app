@@ -487,12 +487,7 @@ class SchedulesController extends Controller
                 $hairstyleCustomer = hairstyle_customers::where('owner_id', $validatedData['owner_id'])->get();
 
                 $userCustomer = customer_users::where('owner_id', $validatedData['owner_id'])->get();
-                $validatedData = $request->validate([
-                    'title' => 'nullable',
-                    'start_time' => 'nullable',
-                    'end_time' => 'nullable',
-                    'allDay' => 'required',
-                ]);
+
 
                 $schedule = schedules::create([
                     'title' => $validatedData['title'],
@@ -500,6 +495,7 @@ class SchedulesController extends Controller
                     'end_time' => $validatedData['end_time'],
                     'allDay' => $validatedData['allDay'],
                     'customers_id' => $customer->id,
+                    'owner_id' => $validatedData['owner_id'],
                 ]);
 
 
@@ -561,6 +557,7 @@ class SchedulesController extends Controller
                     'end_time' => 'nullable',
                     'allDay' => 'required',
                     'customers_id' => 'required',
+                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
                 $customerId = $validatedData['customers_id'];
@@ -572,12 +569,15 @@ class SchedulesController extends Controller
                 $customer->remarks = $validatedData['remarks'];
 
 
+
+
                 // 中間テーブルにデータを挿入
                 $courseIds = $validatedData['courses_id'];
                 $optionIds = $validatedData['options_id'];
                 $merchandiseIds = $validatedData['merchandises_id'];
                 $hairstyleIds = $validatedData['hairstyles_id'];
                 $userIds = $validatedData['user_id'];
+
 
                 $pivotData = [];
                 foreach ($courseIds as $courseId) {
@@ -632,6 +632,7 @@ class SchedulesController extends Controller
                 $schedule->end_time = $validatedData['end_time'];
                 $schedule->allDay = $validatedData['allDay'];
                 $schedule->customers_id = $customerId;
+
 
                 $schedule->save();
 
