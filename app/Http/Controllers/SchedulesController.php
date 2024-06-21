@@ -22,6 +22,7 @@ use App\Models\owner;
 use App\Models\staff;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\Roles;
+use Illuminate\Support\Facades\Log;
 
 class SchedulesController extends Controller
 {
@@ -31,11 +32,18 @@ class SchedulesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
+                $customers = customers::where('owner_id', $id)->get();
+
+                if ($customers->isEmpty()) {
+                    return response()->json([
+                        "resStatus" => "success",
+                        "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
                 $currentYear = Carbon::now()->year;
 
                 $selectSchedules = schedules::where('owner_id', $id)->whereRaw('DATE_FORMAT(start_time, "%Y") = ? OR DATE_FORMAT(start_time, "%Y") = ?', [$currentYear, $currentYear + 1])->get();
-
-                $customers = customers::where('owner_id', $id)->get();
 
                 $courses = courses::where('owner_id', $id)->get();
 
@@ -45,15 +53,29 @@ class SchedulesController extends Controller
 
                 $hairstyles = hairstyles::where('owner_id', $id)->get();
 
-                $owner = owner::find($id);
 
                 $staff = staff::where('owner_id', $id)->pluck('user_id');
+                Log::info('staff', $staff->toArray());
 
                 if ($staff->isEmpty()) {
+                    $owner = owner::where('user_id', $id)->first();
                     $users = User::find($owner->user_id);
                 } else {
+                    $owner = owner::where('user_id', $id)->first();
+                    Log::info('owner', $owner->toArray());
+                    $user = User::find($owner->user_id);
+                    Log::info('user', $user->toArray());
+                    $staff->push($user->id); // Eloquentコレクションに要素を追加
+                    Log::info('staff', $staff->toArray());
                     $users = User::whereIn('id', $staff)->get();
+                    Log::info('users', $users->toArray());
                 }
+
+
+                $responseUsers = $users->map(function ($user) {
+                    return ['id' => $user->id, 'name' => $user->name];
+                });
+
 
                 $courseCustomer = course_customers::where('owner_id', $id)->get();
 
@@ -76,7 +98,7 @@ class SchedulesController extends Controller
                         'options' => $options,
                         'merchandises' => $merchandises,
                         'hairstyles' => $hairstyles,
-                        'users' => $users->only(['id', 'name']),
+                        'responseUsers' => $responseUsers,
                         'course_customers' => $courseCustomer,
                         'option_customers' => $optionCustomer,
                         'merchandise_customers' => $merchandiseCustomer,
@@ -93,8 +115,8 @@ class SchedulesController extends Controller
                         'options' => $options,
                         'merchandises' => $merchandises,
                         'hairstyles' => $hairstyles,
-                        'users'
-                        => $users->only(['id', 'name']),
+                        'responseUsers'
+                        => $responseUsers,
                         'course_customers' => $courseCustomer,
                         'option_customers' => $optionCustomer,
                         'merchandise_customers' => $merchandiseCustomer,
@@ -123,12 +145,19 @@ class SchedulesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+
+                $customers = customers::where('owner_id', $id)->get();
+                if ($customers->isEmpty()) {
+                    return response()->json([
+                        "resStatus" => "success",
+                        "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
                 $selectGetYear = $year;
 
                 $selectSchedules = schedules::where('owner_id', $id)->whereRaw('DATA_FORMAT(start_time, "%Y") = ?', [$selectGetYear])
                     ->get();
-
-                $customers = customers::where('owner_id', $id)->get();
 
                 $courses = courses::where('owner_id', $id)->get();
 
@@ -139,15 +168,27 @@ class SchedulesController extends Controller
                 $hairstyles = hairstyles::where('owner_id', $id)->get();
 
 
-                $owner = owner::find($id);
-
                 $staff = staff::where('owner_id', $id)->pluck('user_id');
+                Log::info('staff', $staff->toArray());
 
                 if ($staff->isEmpty()) {
+                    $owner = owner::where('user_id', $id)->first();
                     $users = User::find($owner->user_id);
                 } else {
+                    $owner = owner::where('user_id', $id)->first();
+                    Log::info('owner', $owner->toArray());
+                    $user = User::find($owner->user_id);
+                    Log::info('user', $user->toArray());
+                    $staff->push($user->id); // Eloquentコレクションに要素を追加
+                    Log::info('staff', $staff->toArray());
                     $users = User::whereIn('id', $staff)->get();
+                    Log::info('users', $users->toArray());
                 }
+
+
+                $responseUsers = $users->map(function ($user) {
+                    return ['id' => $user->id, 'name' => $user->name];
+                });
 
                 $courseCustomer = course_customers::where('owner_id', $id)->get();
 
@@ -167,7 +208,7 @@ class SchedulesController extends Controller
                     'options' => $options,
                     'merchandises' => $merchandises,
                     'hairstyles' => $hairstyles,
-                    'users' => $users->only(['id', 'name']),
+                    'users' => $responseUsers,
                     'course_customers' => $courseCustomer,
                     'option_customers' => $optionCustomer,
                     'merchandise_customers' => $merchandiseCustomer,
@@ -295,7 +336,6 @@ class SchedulesController extends Controller
                 $schedule->end_time = $validatedData['end_time'];
                 $schedule->allDay = $validatedData['allDay'];
 
-
                 $schedule->save();
 
                 return response()->json(
@@ -375,8 +415,8 @@ class SchedulesController extends Controller
                     'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
                     'hairstyles_id' => 'nullable|array',
                     'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
-                    'users_id' => 'nullable|array',
-                    'users_id.*' => 'nullable|integer|exists:users,id',
+                    'user_id' => 'nullable|array',
+                    'user_id.*' => 'nullable|integer|exists:users,id',
                     'title' => 'nullable',
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
@@ -399,26 +439,54 @@ class SchedulesController extends Controller
                 $optionIds = $validatedData['options_id'];
                 $merchandiseIds = $validatedData['merchandises_id'];
                 $hairstyleIds = $validatedData['hairstyles_id'];
-                $userIds = $validatedData['users_id'];
+                $userIds = $validatedData['user_id'];
 
 
-                $customer->courses()->sync($courseIds);
-                $customer->options()->sync($optionIds);
-                $customer->merchandises()->sync($merchandiseIds);
-                $customer->hairstyles()->sync($hairstyleIds);
-                $customer->users()->sync($userIds);
 
-                $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+                $pivotData = [];
+                foreach ($courseIds as $courseId) {
+                    $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];
+                }
 
-                $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+                $customer->courses()->sync($pivotData);
 
-                $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+                $pivotData = [];
+                foreach ($optionIds as $optionId) {
+                    $pivotData[$optionId] = ['owner_id' => $validatedData['owner_id']];
+                }
 
-                $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+                $customer->options()->sync($pivotData);
 
-                $userCustomer = customer_users::where('customers_id', $customer->id)->get();
+                $pivotData = [];
+                foreach ($merchandiseIds as $merchandiseId) {
+                    $pivotData[$merchandiseId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->merchandises()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($hairstyleIds as $hairstyleId) {
+                    $pivotData[$hairstyleId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->hairstyles()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($userIds as $userId) {
+                    $pivotData[$userId] = ['owner_id' => $validatedData['owner_id']];
+                }
+                $customer->users()->sync($pivotData);
 
 
+                $courseCustomer = course_customers::where('owner_id', $validatedData['owner_id'])->get();
+
+                $optionCustomer = option_customers::where('owner_id', $validatedData['owner_id'])->get();
+
+                $merchandiseCustomer = merchandise_customers::where('owner_id', $validatedData['owner_id'])->get();
+
+                $hairstyleCustomer = hairstyle_customers::where('owner_id', $validatedData['owner_id'])->get();
+
+                $userCustomer = customer_users::where('owner_id', $validatedData['owner_id'])->get();
                 $validatedData = $request->validate([
                     'title' => 'nullable',
                     'start_time' => 'nullable',
@@ -461,7 +529,7 @@ class SchedulesController extends Controller
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
-                'スケジュールと顧客情報の作成に失敗しました。'
+                $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -486,14 +554,13 @@ class SchedulesController extends Controller
                     'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
                     'hairstyles_id' => 'nullable|array',
                     'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
-                    'users_id' => 'nullable|array',
-                    'users_id.*' => 'nullable|integer|exists:users,id',
+                    'user_id' => 'nullable|array',
+                    'user_id.*' => 'nullable|integer|exists:users,id',
                     'title' => 'nullable',
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'required',
                     'customers_id' => 'required',
-
                 ]);
 
                 $customerId = $validatedData['customers_id'];
@@ -510,26 +577,53 @@ class SchedulesController extends Controller
                 $optionIds = $validatedData['options_id'];
                 $merchandiseIds = $validatedData['merchandises_id'];
                 $hairstyleIds = $validatedData['hairstyles_id'];
-                $userIds = $validatedData['users_id'];
+                $userIds = $validatedData['user_id'];
 
-                $customer->courses()->sync($courseIds);
-                $customer->options()->sync($optionIds);
-                $customer->merchandises()->sync($merchandiseIds);
-                $customer->hairstyles()->sync($hairstyleIds);
-                $customer->users()->sync($userIds);
+                $pivotData = [];
+                foreach ($courseIds as $courseId) {
+                    $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->courses()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($optionIds as $optionId) {
+                    $pivotData[$optionId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->options()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($merchandiseIds as $merchandiseId) {
+                    $pivotData[$merchandiseId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->merchandises()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($hairstyleIds as $hairstyleId) {
+                    $pivotData[$hairstyleId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->hairstyles()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($userIds as $userId) {
+                    $pivotData[$userId] = ['owner_id' => $validatedData['owner_id']];
+                }
+                $customer->users()->sync($pivotData);
 
                 $customer->save();
 
-                $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
+                $courseCustomer = course_customers::where('owner_id', $validatedData['owner_id'])->get();
 
-                $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
+                $optionCustomer = option_customers::where('owner_id', $validatedData['owner_id'])->get();
 
-                $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
+                $merchandiseCustomer = merchandise_customers::where('owner_id', $validatedData['owner_id'])->get();
 
-                $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
+                $hairstyleCustomer = hairstyle_customers::where('owner_id', $validatedData['owner_id'])->get();
 
-                $userCustomer = customer_users::where('customers_id', $customer->id)->get();
-
+                $userCustomer = customer_users::where('owner_id', $validatedData['owner_id'])->get();
 
                 $schedule = schedules::find($validatedData['Sid']);
 
@@ -567,7 +661,7 @@ class SchedulesController extends Controller
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
-                'スケジュールと顧客情報の更新に失敗しました。'
+                $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -590,8 +684,8 @@ class SchedulesController extends Controller
                     'merchandises_id.*' => 'nullable|integer|exists:merchandises,id',
                     'hairstyles_id' => 'nullable|array',
                     'hairstyles_id.*' => 'nullable|integer|exists:hairstyles,id',
-                    'users_id' => 'nullable|array',
-                    'users_id.*' => 'nullable|integer|exists:users,id',
+                    'user_id' => 'nullable|array',
+                    'user_id.*' => 'nullable|integer|exists:users,id',
                     'title' => 'nullable',
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
@@ -613,25 +707,54 @@ class SchedulesController extends Controller
                 $optionIds = $validatedData['options_id'];
                 $merchandiseIds = $validatedData['merchandises_id'];
                 $hairstyleIds = $validatedData['hairstyles_id'];
-                $userIds = $validatedData['users_id'];
+                $userIds = $validatedData['user_id'];
+                $pivotData = [];
+                foreach ($courseIds as $courseId) {
+                    $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];
+                }
 
-                $courseCustomer = $customer->courses()->sync($courseIds);
-                $optionCustomer = $customer->options()->sync($optionIds);
-                $merchandiseCustomer = $customer->merchandises()->sync($merchandiseIds);
-                $hairstyleCustomer = $customer->hairstyles()->sync($hairstyleIds);
-                $userCustomer = $customer->users()->sync($userIds);
+                $customer->courses()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($optionIds as $optionId) {
+                    $pivotData[$optionId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->options()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($merchandiseIds as $merchandiseId) {
+                    $pivotData[$merchandiseId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->merchandises()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($hairstyleIds as $hairstyleId) {
+                    $pivotData[$hairstyleId] = ['owner_id' => $validatedData['owner_id']];
+                }
+
+                $customer->hairstyles()->sync($pivotData);
+
+                $pivotData = [];
+                foreach ($userIds as $userId) {
+                    $pivotData[$userId] = ['owner_id' => $validatedData['owner_id']];
+                }
+                $customer->users()->sync($pivotData);
+
+
+
+                $courseCustomer = course_customers::where('owner_id', $validatedData['owner_id'])->get();
+
+                $optionCustomer = option_customers::where('owner_id', $validatedData['owner_id'])->get();
+
+                $merchandiseCustomer = merchandise_customers::where('owner_id', $validatedData['owner_id'])->get();
+
+                $hairstyleCustomer = hairstyle_customers::where('owner_id', $validatedData['owner_id'])->get();
+
+                $userCustomer = customer_users::where('owner_id', $validatedData['owner_id'])->get();
 
                 $customer->save();
-
-                $courseCustomer = course_customers::where('customers_id', $customer->id)->get();
-
-                $optionCustomer = option_customers::where('customers_id', $customer->id)->get();
-
-                $merchandiseCustomer = merchandise_customers::where('customers_id', $customer->id)->get();
-
-                $hairstyleCustomer = hairstyle_customers::where('customers_id', $customer->id)->get();
-
-                $userCustomer = customer_users::where('customers_id', $customer->id)->get();
 
                 $schedule = schedules::create([
                     'title' => $validatedData['title'],
@@ -668,7 +791,7 @@ class SchedulesController extends Controller
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
-                'スケジュールと顧客情報の更新に失敗しました。'
+                $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

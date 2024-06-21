@@ -55,18 +55,61 @@ class UserGetController extends Controller
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
-
-    public function show(): JsonResponse
+    public function getAttendanceUsers($owner_id): JsonResponse
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
-                if (!empty($user)) {
+                $staffs = staff::where('owner_id', $owner_id)->get();
+
+                if ($staffs->isEmpty()) {
+                    return response()->json([
+                        'resStatus' => 'success',
+                        'message' => 'スタッフ情報がありません!登録してください！',
+                        'responseUsers' => []
+                    ]);
+                } else {
+
+                    $userIds = $staffs->pluck('user_id')->toArray();
+
+                    $users = User::whereIn('id', $userIds)->get();
+
                     return response()->json([
                         'resStatus' => 'success',
                         'message' => 'ユーザー情報を取得しました。',
-                        'responseUser' => $user->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'),
+                        'responseUsers' => $users->map(function ($user) {
+                            return $user->only(['id', 'name', 'isAttendance']);
+                        }),
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+            } else {
+                return response()->json([
+                    'resStatus' => 'error',
+                    'message' => '貴方は権限がありません。',
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'resStatus' => 'error',
+                'message' => 'エラーが発生しました。もう一度やり直してください。',
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+        }
+    }
+
+    public function show($id): JsonResponse
+    {
+        try {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+
+                $responseUser = User::find($id);
+                if (!empty($responseUser)) {
+
+                    return response()->json([
+                        'resStatus' => 'success',
+                        'message' => 'ユーザー情報を取得しました。',
+                        'responseUser' => $responseUser->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([

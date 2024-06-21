@@ -89,7 +89,7 @@ class CustomersSeeder extends Seeder
             foreach ($users as $user) {
                 customer_users::create([
                     'customers_id' => $customer->id,
-                    'users_id' => $user->id,
+                    'user_id' => $user->id,
                     'owner_id' => 1,
                 ]);
             }

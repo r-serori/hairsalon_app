@@ -19,27 +19,30 @@ class customers extends Model
 
     public function courses()
     {
-        return $this->belongsToMany(courses::class, 'course_customers');
+        return $this->belongsToMany(
+            courses::class,
+            'course_customers'
+        )->withPivot('owner_id');
     }
 
     public function options()
     {
-        return $this->belongsToMany(options::class, 'option_customers');
+        return $this->belongsToMany(options::class, 'option_customers')->withPivot('owner_id');
     }
 
     public function merchandises()
     {
-        return $this->belongsToMany(merchandises::class, 'merchandise_customers');
+        return $this->belongsToMany(merchandises::class, 'merchandise_customers')->withPivot('owner_id');
     }
 
     public function hairstyles()
     {
-        return $this->belongsToMany(hairstyles::class, 'hairstyle_customers');
+        return $this->belongsToMany(hairstyles::class, 'hairstyle_customers')->withPivot('owner_id');
     }
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'customer_users', 'customers_id', 'users_id');
+        return $this->belongsToMany(User::class, 'customer_users')->withPivot('owner_id');
     }
 
     public function schedules()

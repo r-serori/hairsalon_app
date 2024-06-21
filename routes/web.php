@@ -32,17 +32,13 @@ use App\Http\Controllers\Auth\UserPostController;
 
 Route::middleware('web')->group(function () {
 
-    //購入者ownerが店の情報を登録
-    Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
-
-
-
     Route::middleware('auth:sanctum')->group(function () {
         // imgタグのsrc属性に画像を表示するためのルーティング　startは出勤時の写真、endは退勤時の写真
         Route::get("/attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
         Route::get("/attendance_times/images/endPhotos/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');
 
-
+        //購入者ownerが店の情報を登録
+        Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
 
         // Route::post('ownerRegister', [UserPostController::class, 'ownerStore']);
 
@@ -71,7 +67,7 @@ Route::middleware('web')->group(function () {
 
 
         //顧客情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER  , index = Gate,ALL
-        Route::get('/customers/{user_id}', [CustomersController::class, 'index']);
+        Route::get('/customers/{owner_id}', [CustomersController::class, 'index']);
         Route::post('/customers/store', [CustomersController::class, 'store']);
         Route::post('/customers/update', [CustomersController::class, 'update']);
         Route::post('/customers/delete', [CustomersController::class, 'destroy']);
@@ -105,7 +101,7 @@ Route::middleware('web')->group(function () {
         Route::post('/schedules/customers/double', [SchedulesController::class, 'double']);
         Route::post('/schedules/customers/doubleUpdate', [SchedulesController::class, 'doubleUpdate']);
         Route::post('/schedules/customers/customerOnlyUpdate', [SchedulesController::class, 'customerOnlyUpdate']);
-        // Route::get('/schedules', SchedulesController::class);
+        Route::get('/schedules/{user_id}', [SchedulesController::class, 'index']);
 
         Route::post('/schedules/update', [SchedulesController::class, 'update']);
         Route::post('/schedules/delete', [SchedulesController::class, 'destroy']);
