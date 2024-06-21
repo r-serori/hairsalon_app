@@ -44,9 +44,8 @@ Route::middleware('api')->group(
                 //ログアウト処理 Gate,ALL
                 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
 
-
                 //各スタッフが自分の情報を取得 Gate,ALL
-                Route::get('/showUser/{user_id}', [UserGetController::class, 'show']);
+                Route::get('/showUser', [UserGetController::class, 'show']);
 
                 //ユーザーが自分の個人情報を変更 Gate,ALL
                 Route::post('/updateUser', [UpdateUserProfileInformation::class, 'update']);
@@ -58,6 +57,7 @@ Route::middleware('api')->group(
                 Route::post('/resetPassword', [ResetUserPassword::class, 'reset'])
                     ->name('password.store');
 
+                //register時にメールを送信する処理  MAIL_MAILER=smtp 確認できる。
                 Route::get('/verify-email', VerifyEmailController::class)
                     ->middleware(['auth', 'signed', 'throttle:6,1'])
                     ->name('verification.verify');

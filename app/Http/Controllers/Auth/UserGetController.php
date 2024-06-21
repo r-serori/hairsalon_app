@@ -9,13 +9,16 @@ use App\Models\User;
 use App\Models\staff;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
 
 class UserGetController extends Controller
 {
     public function getUsers($owner_id): JsonResponse
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
 
                 $staffs = staff::where('owner_id', $owner_id)->get();
 
@@ -53,11 +56,11 @@ class UserGetController extends Controller
         }
     }
 
-    public function show($user_id): JsonResponse
+    public function show(): JsonResponse
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
-                $user = User::where('id', $user_id)->first();
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 if (!empty($user)) {
                     return response()->json([

@@ -13,6 +13,8 @@ use App\Models\User;
 use App\Models\owner;
 use App\Models\staff;
 use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
+
 
 class UserPostController extends Controller
 {
@@ -82,7 +84,8 @@ class UserPostController extends Controller
     public function staffStore(Request $request): JsonResponse
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
 
                 $request->validate([
                     'name' => ['required', 'string', 'max:50'],
@@ -165,7 +168,8 @@ class UserPostController extends Controller
     public function updatePermission(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
 
                 $request->validate([
                     'id' => ['required', 'integer', 'exists:users,id'],

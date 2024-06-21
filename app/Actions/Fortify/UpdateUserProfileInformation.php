@@ -7,6 +7,9 @@ use App\Enums\Permissions;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
+use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
 
 
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -26,7 +29,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     public function update($user, array $input): JsonResponse
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 Validator::make($input, [
                     'name' => ['required', 'string', 'max:255'],
