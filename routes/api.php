@@ -16,10 +16,12 @@ use App\Http\Controllers\Auth\UserPostController; // Add this line to import the
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Jetstream\DeleteUserMain;
+use Illuminate\Support\Facades\Log;
 
 Route::middleware('api')->group(
     function () {
         Route::get('/sanctum/csrf-cookie', function (Request $request) {
+            Log::info('CSRF token has been set successfully.');
             return response()->json([
                 'message' => 'CSRF token has been set successfully.',
             ]);

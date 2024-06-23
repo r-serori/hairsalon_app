@@ -97,11 +97,12 @@ Route::middleware('web')->group(function () {
         Route::post('/hairstyles/delete', [HairstylesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   , index = Gate,ALL
-        Route::get('/schedules/customers/selectGetYear/{user_id}/{year}', [SchedulesController::class, 'selectGetYear']);
+        Route::get('/schedules/customers/selectGetYear/{owner_id}/{year}', [SchedulesController::class, 'selectGetYear']);
         Route::post('/schedules/customers/double', [SchedulesController::class, 'double']);
         Route::post('/schedules/customers/doubleUpdate', [SchedulesController::class, 'doubleUpdate']);
         Route::post('/schedules/customers/customerOnlyUpdate', [SchedulesController::class, 'customerOnlyUpdate']);
         Route::get('/schedules/{user_id}', [SchedulesController::class, 'index']);
+        Route::post('/schedules/store', [SchedulesController::class, 'store']);
 
         Route::post('/schedules/update', [SchedulesController::class, 'update']);
         Route::post('/schedules/delete', [SchedulesController::class, 'destroy']);

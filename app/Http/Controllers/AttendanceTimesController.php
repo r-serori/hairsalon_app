@@ -33,8 +33,9 @@ class AttendanceTimesController extends Controller
                 }
 
                 //user_isdでデータを絞ってから、created_atで年月を絞る
-                $selectAttendanceTimes = attendance_times::where('user_id', $id)->whereRaw("DATE_FORMAT(created_at, '%Y-%m') = ?", [$currentYearAndMonth])
+                $selectAttendanceTimes = attendance_times::where('user_id', $id)->whereYear('created_at', $currentYearAndMonth)
                     ->get();
+
 
                 // 各レコードのstart_photo_pathとend_photos_pathをエンコード
                 $selectAttendanceTimes->transform(function ($item) {
@@ -188,7 +189,7 @@ class AttendanceTimesController extends Controller
                     $data = base64_decode($data);
 
                     // 保存するファイル名を生成
-                    $fileName = 'startPhotos/' . uniqid() . '.jpg';
+                    $fileName =  uniqid() . '.jpg';
 
                     // ファイルを保存
                     Storage::disk('public')->put($fileName, $data);
@@ -211,7 +212,7 @@ class AttendanceTimesController extends Controller
                         response()->json(
                             [
                                 "resStatus" => "success",
-                                "attendance" => $user,
+                                "responseUser" => $user,
                                 "attendanceTime" => $attendanceTime,
                             ],
                             200,
@@ -267,7 +268,7 @@ class AttendanceTimesController extends Controller
                     [
                         "resStatus" => "success",
                         "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、その後出勤ボタンを押してください！",
-                        "attendanceTime" => $existYesterdayStartTime, "attendance" => $user
+                        "attendanceTime" => $existYesterdayStartTime, "responseUser" => $user
                     ],
                     200,
                     [],
@@ -329,7 +330,8 @@ class AttendanceTimesController extends Controller
                             [
                                 "resStatus" => "success",
                                 "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、今は編集依頼を押した後に出勤ボタンを押してください！",
-                                "attendanceTime" => $existYesterdayStartTime, "attendance" => $user
+                                "attendanceTime" => $existYesterdayStartTime,
+                                "responseUser" => $user
                             ],
                             200,
                             [],
@@ -348,7 +350,7 @@ class AttendanceTimesController extends Controller
                     $data = base64_decode($data);
 
                     // 保存するファイル名を生成
-                    $fileName = 'endPhotos/' . uniqid() . '.jpg';
+                    $fileName = uniqid() . '.jpg';
 
                     // ファイルを保存
                     Storage::disk('public')->put($fileName, $data);
@@ -373,7 +375,7 @@ class AttendanceTimesController extends Controller
 
                     return
                         response()->json(
-                            ["resStatus" => "success", "attendanceTime" => $attendanceTime, "attendance" => $user],
+                            ["resStatus" => "success", "attendanceTime" => $attendanceTime, "responseUser" => $user],
                             200,
                             [],
                             JSON_UNESCAPED_UNICODE

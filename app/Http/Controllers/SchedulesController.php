@@ -43,7 +43,9 @@ class SchedulesController extends Controller
 
                 $currentYear = Carbon::now()->year;
 
-                $selectSchedules = schedules::where('owner_id', $id)->whereRaw('DATE_FORMAT(start_time, "%Y") = ? OR DATE_FORMAT(start_time, "%Y") = ?', [$currentYear, $currentYear + 1])->get();
+                $selectSchedules = schedules::whereYear('start_time', $currentYear)
+                    ->where('owner_id', 1)
+                    ->get();
 
                 $courses = courses::where('owner_id', $id)->get();
 
@@ -71,11 +73,9 @@ class SchedulesController extends Controller
                     Log::info('users', $users->toArray());
                 }
 
-
                 $responseUsers = $users->map(function ($user) {
                     return ['id' => $user->id, 'name' => $user->name];
                 });
-
 
                 $courseCustomer = course_customers::where('owner_id', $id)->get();
 
@@ -147,6 +147,7 @@ class SchedulesController extends Controller
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 $customers = customers::where('owner_id', $id)->get();
+
                 if ($customers->isEmpty()) {
                     return response()->json([
                         "resStatus" => "success",
@@ -156,7 +157,8 @@ class SchedulesController extends Controller
 
                 $selectGetYear = $year;
 
-                $selectSchedules = schedules::where('owner_id', $id)->whereRaw('DATA_FORMAT(start_time, "%Y") = ?', [$selectGetYear])
+                $selectSchedules = schedules::whereYear('start_time', $selectGetYear)
+                    ->where('owner_id', 1)
                     ->get();
 
                 $courses = courses::where('owner_id', $id)->get();
@@ -226,7 +228,7 @@ class SchedulesController extends Controller
             return response()->json([
                 "resStatus" => "error",
                 'message' =>
-                'スケジュールが見つかりません。'
+                $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -242,8 +244,6 @@ class SchedulesController extends Controller
                     'end_time' => 'nullable',
                     'allDay' =>
                     'nullable|in:0,1',
-                    'customers_id' => 'nullable',
-                    'customers_id.*' => 'nullable|integer|exists:customers,id',
                     'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
@@ -253,21 +253,8 @@ class SchedulesController extends Controller
                     'end_time' => $validatedData['end_time'],
                     'allDay' => $validatedData['allDay'],
                     'owner_id' => $validatedData['owner_id'],
-                    'customers_id' => $validatedData['customers_id'],
                 ]);
 
-
-
-                // if ($customerId !== null && $customerId !== 0) {
-                //     $customerSchedule =  $schedule->customer()->sync([$customerId]);
-
-                //     return response()->json([
-                //         "resStatus" => "success",
-                //         'schedule' => $schedule,
-                //         'customerSchedule' => $customerSchedule
-
-                //     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                // } else {
                 return response()->json([
                     "resStatus" => "success",
                     'schedule' => $schedule,
@@ -421,7 +408,6 @@ class SchedulesController extends Controller
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'required',
-                    'customers_id' => 'nullable',
                     'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
@@ -668,7 +654,7 @@ class SchedulesController extends Controller
     }
 
 
-    public function customerOnlyUpdate(Request $request, $id)
+    public function customerOnlyUpdate(Request $request)
     {
         try {
             $user = User::find(Auth::id());

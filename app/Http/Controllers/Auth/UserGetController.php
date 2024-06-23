@@ -10,6 +10,7 @@ use App\Models\staff;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use App\Enums\Roles;
+use App\Models\attendance_times;
 use Illuminate\Support\Facades\Auth;
 
 class UserGetController extends Controller
@@ -34,12 +35,13 @@ class UserGetController extends Controller
 
                     $users = User::whereIn('id', $userIds)->get();
 
+                    $users->map(function ($user) {
+                        return $user->only(['id', 'name', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']);
+                    });
                     return response()->json([
                         'resStatus' => 'success',
                         'message' => 'ユーザー情報を取得しました。',
-                        'responseUsers' => $users->map(function ($user) {
-                            return $user->only(['id', 'name', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']);
-                        }),
+                        'responseUsers' => $users,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
@@ -75,12 +77,27 @@ class UserGetController extends Controller
 
                     $users = User::whereIn('id', $userIds)->get();
 
+                    $attendanceTimes = $users->map(function ($userId) {
+                        $attendanceTime = attendance_times::where('user_id', $userId->id)->latest()->first();
+                        if (empty($attendanceTime)) {
+                            return [
+                                'user_id' => $userId->id,
+                                'start_time' => null,
+                                'end_time' => null,
+                            ];
+                        } else {
+                            return $attendanceTime;
+                        }
+                    });
+
+                    $users->map(function ($user) {
+                        return $user->only(['id', 'name', 'isAttendance', 'created_at', 'updated_at']);
+                    });
                     return response()->json([
                         'resStatus' => 'success',
                         'message' => 'ユーザー情報を取得しました。',
-                        'responseUsers' => $users->map(function ($user) {
-                            return $user->only(['id', 'name', 'isAttendance']);
-                        }),
+                        'responseUsers' => $users,
+                        'attendanceTimes' => $attendanceTimes,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
