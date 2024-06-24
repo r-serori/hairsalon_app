@@ -24,15 +24,17 @@ class UserSeeder extends Seeder
             'role' => 'オーナー',
             'isAttendance' => 0,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
         DB::table('users')->insert([
-            'name' => 'maneger123',
-            'email' => 'maneger@hairmail.com',
+            'name' => 'manager123',
+            'email' => 'manager@hairmail.com',
             'phone_number' => '080-1234-5678',
             'password' => Hash::make('password123'),
             'role' => 'マネージャー',
             'isAttendance' => 0,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
         DB::table('users')->insert([
             'name' => 'staff123',
@@ -42,6 +44,7 @@ class UserSeeder extends Seeder
             'role' => 'スタッフ',
             'isAttendance' => 0,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

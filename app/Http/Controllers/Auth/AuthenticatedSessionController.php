@@ -76,7 +76,8 @@ class AuthenticatedSessionController extends Controller
                         'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
-                    $staff = staff::where('owner_id', $existOwner->id)->first();
+
+                    $staff = staff::where('user_id', $request->user()->id)->first();
 
                     $owner = owner::where('id', $staff->owner_id)->first();
 
@@ -90,8 +91,7 @@ class AuthenticatedSessionController extends Controller
             } catch (\Exception $e) {
                 return response()->json([
                     'resStatus' => 'error',
-                    'message' => 'ログインに失敗しました。もう一度やり直してください。',
-                    'error' => $e->getMessage(),
+                    'message' =>  $e->getMessage(),
                 ], 500);
             }
         });
@@ -105,25 +105,29 @@ class AuthenticatedSessionController extends Controller
      */
     protected function loginPipeline(LoginRequest $request)
     {
-        if (Fortify::$authenticateThroughCallback) {
-            return (new Pipeline(app()))->send($request)->through(array_filter(
-                call_user_func(Fortify::$authenticateThroughCallback, $request)
-            ));
-        }
+        try {
+            if (Fortify::$authenticateThroughCallback) {
+                return (new Pipeline(app()))->send($request)->through(array_filter(
+                    call_user_func(Fortify::$authenticateThroughCallback, $request)
+                ));
+            }
 
-        if (is_array(config('fortify.pipelines.login'))) {
-            return (new Pipeline(app()))->send($request)->through(array_filter(
-                config('fortify.pipelines.login')
-            ));
-        }
+            if (is_array(config('fortify.pipelines.login'))) {
+                return (new Pipeline(app()))->send($request)->through(array_filter(
+                    config('fortify.pipelines.login')
+                ));
+            }
 
-        return (new Pipeline(app()))->send($request)->through(array_filter([
-            config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
-            config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
-            Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
-            AttemptToAuthenticate::class,
-            PrepareAuthenticatedSession::class,
-        ]));
+            return (new Pipeline(app()))->send($request)->through(array_filter([
+                config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+                config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
+                Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
+                AttemptToAuthenticate::class,
+                PrepareAuthenticatedSession::class,
+            ]));
+        } catch (\Exception $e) {
+            return throw $e;
+        }
     }
 
     /**
@@ -150,8 +154,8 @@ class AuthenticatedSessionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'resStatus' => 'error',
-                'message' => 'ログアウトに失敗しました。もう一度やり直してください。',
-                'error' => $e->getMessage(),
+                'message' =>  $e->getMessage(),
+
             ], 500);
         }
     }

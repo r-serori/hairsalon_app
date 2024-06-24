@@ -21,6 +21,7 @@ class MonthlySalesSeeder extends Seeder
             'monthly_sales' => 211000,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         DB::table('monthly_sales')->insert([
@@ -29,6 +30,7 @@ class MonthlySalesSeeder extends Seeder
             'monthly_sales' => 250000,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         DB::table('monthly_sales')->insert([
@@ -37,6 +39,7 @@ class MonthlySalesSeeder extends Seeder
             'monthly_sales' => 300000,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         DB::table('monthly_sales')->insert([
@@ -45,6 +48,7 @@ class MonthlySalesSeeder extends Seeder
             'monthly_sales' => 350000,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

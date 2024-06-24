@@ -21,18 +21,21 @@ class OptionSeeder extends Seeder
             'price' => 3000,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
         DB::table('options')->insert([
             'option_name' => 'エステB',
             'price' => 500,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
         DB::table('options')->insert([
             'option_name' => 'クレンジング',
             'price' => 1000,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

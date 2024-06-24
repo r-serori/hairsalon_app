@@ -32,6 +32,9 @@ class CustomersSeeder extends Seeder
                 'phone_number' => '123456789' . $i,
                 'remarks' => 'Regular customer ' . $i,
                 'owner_id' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+
             ]);
 
             // ハンドリングするヘアスタイルを取得
@@ -43,6 +46,8 @@ class CustomersSeeder extends Seeder
                     'customers_id' => $customer->id,
                     'hairstyles_id' => $hairstyle->id,
                     'owner_id' => 1,
+
+
                 ]);
             }
 
@@ -55,6 +60,7 @@ class CustomersSeeder extends Seeder
                     'customers_id' => $customer->id,
                     'courses_id' => $course->id,
                     'owner_id' => 1,
+
                 ]);
             }
 
@@ -67,6 +73,8 @@ class CustomersSeeder extends Seeder
                     'customers_id' => $customer->id,
                     'options_id' => $option->id,
                     'owner_id' => 1,
+
+
                 ]);
             }
 
@@ -79,6 +87,8 @@ class CustomersSeeder extends Seeder
                     'customers_id' => $customer->id,
                     'merchandises_id' => $merchandise->id,
                     'owner_id' => 1,
+
+
                 ]);
             }
 
@@ -91,6 +101,8 @@ class CustomersSeeder extends Seeder
                     'customers_id' => $customer->id,
                     'user_id' => $user->id,
                     'owner_id' => 1,
+
+
                 ]);
             }
         }

@@ -22,6 +22,7 @@ class OwnerSeeder extends Seeder
             'phone_number' => '03-1234-5678',
             'user_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

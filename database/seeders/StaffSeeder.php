@@ -20,11 +20,13 @@ class StaffSeeder extends Seeder
             'user_id' => 2,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
         DB::table('staff')->insert([
             'user_id' => 3,
             'owner_id' => 1,
             'created_at' => now(),
+            'updated_at' => now(),
         ]);
     }
 }

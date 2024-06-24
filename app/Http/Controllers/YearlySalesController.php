@@ -6,13 +6,19 @@ use Illuminate\Http\Request;
 use App\Models\yearly_sales;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+use App\Enums\Roles;
+
 
 class YearlySalesController extends Controller
 {
     public function index($id)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $yearly_sales = yearly_sales::where('owner_id', $id)->get();
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
@@ -45,7 +51,8 @@ class YearlySalesController extends Controller
     public function store(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $validatedData = $request->validate([
                     'year' => 'required|string',
                     'yearly_sales' => 'required|integer',
@@ -106,7 +113,8 @@ class YearlySalesController extends Controller
     public function update(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $validatedData = $request->validate([
                     'year' => 'required|string',
                     'yearly_sales' => 'required|integer',
@@ -145,7 +153,8 @@ class YearlySalesController extends Controller
     public function destroy(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::OWNER)) {
                 $yearly_sale = yearly_sales::find($request->id);
                 if (!$yearly_sale) {
                     return response()->json([
