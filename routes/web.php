@@ -34,8 +34,9 @@ Route::middleware('web')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         // imgタグのsrc属性に画像を表示するためのルーティング　startは出勤時の写真、endは退勤時の写真
-        Route::get("/attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
-        Route::get("/attendance_times/images/endPhotos/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');
+        Route::get("/storage/attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
+
+        Route::get("/storage/attendance_times/images/endPhotos/{fileName}", [AttendanceTimesController::class, 'endPhotos'])->where('fileName', '.*');
 
         //購入者ownerが店の情報を登録
         Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);

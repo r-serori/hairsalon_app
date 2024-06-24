@@ -19,6 +19,8 @@ return [
         'api/*',
         'sanctum/csrf-cookie',
         'csrf-token',
+        'storage',
+        'storage/*',
         'login',
         'login/*',
         'register',

@@ -33,9 +33,10 @@ class AttendanceTimesController extends Controller
                 }
 
                 //user_isdでデータを絞ってから、created_atで年月を絞る
-                $selectAttendanceTimes = attendance_times::where('user_id', $id)->whereYear('created_at', $currentYearAndMonth)
-                    ->get();
+                $selectAttendanceTimes = attendance_times::where('user_id', $id)->whereYear('created_at', $currentYearAndMonth)->latest('created_at')->get();
 
+                //送信されるphoto_pathを確認
+                Log::info("selectAttendanceTimes", ["selectAttendanceTimes", $selectAttendanceTimes]);
 
                 // 各レコードのstart_photo_pathとend_photos_pathをエンコード
                 $selectAttendanceTimes->transform(function ($item) {
@@ -119,9 +120,20 @@ class AttendanceTimesController extends Controller
                 abort(404);
             }
 
-            return response()->file($imagePath);
+            // 画像のMIMEタイプを取得
+            $mimeType = Storage::mimeType('app/public/' . $decoFileName);
+
+            // レスポンスを生成して返す
+            $headers = [
+                'Content-Type' => $mimeType,
+            ];
+
+            return response(file_get_contents($imagePath), 200, $headers);
         } catch (\Exception $e) {
-            abort(404);
+            return response()->json([
+                "resStatus" => "error",
+                'message' => $e->getMessage()
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
@@ -135,7 +147,7 @@ class AttendanceTimesController extends Controller
 
             $imagePath = storage_path('app/public/' . $decoFileName);
 
-            dd($imagePath);
+            Log::info("imagePath", ["imagePath", $imagePath]);
 
 
             // 画像ファイルが存在するか確認
@@ -143,9 +155,20 @@ class AttendanceTimesController extends Controller
                 abort(404);
             }
 
-            return response()->file($imagePath);
+            // 画像のMIMEタイプを取得
+            $mimeType = Storage::mimeType('app/public/' . $decoFileName);
+
+            // レスポンスを生成して返す
+            $headers = [
+                'Content-Type' => $mimeType,
+            ];
+
+            return response(file_get_contents($imagePath), 200, $headers);
         } catch (\Exception $e) {
-            abort(404);
+            return response()->json([
+                "resStatus" => "error",
+                'message' => $e->getMessage()
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
@@ -189,7 +212,7 @@ class AttendanceTimesController extends Controller
                     $data = base64_decode($data);
 
                     // 保存するファイル名を生成
-                    $fileName =  uniqid() . '.jpg';
+                    $fileName = 'startPhotos/' . uniqid() . '.jpg';
 
                     // ファイルを保存
                     Storage::disk('public')->put($fileName, $data);
@@ -350,7 +373,7 @@ class AttendanceTimesController extends Controller
                     $data = base64_decode($data);
 
                     // 保存するファイル名を生成
-                    $fileName = uniqid() . '.jpg';
+                    $fileName = 'endPhotos/' . uniqid() . '.jpg';
 
                     // ファイルを保存
                     Storage::disk('public')->put($fileName, $data);
