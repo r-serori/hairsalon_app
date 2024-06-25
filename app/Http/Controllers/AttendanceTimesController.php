@@ -24,6 +24,8 @@ class AttendanceTimesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
+                $user_id = urldecode($id);
+                $yearMonth = urldecode($yearMonth);
                 if ($yearMonth !== "無し") {
                     //わたってきた('Y-m')形式の年月を取得
                     $currentYearAndMonth = $yearMonth;
@@ -33,7 +35,7 @@ class AttendanceTimesController extends Controller
                 }
 
                 //user_isdでデータを絞ってから、created_atで年月を絞る
-                $selectAttendanceTimes = attendance_times::where('user_id', $id)->whereYear('created_at', $currentYearAndMonth)->latest('created_at')->get();
+                $selectAttendanceTimes = attendance_times::where('user_id', $user_id)->whereYear('created_at', $currentYearAndMonth)->latest('created_at')->get();
 
                 //送信されるphoto_pathを確認
                 Log::info("selectAttendanceTimes", ["selectAttendanceTimes", $selectAttendanceTimes]);
