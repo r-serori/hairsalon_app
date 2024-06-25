@@ -20,9 +20,9 @@ use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
-use Nette\Utils\Json;
 use App\Models\owner;
 use App\Models\staff;
+use Illuminate\Support\Facades\Log;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -70,29 +70,32 @@ class AuthenticatedSessionController extends Controller
 
                 if (!empty($existOwner)) {
                     return response()->json([
-                        'resStatus' => 'success',
                         'message' => 'オーナー用ユーザーとしてログインしました!',
                         'responseOwnerId' => $existOwner->id,
                         'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
-
                     $staff = staff::where('user_id', $request->user()->id)->first();
 
-                    $owner = owner::where('id', $staff->owner_id)->first();
+                    $owner = owner::find($staff->owner_id);
 
                     return response()->json([
-                        'resStatus' => 'success',
                         'message' => 'スタッフ用ユーザーとしてログインしました!',
                         'responseOwnerId' => $owner->id,
                         'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } catch (\Exception $e) {
-                return response()->json([
-                    'resStatus' => 'error',
-                    'message' =>  $e->getMessage(),
-                ], 500);
+                // Log::error($e->getMessage());
+                return response()->json(
+                    [
+                        'message' =>
+                        'ログインに失敗しました。もう一度やり直してください。',
+                    ],
+                    500,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
             }
         });
     }
@@ -105,29 +108,25 @@ class AuthenticatedSessionController extends Controller
      */
     protected function loginPipeline(LoginRequest $request)
     {
-        try {
-            if (Fortify::$authenticateThroughCallback) {
-                return (new Pipeline(app()))->send($request)->through(array_filter(
-                    call_user_func(Fortify::$authenticateThroughCallback, $request)
-                ));
-            }
-
-            if (is_array(config('fortify.pipelines.login'))) {
-                return (new Pipeline(app()))->send($request)->through(array_filter(
-                    config('fortify.pipelines.login')
-                ));
-            }
-
-            return (new Pipeline(app()))->send($request)->through(array_filter([
-                config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
-                config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
-                Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
-                AttemptToAuthenticate::class,
-                PrepareAuthenticatedSession::class,
-            ]));
-        } catch (\Exception $e) {
-            return throw $e;
+        if (Fortify::$authenticateThroughCallback) {
+            return (new Pipeline(app()))->send($request)->through(array_filter(
+                call_user_func(Fortify::$authenticateThroughCallback, $request)
+            ));
         }
+
+        if (is_array(config('fortify.pipelines.login'))) {
+            return (new Pipeline(app()))->send($request)->through(array_filter(
+                config('fortify.pipelines.login')
+            ));
+        }
+
+        return (new Pipeline(app()))->send($request)->through(array_filter([
+            config('fortify.limiters.login') ? null : EnsureLoginIsNotThrottled::class,
+            config('fortify.lowercase_usernames') ? CanonicalizeUsername::class : null,
+            Features::enabled(Features::twoFactorAuthentication()) ? RedirectIfTwoFactorAuthenticatable::class : null,
+            AttemptToAuthenticate::class,
+            PrepareAuthenticatedSession::class,
+        ]));
     }
 
     /**
@@ -148,14 +147,12 @@ class AuthenticatedSessionController extends Controller
             }
 
             return response()->json([
-                'resStatus' => 'success',
                 'message' => 'ログアウトしました!'
-            ]);
+            ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             return response()->json([
-                'resStatus' => 'error',
-                'message' =>  $e->getMessage(),
-
+                'message' => 'ログアウトに失敗しました。もう一度やり直してください。',
             ], 500);
         }
     }

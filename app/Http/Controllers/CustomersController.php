@@ -80,7 +80,6 @@ class CustomersController extends Controller
 
                 if ($customers->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！新規作成ボタンから顧客を作成しましょう！",
                         'customers' => $customers,
                         'courses' => $courses,
@@ -96,7 +95,6 @@ class CustomersController extends Controller
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'message' => '顧客情報を取得しました!',
                         'customers' => $customers,
                         'courses' => $courses,
@@ -113,13 +111,11 @@ class CustomersController extends Controller
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません。"
+                    "message" => "あなたには権限が！！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 "message" => $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
@@ -212,7 +208,6 @@ class CustomersController extends Controller
                 return
                     response()->json(
                         [
-                            "resStatus" => "success",
                             "customer" => $customer,
                             "course_customers" => $courseCustomer,
                             "option_customers" => $optionCustomer,
@@ -226,13 +221,11 @@ class CustomersController extends Controller
                     )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません。"
+                    "message" => "あなたには権限が！！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 "message" => $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
@@ -252,8 +245,7 @@ class CustomersController extends Controller
     //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
-    //             "message" => "顧客情報取得時にエラーが発生しました。"
+    //             "message" => "顧客情報取得時にエラーが発生しました！"
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -347,7 +339,6 @@ class CustomersController extends Controller
 
                 return
                     response()->json([
-                        "resStatus" => "success",
                         "customer" =>  $customer,
                         "course_customers" => $courseCustomer,
                         "option_customers" => $optionCustomer,
@@ -357,14 +348,13 @@ class CustomersController extends Controller
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません。"
+                    "message" => "あなたには権限が！！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => $e->getMessage()
+                "message" => '顧客情報更新時にエラーが発生しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -378,27 +368,24 @@ class CustomersController extends Controller
                 $customer = customers::find($request->id);
                 if (!$customer) {
                     return response()->json([
-                        "resStatus" => "error",
                         'message' =>
-                        '顧客が見つかりません。'
+                        '顧客が見つかりません！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
                 // 顧客データを削除
                 $customer->delete();
                 return response()->json([
-                    "resStatus" => "success",
                     "deleteId"  => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません。"
+                    "message" => "あなたには権限が！！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "顧客情報削除時にエラーが発生しました。"
+                "message" => "顧客情報削除時にエラーが発生しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

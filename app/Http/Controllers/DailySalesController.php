@@ -21,28 +21,25 @@ class DailySalesController extends Controller
                 $daily_sales = daily_sales::where('owner_id', $id)->get();
                 if ($daily_sales->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
                         'dailySales' => $daily_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'dailySales' => $daily_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json(
                 [
-                    "resStatus" => "error",
                     'message' =>
-                    '日次売上が見つかりません。'
+                    '日次売上が見つかりません！
+                    もう一度お試しください！'
                 ],
                 500,
                 [],
@@ -72,19 +69,17 @@ class DailySalesController extends Controller
                     ]);
 
                 return response()->json([
-                    "resStatus" => "success",
                     "dailySale" => $daily_sales
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "日次売上の作成に失敗しました。"
+                "message" => "日次売上の作成に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -96,19 +91,16 @@ class DailySalesController extends Controller
     //             $daily_sale = daily_sales::find($id);
 
     //             return response()->json([
-    //                 "resStatus" => "success",
     //                 'dailySale' => $daily_sale
     //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         } else {
     //             return response()->json([
-    //                 "resStatus" => "error",
-    //                 "message" => "権限がありません"
+    //                 "message" => "あなたには権限が！"
     //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         }
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
-    //             "message" => "日次売上が見つかりません。"
+    //             "message" => "日次売上が見つかりません！"
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -133,7 +125,6 @@ class DailySalesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "dailySale" => $daily_sale
                     ],
                     200,
@@ -142,14 +133,13 @@ class DailySalesController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "日次売上の更新に失敗しました。"
+                "message" => "日次売上の更新に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -162,27 +152,25 @@ class DailySalesController extends Controller
                 $daily_sale = daily_sales::find($request->id);
                 if (!$daily_sale) {
                     return response()->json([
-                        "resStatus" => "error",
                         'message' =>
-                        '日次売上が見つかりません。'
+                        '日次売上が見つかりません！
+                        もう一度お試しください！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
                 $daily_sale->delete();
                 return response()->json([
-                    "resStatus" => "success",
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                '日次売上の削除に失敗しました。'
+                '日次売上の削除に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

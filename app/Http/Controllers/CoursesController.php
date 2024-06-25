@@ -21,26 +21,23 @@ class CoursesController extends Controller
                 $courses = courses::where('owner_id', $id)->get();
                 if ($courses->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！新規作成ボタンからコースを作成しましょう！",
                         'courses' => $courses
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'courses' => $courses
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "コースの取得に失敗しました。"
+                "message" => "コースの取得に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -64,19 +61,17 @@ class CoursesController extends Controller
                 ]);
 
                 return response()->json([
-                    "resStatus" => "success",
                     "course" => $course
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "コースの作成に失敗しました。"
+                "message" => "コースの作成に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -88,19 +83,16 @@ class CoursesController extends Controller
     //         $course = courses::find($id);
     //         if (!$course) {
     //             return response()->json([
-    //                 'resStatus' => 'error',
     //                 'message' =>
-    //                 'コースが見つかりません。'
+    //                 'コースが見つかりません！'
     //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         }
     //         return response()->json([
-    //             'resStatus' => 'success',
     //             'course' => $course
     //         ]);
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
-    //             "message" => "コースの取得に失敗しました。"
+    //             "message" => "コースの取得に失敗しました！"
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -124,21 +116,19 @@ class CoursesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "course" => $course
                     ],
                     200
                 );
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => $e->getMessage()
+                "message" => "コースの更新に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -150,9 +140,8 @@ class CoursesController extends Controller
                 $course = courses::find($request->id);
                 if (!$course) {
                     return response()->json([
-                        "resStatus" => "error",
                         'message' =>
-                        'コースが見つかりません。'
+                        'コースが見つかりません！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
@@ -160,21 +149,19 @@ class CoursesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "deleteId"  => $request->id
                     ],
                     200
                 );
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "コースの削除に失敗しました。"
+                "message" => "コースの削除に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

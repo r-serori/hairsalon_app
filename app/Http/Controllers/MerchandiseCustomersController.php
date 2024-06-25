@@ -13,12 +13,10 @@ class MerchandiseCustomersController extends Controller
             $merchandise_customers = merchandise_customers::all();
 
             return response()->json([
-                "resStatus" => "success",
                 'merchandise_customers' => $merchandise_customers
             ]);
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' => 'merchandise_customers not found'
             ], 500);
         }

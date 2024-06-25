@@ -36,7 +36,6 @@ class SchedulesController extends Controller
 
                 if ($customers->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
@@ -89,7 +88,6 @@ class SchedulesController extends Controller
 
                 if ($selectSchedules->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         'message' =>
                         '初めまして！新規作成ボタンからスケジュールを作成しましょう！',
                         'schedules' => $selectSchedules,
@@ -108,7 +106,6 @@ class SchedulesController extends Controller
                 } else {
 
                     return response()->json([
-                        "resStatus" => "success",
                         'schedules' => $selectSchedules,
                         'customers' => $customers,
                         'courses' => $courses,
@@ -126,16 +123,15 @@ class SchedulesController extends Controller
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
                     'message' =>
-                    '権限がありません。'
+                    'あなたには権限がありません！'
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                'スケジュールが見つかりません。'
+                'スケジュールが見つかりません！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -150,7 +146,6 @@ class SchedulesController extends Controller
 
                 if ($customers->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
@@ -203,7 +198,6 @@ class SchedulesController extends Controller
                 $userCustomer = customer_users::where('owner_id', $id)->get();
 
                 return response()->json([
-                    "resStatus" => "success",
                     'schedules' => $selectSchedules,
                     'customers' => $customers,
                     'courses' => $courses,
@@ -219,16 +213,15 @@ class SchedulesController extends Controller
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
                     'message' =>
-                    '権限がありません。'
+                    'あなたには権限がありません！'
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                $e->getMessage()
+                'スケジュールが見つかりません！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -256,21 +249,19 @@ class SchedulesController extends Controller
                 ]);
 
                 return response()->json([
-                    "resStatus" => "success",
                     'schedule' => $schedule,
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
                     'message' =>
-                    '権限がありません。'
+                    'あなたには権限がありません！'
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                'スケジュールの作成に失敗しました。'
+                'スケジュールの作成に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -282,21 +273,18 @@ class SchedulesController extends Controller
     //             $schedule = schedules::find($id);
 
     //             return response()->json([
-    //                 "resStatus" => "success",
     //                 'schedule' => $schedule
     //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         } else {
     //             return response()->json([
-    //                 "resStatus" => "error",
     //                 'message' =>
-    //                 '権限がありません。'
+    //                 'あなたには権限がありません！'
     //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         }
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
     //             'message' =>
-    //             'スケジュールが見つかりません。'
+    //             'スケジュールが見つかりません！'
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -327,7 +315,6 @@ class SchedulesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "schedule" => $schedule
                     ],
                     200,
@@ -336,16 +323,15 @@ class SchedulesController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
                     'message' =>
-                    '権限がありません。'
+                    'あなたには権限がありません！'
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                'スケジュールが見つかりません。'
+                'スケジュールが見つかりません！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -358,29 +344,27 @@ class SchedulesController extends Controller
                 $schedule = schedules::find($request->id);
                 if (!$schedule) {
                     return response()->json([
-                        "resStatus" => "error",
                         'message' =>
-                        'スケジュールが見つかりません。'
+                        'スケジュールが見つかりません！
+                        もう一度お試しください！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $schedule->delete();
                 return response()->json([
-                    "resStatus" => "success",
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
                     'message' =>
-                    '権限がありません。'
+                    'あなたには権限がありません！'
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                'スケジュールの削除に失敗しました。'
+                'スケジュールの削除に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -487,7 +471,6 @@ class SchedulesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "customer" => $customer,
                         "schedule" => $schedule,
                         "course_customers" => $courseCustomer,
@@ -502,16 +485,15 @@ class SchedulesController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
                     'message' =>
-                    '権限がありません。'
+                    'あなたには権限がありません！'
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                $e->getMessage()
+                'スケジュールの作成に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -624,7 +606,6 @@ class SchedulesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "customer" => $customer,
                         "schedule" => $schedule,
                         "course_customers" => $courseCustomer,
@@ -639,16 +620,15 @@ class SchedulesController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
                     'message' =>
-                    '権限がありません。'
+                    'あなたには権限がありません！'
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                $e->getMessage()
+                'スケジュールの更新に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -754,7 +734,6 @@ class SchedulesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "customer" => $customer,
                         "schedule" => $schedule,
                         "course_customers" => $courseCustomer,
@@ -769,16 +748,16 @@ class SchedulesController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
                     'message' =>
-                    '権限がありません。'
+                    'あなたには権限がありません！'
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                $e->getMessage()
+                'スケジュールの更新に失敗しました！
+                もう一度お試しください！
+                '
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

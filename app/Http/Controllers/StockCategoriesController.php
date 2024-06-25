@@ -19,30 +19,27 @@ class StockCategoriesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
-                // カテゴリー一覧を取得
+                // カテゴリ一覧を取得
                 $stock_categories = stock_categories::where('owner_id', $id)->get();
                 if ($stock_categories->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
-                        "message" => "初めまして！新規作成ボタンから在庫カテゴリーを作成しましょう！",
+                        "message" => "初めまして！新規作成ボタンから在庫カテゴリを作成しましょう！",
                         'stockCategories' => $stock_categories
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'stockCategories' => $stock_categories
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => 'ストックカテゴリーが見つかりません。'
+                'message' => '在庫カテゴリが見つかりません！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -68,19 +65,17 @@ class StockCategoriesController extends Controller
 
                 // 成功したらリダイレクト
                 return response()->json([
-                    "resStatus" => "success",
                     "stockCategory" => $stock_category
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "在庫カテゴリーの作成に失敗しました。"
+                "message" => "在庫カテゴリの作成に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -90,24 +85,21 @@ class StockCategoriesController extends Controller
     // {
     //     try {
     //         if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
-    //             // 指定されたIDの在庫カテゴリーを取得
+    //             // 指定されたIDの在庫カテゴリを取得
     //             $stock_category = stock_categories::find($id);
 
-    //             // 在庫カテゴリーを表示
+    //             // 在庫カテゴリを表示
     //             return response()->json([
-    //                 "resStatus" => "success",
     //                 'stockCategory' => $stock_category
     //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         } else {
     //             return response()->json([
-    //                 "resStatus" => "error",
-    //                 "message" => "権限がありません"
+    //                 "message" => "あなたには権限がありません！""
     //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         }
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
-    //             'message' => 'ストックカテゴリーが見つかりません。'
+    //             'message' => '在庫カテゴリが見つかりません！'
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -136,19 +128,17 @@ class StockCategoriesController extends Controller
 
                 // 成功したらリダイレクト
                 return response()->json([
-                    "resStatus" => "success",
                     "stockCategory" => $stock_category
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "在庫カテゴリーの更新に失敗しました。"
+                "message" => "在庫カテゴリの更新に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -158,36 +148,34 @@ class StockCategoriesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
-                // 指定されたIDの在庫カテゴリーを取得
+                // 指定されたIDの在庫カテゴリを取得
                 $stock_category = stock_categories::find($request->id);
 
-                // 在庫カテゴリーが見つからない場合は404エラーを返す
+                // 在庫カテゴリが見つからない場合は404エラーを返す
                 if (!$stock_category) {
                     return response()->json([
-                        "resStatus" => "error",
                         'message' =>
-                        'ストックカテゴリーが見つかりません。'
+                        '在庫カテゴリが見つかりません！
+                        もう一度お試しください！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
-                // 在庫カテゴリーを削除する
+                // 在庫カテゴリを削除する
                 $stock_category->delete();
                 return response()->json([
-                    "resStatus" => "success",
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             // エラーが発生した場合は500エラーを返す
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                'ストックカテゴリーの削除に失敗しました。'
+                '在庫カテゴリの削除に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

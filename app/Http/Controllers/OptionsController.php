@@ -22,27 +22,24 @@ class OptionsController extends Controller
                 $options = options::where('owner_id', $id)->get();
                 if ($options->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！新規作成ボタンからオプションを作成しましょう！",
                         'options' => $options
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'options' => $options
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                'オプションが見つかりません。       '
+                'オプションが見つかりません！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -64,19 +61,17 @@ class OptionsController extends Controller
                     ]);
 
                 return response()->json([
-                    "resStatus" => "success",
                     "option" => $option
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "オプションの作成に失敗しました。"
+                "message" => "オプションの作成に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -87,14 +82,12 @@ class OptionsController extends Controller
     //         $option = options::find($id);
 
     //         return response()->json([
-    //             "resStatus" => "success",
     //             'option' => $option
     //         ]);
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
     //             'message' =>
-    //             'オプションが見つかりません。'
+    //             'オプションが見つかりません！'
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -119,7 +112,6 @@ class OptionsController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "option" => $option
                     ],
                     200,
@@ -128,14 +120,13 @@ class OptionsController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "オプションの更新に失敗しました。"
+                "message" => "オプションの更新に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -149,29 +140,27 @@ class OptionsController extends Controller
                 $option = options::find($request->id);
                 if (!$option) {
                     return response()->json([
-                        "resStatus" => "error",
                         'message' =>
-                        'オプションが見つかりません。'
+                        'オプションが見つかりません！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $option->delete();
                 return response()->json([
-                    "resStatus" => "success",
-                    'message' => 'オプションを削除しました。',
+                    'message' => 'オプションを削除しました！
+                    もう一度お試しください！',
                     'deleteId' => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                'オプションが見つかりません。'
+                'オプションが見つかりません！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

@@ -51,17 +51,17 @@ class UserPostController extends Controller
 
                 return response()->json(
                     [
-                        'resStatus' => "success",
                         'message' => 'オーナー用ユーザー登録に成功しました!',
                         'responseOwner' => $responseOwner,
                     ],
-                    200
-                );
+                    200,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json(
                     [
-                        'resStatus' => "error",
-                        "message" => "もう一度最初からやり直してください。",
+                        "message" => "もう一度最初からやり直してください！",
                     ],
                     404,
                     [],
@@ -71,8 +71,7 @@ class UserPostController extends Controller
         } catch (\Exception $e) {
             return response()->json(
                 [
-                    'resStatus' => "error",
-                    "message" => $e->getMessage(),
+                    "message" => "オーナー用ユーザー登録に失敗しました！",
                 ],
                 500,
                 [],
@@ -105,8 +104,8 @@ class UserPostController extends Controller
                 if ($userID) {
                     return
                         response()->json([
-                            "resStatus" => 'error',
-                            'message' => 'メールアドレスが既に存在しています。',
+                            'message' => 'メールアドレスが既に存在しています！
+                            他のメールアドレスを入力してください！',
                         ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     $user = User::create([
@@ -139,7 +138,6 @@ class UserPostController extends Controller
                     ];
                     return response()->json(
                         [
-                            'resStatus' => "success",
                             'message' => 'スタッフ用ユーザー登録に成功しました!',
                             'responseUser' => $responseUser,
                             'responseStaff' => $staff,
@@ -151,16 +149,14 @@ class UserPostController extends Controller
                 }
             } else {
                 return response()->json([
-                    "resStatus" => 'error',
-                    'message' => 'あなたは権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
-            Log::error('ユーザー登録処理中にエラーが発生しました。');
-            Log::error('エラー内容: ' . $e);
+            // Log::error('ユーザー登録処理中にエラーが発生しました。');
+            // Log::error('エラー内容: ' . $e);
             return response()->json([
-                "resStatus" => 'error',
-                'message' => 'ユーザー登録に失敗しました。',
+                'message' => 'ユーザー登録に失敗しました！もう一度最初からやり直してください！',
             ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -183,26 +179,22 @@ class UserPostController extends Controller
                     $user->save();
 
                     return response()->json([
-                        'resStatus' => 'success',
-                        'message' => '権限の変更に成功しました。',
+                        'message' => '権限の変更に成功しました！',
                         'responseUser' => $user->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        'resStatus' => 'error',
-                        'message' => 'スタッフ情報が見つかりませんでした。',
+                        'message' => 'スタッフ情報が見つかりませんでした！',
                     ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    'resStatus' => 'error',
-                    'message' => 'あなたは権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                'resStatus' => 'error',
-                'message' => 'エラーが発生しました。もう一度やり直してください。',
+                'message' => 'エラーが発生しました！もう一度やり直してください！',
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

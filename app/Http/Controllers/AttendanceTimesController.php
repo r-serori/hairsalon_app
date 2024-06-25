@@ -47,32 +47,28 @@ class AttendanceTimesController extends Controller
 
                 if ($selectAttendanceTimes->isEmpty() && $yearMonth === "無し") {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！勤怠画面から出勤してください！",
                         'attendanceTimes' => $selectAttendanceTimes
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else if ($selectAttendanceTimes->isEmpty() && $yearMonth !== "無し") {
                     return response()->json([
-                        "resStatus" => "success",
-                        "message" => "選択した勤怠履歴がありません。",
+                        "message" => "選択した勤怠履歴がありません！",
                         'attendanceTimes' => $selectAttendanceTimes
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'attendanceTimes' => $selectAttendanceTimes
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    'message' => '権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '勤怠時間の取得に失敗しました。'
+                'message' => '勤怠時間の取得に失敗しました！もう一度お試しください！'
+
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -86,19 +82,17 @@ class AttendanceTimesController extends Controller
                 $firstAttendanceTime = attendance_times::where('user_id', $id)->latest('created_at')->first();
 
                 return response()->json([
-                    "resStatus" => "success",
                     'attendanceTime' => $firstAttendanceTime,
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    'message' => '権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '勤怠時間の取得に失敗しました。'
+                'message' => '勤怠時間の取得に失敗しました！
+                もう一度やり直してください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -131,8 +125,7 @@ class AttendanceTimesController extends Controller
             return response(file_get_contents($imagePath), 200, $headers);
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => $e->getMessage()
+                'message' => '画像の取得に失敗しました！もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -166,8 +159,7 @@ class AttendanceTimesController extends Controller
             return response(file_get_contents($imagePath), 200, $headers);
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => $e->getMessage()
+                'message' => '画像の取得に失敗しました！もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -186,8 +178,7 @@ class AttendanceTimesController extends Controller
                 if (!empty($existAttendanceStart) && !empty($existAttendanceEnd)) {
                     return response()->json(
                         [
-                            "resStatus" => "error",
-                            "message" => "既にに出勤時間が登録されています。"
+                            "message" => "既にに出勤時間が登録されています！"
                         ],
                         500,
                         [],
@@ -234,7 +225,6 @@ class AttendanceTimesController extends Controller
                     return
                         response()->json(
                             [
-                                "resStatus" => "success",
                                 "responseUser" => $user,
                                 "attendanceTime" => $attendanceTime,
                             ],
@@ -245,14 +235,13 @@ class AttendanceTimesController extends Controller
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    'message' => '権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '出勤時間と写真の登録に失敗しました。'
+                'message' => '出勤時間と写真の登録に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -289,7 +278,6 @@ class AttendanceTimesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、その後出勤ボタンを押してください！",
                         "attendanceTime" => $existYesterdayStartTime, "responseUser" => $user
                     ],
@@ -302,14 +290,13 @@ class AttendanceTimesController extends Controller
                 );
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    'message' => '権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => $e->getMessage()
+                'message' => '退勤時間と写真の登録に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -351,7 +338,6 @@ class AttendanceTimesController extends Controller
                     return
                         response()->json(
                             [
-                                "resStatus" => "success",
                                 "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、今は編集依頼を押した後に出勤ボタンを押してください！",
                                 "attendanceTime" => $existYesterdayStartTime,
                                 "responseUser" => $user
@@ -398,7 +384,11 @@ class AttendanceTimesController extends Controller
 
                     return
                         response()->json(
-                            ["resStatus" => "success", "attendanceTime" => $attendanceTime, "responseUser" => $user],
+
+                            [
+                                "attendanceTime" => $attendanceTime,
+                                "responseUser" => $user
+                            ],
                             200,
                             [],
                             JSON_UNESCAPED_UNICODE
@@ -406,14 +396,13 @@ class AttendanceTimesController extends Controller
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    'message' => '権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => $e->getMessage()
+                'message' => '退勤時間と写真の登録に失敗しました！  
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -447,21 +436,22 @@ class AttendanceTimesController extends Controller
 
                 return
                     response()->json(
-                        ["resStatus" => "success", "attendanceTime" => $attendanceTime],
+                        [
+                            "attendanceTime" => $attendanceTime
+                        ],
                         200,
                         [],
                         JSON_UNESCAPED_UNICODE
                     )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    'message' => '権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '出勤時間と写真の更新に失敗しました。'
+                'message' => '出勤時間と写真の更新に失敗しました！
+                もう一度お試しください！    '
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -494,21 +484,22 @@ class AttendanceTimesController extends Controller
 
                 return
                     response()->json(
-                        ["resStatus" => "success", "attendanceTime" => $attendanceTime],
+                        [
+                            "attendanceTime" => $attendanceTime
+                        ],
                         200,
                         [],
                         JSON_UNESCAPED_UNICODE
                     )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    'message' => '権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '退勤時間と写真の更新に失敗しました。'
+                'message' => '退勤時間と写真の更新に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -538,7 +529,6 @@ class AttendanceTimesController extends Controller
                 return
                     response()->json(
                         [
-                            "resStatus" => "success",
                             "deleteId" => $request->id
                         ],
                         200,
@@ -547,14 +537,13 @@ class AttendanceTimesController extends Controller
                     )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    'message' => '権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '勤怠時間の削除に失敗しました。'
+                'message' => '勤怠時間の削除に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

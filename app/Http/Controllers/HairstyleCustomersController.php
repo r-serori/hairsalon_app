@@ -13,12 +13,10 @@ class HairstyleCustomersController extends Controller
             $hairstyle_customers = hairstyle_customers::all();
 
             return response()->json([
-                "resStatus" => "success",
                 'hairstyle_customers' => $hairstyle_customers
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' => 'hairstyle_customers not found'
             ], 500);
         }

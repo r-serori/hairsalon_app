@@ -24,27 +24,24 @@ class MerchandisesController extends Controller
 
                 if ($merchandises->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！新規作成ボタンから物販商品を作成しましょう！",
                         'merchandises' => $merchandises
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'merchandises' => $merchandises
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                '物販商品が見つかりません。'
+                '物販商品が見つかりません！
+                もう一度お試しください！'
             ], 500);
         }
     }
@@ -69,20 +66,18 @@ class MerchandisesController extends Controller
                 ]);
 
                 return response()->json([
-                    "resStatus" => "success",
                     "merchandise" => $merchandise
 
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "物販商品の作成に失敗しました。"
+                "message" => "物販商品の作成に失敗しました！
+                もう一度お試しください！"
             ], 500);
         }
     }
@@ -93,14 +88,12 @@ class MerchandisesController extends Controller
     //         $merchandise = merchandises::find($id);
 
     //         return response()->json([
-    //             "resStatus" => "success",
     //             'merchandise' => $merchandise
     //         ]);
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
     //             'message' =>
-    //             '物販商品が見つかりません。'
+    //             '物販商品が見つかりません！'
     //         ], 500);
     //     }
     // }
@@ -129,21 +122,19 @@ class MerchandisesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "merchandise" => $merchandise,
                     ],
                     200
                 );
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "物販商品の更新に失敗しました。"
+                "message" => "物販商品の更新に失敗しました！
+                もう一度お試しください！"
             ], 500);
         }
     }
@@ -156,28 +147,26 @@ class MerchandisesController extends Controller
                 $merchandise = merchandises::find($request->id);
                 if (!$merchandise) {
                     return response()->json([
-                        "resStatus" => "error",
                         'message' =>
-                        '物販商品が見つかりません。'
+                        '物販商品が見つかりません！
+                        もう一度お試しください！'
                     ], 500);
                 }
 
                 $merchandise->delete();
                 return response()->json([
-                    "resStatus" => "success",
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                '物販商品の削除に失敗しました。'
+                '物販商品の削除に失敗しました！
+                もう一度お試しください！'
             ], 500);
         }
     }

@@ -28,26 +28,23 @@ class StocksController extends Controller
                 $stocks = stocks::where('owner_id', $id)->get();
                 if ($stocks->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！新規作成ボタンから店の在庫を作成しましょう！",
                         'stocks' => $stocks
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'stocks' => $stocks
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたに権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '在庫が見つかりませんでした。'
+                'message' => '在庫が見つかりませんでした！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -86,19 +83,17 @@ class StocksController extends Controller
 
                 // 成功したらリダイレクト
                 return response()->json([
-                    "resStatus" => "success",
                     "stock" => $stocks
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたに権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '在庫の登録に失敗しました。'
+                'message' => '在庫の登録に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -118,14 +113,12 @@ class StocksController extends Controller
     //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         } else {
     //             return response()->json([
-    //                 "resStatus" => "error",
-    //                 "message" => "権限がありません"
+    //                 "message" => "あなたに権限がありません！"
     //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         }
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
-    //             'message' => '在庫が見つかりませんでした。'
+    //             'message' => '在庫が見つかりませんでした！'
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -165,19 +158,17 @@ class StocksController extends Controller
 
                 // 成功したらリダイレクト
                 return response()->json([
-                    "resStatus" => "success",
                     "stock" => $stock
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたに権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '在庫の更新に失敗しました。'
+                'message' => '在庫の更新に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -191,26 +182,24 @@ class StocksController extends Controller
                 $stock = stocks::find($request->id);
                 if (!$stock) {
                     return response()->json([
-                        "resStatus" => "error",
-                        'message' => '在庫が見つかりませんでした。'
+                        'message' => '在庫が見つかりませんでした！
+                        もう一度お試しください！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $stock->delete();
                 return response()->json([
-                    "resStatus" => "success",
                     "deleteId"  => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたに権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => '在庫の削除に失敗しました。'
+                'message' => '在庫の削除に失敗しました！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

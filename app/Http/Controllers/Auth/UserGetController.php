@@ -12,6 +12,7 @@ use App\Enums\Permissions;
 use App\Enums\Roles;
 use App\Models\attendance_times;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserGetController extends Controller
 {
@@ -25,10 +26,9 @@ class UserGetController extends Controller
 
                 if ($staffs->isEmpty()) {
                     return response()->json([
-                        'resStatus' => 'success',
                         'message' => 'スタッフ情報がありません!登録してください！',
                         'responseUsers' => []
-                    ]);
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
 
                     $userIds = $staffs->pluck('user_id')->toArray();
@@ -42,22 +42,20 @@ class UserGetController extends Controller
                     $userCount = count($users);
 
                     return response()->json([
-                        'resStatus' => 'success',
-                        'message' => 'ユーザー情報を取得しました。',
+                        'message' => 'ユーザー情報を取得しました!',
                         'responseUsers' => $users,
                         'userCount' => $userCount,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    'resStatus' => 'error',
-                    'message' => '貴方は権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             return response()->json([
-                'resStatus' => 'error',
-                'message' => 'エラーが発生しました。もう一度やり直してください。',
+                'message' => 'エラーが発生しました。もう一度やり直してください！',
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -71,10 +69,9 @@ class UserGetController extends Controller
 
                 if ($staffs->isEmpty()) {
                     return response()->json([
-                        'resStatus' => 'success',
                         'message' => 'スタッフ情報がありません!登録してください！',
                         'responseUsers' => []
-                    ]);
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
 
                     $userIds = $staffs->pluck('user_id')->toArray();
@@ -98,22 +95,20 @@ class UserGetController extends Controller
                         return $user->only(['id', 'name', 'isAttendance', 'created_at', 'updated_at']);
                     });
                     return response()->json([
-                        'resStatus' => 'success',
-                        'message' => 'ユーザー情報を取得しました。',
+                        'message' => 'ユーザー情報を取得しました！',
                         'responseUsers' => $users,
                         'attendanceTimes' => $attendanceTimes,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    'resStatus' => 'error',
-                    'message' => '貴方は権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             return response()->json([
-                'resStatus' => 'error',
-                'message' => 'エラーが発生しました。もう一度やり直してください。',
+                'message' => 'エラーが発生しました。もう一度やり直してください！',
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -128,26 +123,22 @@ class UserGetController extends Controller
                 if (!empty($responseUser)) {
 
                     return response()->json([
-                        'resStatus' => 'success',
-                        'message' => 'ユーザー情報を取得しました。',
+                        'message' => 'ユーザー情報を取得しました!',
                         'responseUser' => $responseUser->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        'resStatus' => 'error',
-                        'message' => 'ユーザー情報がありません。',
+                        'message' => 'ユーザー情報がありません！',
                     ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    'resStatus' => 'error',
-                    'message' => '貴方は権限がありません。',
+                    'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                'resStatus' => 'error',
-                'message' => 'エラーが発生しました。もう一度やり直してください。',
+                'message' => 'エラーが発生しました。もう一度やり直してください！',
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

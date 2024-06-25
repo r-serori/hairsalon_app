@@ -22,28 +22,25 @@ class YearlySalesController extends Controller
                 $yearly_sales = yearly_sales::where('owner_id', $id)->get();
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" =>
                         "初めまして！予約表画面の月次売上作成ボタンから月次売上を作成しましょう！",
                         'yearlySales' => $yearly_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'yearlySales' => $yearly_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                '月次売上が見つかりません。'
+                '月次売上が見つかりません！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -66,19 +63,17 @@ class YearlySalesController extends Controller
                 ]);
 
                 return response()->json([
-                    "resStatus" => "success",
                     "yearlySale" => $yearly_sale
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "月次売上の作成に失敗しました。"
+                "message" => "月次売上の作成に失敗しました！
+                もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -90,20 +85,17 @@ class YearlySalesController extends Controller
     //             $yearly_sale = yearly_sales::find($id);
 
     //             return response()->json([
-    //                 "resStatus" => "success",
     //                 'yearlySale' => $yearly_sale
     //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         } else {
     //             return response()->json([
-    //                 "resStatus" => "error",
-    //                 "message" => "権限がありません"
+    //                 "message" => "あなたには権限がありません！"
     //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //         }
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
     //             'message' =>
-    //             '月次売上が見つかりません。'
+    //             '月次売上が見つかりません！'
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -128,7 +120,6 @@ class YearlySalesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "yearlySale" => $yearly_sale
                     ],
                     200,
@@ -137,15 +128,14 @@ class YearlySalesController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
                 'message' =>
-                '月次売上が見つかりません。'
+                '月次売上が見つかりません！
+                もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -158,26 +148,27 @@ class YearlySalesController extends Controller
                 $yearly_sale = yearly_sales::find($request->id);
                 if (!$yearly_sale) {
                     return response()->json([
-                        "resStatus" => "error",
                         'message' =>
-                        '月次売上が見つかりません。'
+                        '月次売上が見つかりません！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $yearly_sale->delete();
                 return response()->json([
-                    "resStatus" => "success",
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！
+                    "
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
-            return response()->json(['message' =>
-            'monthly_sale not found'], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return response()->json([
+                'message' =>
+                '月次売上が見つかりません！
+            もう一度お試しください！'
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 }

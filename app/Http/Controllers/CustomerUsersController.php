@@ -12,13 +12,11 @@ class CustomerAttendancesController extends Controller
     try {
       $customer_users = customer_users::all();
       return response()->json([
-        "resStatus" => "success",
         'customer_users' => $customer_users
       ]);
     } catch (\Exception $e) {
       return response()->json([
-        "resStatus" => "error",
-        "message" => "顧客の出席情報取得時にエラーが発生しました。"
+        "message" => "顧客の出席情報取得時にエラーが発生しました！"
       ], 500);
     }
   }

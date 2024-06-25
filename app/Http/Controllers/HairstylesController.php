@@ -23,26 +23,23 @@ class HairstylesController extends Controller
 
                 if ($hairstyles->isEmpty()) {
                     return response()->json([
-                        "resStatus" => "success",
                         "message" => "初めまして！新規作成ボタンから使用するヘアスタイルを作成しましょう！",
                         'hairstyles' => $hairstyles
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        "resStatus" => "success",
                         'hairstyles' => $hairstyles
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => "ヘアスタイルが見つかりませんでした。"
+                'message' => "ヘアスタイルが見つかりませんでした！
+                もう一度お試しください！"
             ], 500);
         }
     }
@@ -62,19 +59,17 @@ class HairstylesController extends Controller
                 ]);
 
                 return response()->json([
-                    "resStatus" => "success",
                     "hairstyle" => $hairstyle
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません"
+                    "message" => "あなたには権限がありません！"
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "ヘアスタイルの作成に失敗しました。"
+                "message" => "ヘアスタイルの作成に失敗しました！
+                もう一度お試しください！"
             ], 500);
         }
     }
@@ -86,19 +81,16 @@ class HairstylesController extends Controller
     //         $hairstyle = hairstyles::find($id);
     //         if (!$hairstyle) {
     //             return response()->json([
-    //                 'resStatus' => 'error',
-    //                 'message' => 'ヘアスタイルが見つかりません。'
+    //                 'message' => 'ヘアスタイルが見つかりません！'
     //             ], 404);
     //         }
 
     //         return response()->json([
-    //             "resStatus" => "success",
     //             'hairstyle' => $hairstyle
     //         ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     } catch (\Exception $e) {
     //         return response()->json([
-    //             "resStatus" => "error",
-    //             'message' => 'ヘアスタイルが見つかりません。'
+    //             'message' => 'ヘアスタイルが見つかりません！'
     //         ], 500);
     //     }
     // }
@@ -121,21 +113,19 @@ class HairstylesController extends Controller
 
                 return response()->json(
                     [
-                        "resStatus" => "success",
                         "hairstyle" => $hairstyle
                     ],
                     200
                 );
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません。"
+                    "message" => "あなたには権限がありません！"
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                "message" => "ヘアスタイルの更新に失敗しました。"
+                "message" => "ヘアスタイルの更新に失敗しました！
+                もう一度お試しください！"
             ], 500);
         }
     }
@@ -148,25 +138,23 @@ class HairstylesController extends Controller
                 $hairstyle = hairstyles::find($request->id);
                 if (!$hairstyle) {
                     return response()->json([
-                        "resStatus" => "error",
-                        'message' => 'ヘアスタイルが見つかりません。'
+                        'message' => 'ヘアスタイルが見つかりません！
+                        もう一度お試しください！'
                     ], 500);
                 }
                 $hairstyle->delete();
                 return response()->json([
-                    "resStatus" => "success",
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "resStatus" => "error",
-                    "message" => "権限がありません。"
+                    "message" => "あなたには権限がありません！"
                 ], 500);
             }
         } catch (\Exception $e) {
             return response()->json([
-                "resStatus" => "error",
-                'message' => 'ヘアスタイルの削除に失敗しました。'
+                'message' => 'ヘアスタイルの削除に失敗しました！
+                もう一度お試しください！'
             ], 500);
         }
     }
