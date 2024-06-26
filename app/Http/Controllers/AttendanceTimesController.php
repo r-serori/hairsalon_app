@@ -17,7 +17,7 @@ class AttendanceTimesController extends Controller
 {
 
     //クエリのuser:idを受け取り、そのユーザーの勤怠時間を１か月分取得　Gate,ALL
-    //yearMonthが"無し"の場合は当月の勤怠時間を取得
+    //yearMonthが"000111"の場合は当月の勤怠時間を取得
     public function selectedAttendanceTime($id, $yearMonth)
     {
         try {
@@ -26,7 +26,7 @@ class AttendanceTimesController extends Controller
 
                 $user_id = urldecode($id);
                 $yearMonth = urldecode($yearMonth);
-                if ($yearMonth !== "無し") {
+                if ($yearMonth !== "000111") {
                     //わたってきた('Y-m')形式の年月を取得
                     $currentYearAndMonth = $yearMonth;
                 } else {
@@ -47,19 +47,24 @@ class AttendanceTimesController extends Controller
                     return $item;
                 });
 
-                if ($selectAttendanceTimes->isEmpty() && $yearMonth === "無し") {
+                $user = User::find($user_id)->only([
+                    'id', 'name', 'isAttendance', 'created_at', 'updated_at'
+                ]);
+
+                if ($selectAttendanceTimes->isEmpty() && $yearMonth === "000111") {
                     return response()->json([
                         "message" => "初めまして！勤怠画面から出勤してください！",
                         'attendanceTimes' => $selectAttendanceTimes
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else if ($selectAttendanceTimes->isEmpty() && $yearMonth !== "無し") {
+                } else if ($selectAttendanceTimes->isEmpty() && $yearMonth !== "000111") {
                     return response()->json([
                         "message" => "選択した勤怠履歴がありません！",
                         'attendanceTimes' => $selectAttendanceTimes
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        'attendanceTimes' => $selectAttendanceTimes
+                        'attendanceTimes' => $selectAttendanceTimes,
+                        'responseUser' => $user
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
@@ -81,7 +86,8 @@ class AttendanceTimesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
-                $firstAttendanceTime = attendance_times::where('user_id', $id)->latest('created_at')->first();
+                $user_id = urldecode($id);
+                $firstAttendanceTime = attendance_times::where('user_id', $user_id)->latest('created_at')->first();
 
                 return response()->json([
                     'attendanceTime' => $firstAttendanceTime,
@@ -100,71 +106,76 @@ class AttendanceTimesController extends Controller
     }
 
 
-    public function startPhotos($fileName)
-    {
+    // public function startPhotos($fileName)
+    // {
 
-        try {
-            // URLエンコードされたファイル名をデコード
-            $decoFileName = urldecode($fileName);
+    //     try {
+    //         // URLエンコードされたファイル名をデコード
+    //         $decoFileName = urldecode($fileName);
 
-            $imagePath = storage_path('app/public/' . $decoFileName);
+    //         $imagePath = storage_path('app/public/' . $decoFileName);
+    //         Log::info("imagePath", ["decodeFileName", $decoFileName]);
 
-            Log::info("imagePath", ["imagePath", $imagePath]);
+    //         Log::info("imagePath", ["imagePath", $imagePath]);
 
-            // 画像ファイルが存在するか確認
-            if (!file_exists($imagePath)) {
-                abort(404);
-            }
+    //         // 画像ファイルが存在するか確認
+    //         if (!file_exists($imagePath)) {
+    //             abort(404);
+    //         }
 
-            // 画像のMIMEタイプを取得
-            $mimeType = Storage::mimeType('app/public/' . $decoFileName);
+    //         // 画像のMIMEタイプを取得
+    //         // $mimeType = Storage::mimeType('app/public/' . $decoFileName);
 
-            // レスポンスを生成して返す
-            $headers = [
-                'Content-Type' => $mimeType,
-            ];
+    //         // レスポンスを生成して返す
+    //         $headers = [
+    //             'Content-Type' => 'image/jpeg',
+    //         ];
 
-            return response(file_get_contents($imagePath), 200, $headers);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => '画像の取得に失敗しました！もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-        }
-    }
-
-
-    public function endPhotos($fileName)
-    {
-        try {
-
-            // URLエンコードされたファイル名をデコード
-            $decoFileName = urldecode($fileName);
-
-            $imagePath = storage_path('app/public/' . $decoFileName);
-
-            Log::info("imagePath", ["imagePath", $imagePath]);
+    //         return response(file_get_contents($imagePath), 200, $headers);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => '画像の取得に失敗しました！もう一度お試しください！'
+    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    //     }
+    // }
 
 
-            // 画像ファイルが存在するか確認
-            if (!file_exists($imagePath)) {
-                abort(404);
-            }
+    // public function endPhotos($fileName)
+    // {
+    //     try {
 
-            // 画像のMIMEタイプを取得
-            $mimeType = Storage::mimeType('app/public/' . $decoFileName);
+    //         // URLエンコードされたファイル名をデコード
+    //         $decoFileName = urldecode($fileName);
 
-            // レスポンスを生成して返す
-            $headers = [
-                'Content-Type' => $mimeType,
-            ];
+    //         $imagePath = storage_path('app/public/' . $decoFileName);
 
-            return response(file_get_contents($imagePath), 200, $headers);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => '画像の取得に失敗しました！もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-        }
-    }
+    //         Log::info("endimagePath", ["imagePath", $imagePath]);
+
+
+    //         // 画像ファイルが存在するか確認
+    //         if (!file_exists($imagePath)) {
+    //             Log::error("enderrorimagePath", ["imagePath", $imagePath]);
+    //             abort(404);
+    //         }
+
+    //         // 画像のMIMEタイプを取得
+    //         // $mimeType = Storage::mimeType('app/public/' . $decoFileName);
+
+    //         // レスポンスを生成して返す
+    //         $headers = [
+    //             'Content-Type' => 'image/jpeg',
+    //         ];
+
+    //         return response(file_get_contents($imagePath), 200, $headers);
+    //         // return response()->file($imagePath);
+    //     } catch (\Exception $e) {
+    //         // Log::error("enderrorimagePath", ["imagePath", $imagePath]);
+    //         // Log::error("error", ["error", $e]);
+    //         return response()->json([
+    //             'message' => $e->getMessage()
+    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    //     }
+    // }
 
 
     public function startTimeShot(Request $request)
@@ -328,7 +339,7 @@ class AttendanceTimesController extends Controller
                     // リクエストから受け取ったデータを使用してレコードを更新
                     $existYesterdayStartTime->end_time = "9999-12-31 23:59:59";
 
-                    $existYesterdayEndTime->end_photo_path = "編集済み";
+                    $existYesterdayEndTime->end_photo_path = "111222";
 
                     $existYesterdayStartTime->save();
 
@@ -432,7 +443,7 @@ class AttendanceTimesController extends Controller
 
                 $attendanceTime->start_time = $request->start_time;
                 $attendanceTime->start_photo_path =
-                    "編集済み";
+                    "111222";
 
                 $attendanceTime->save();
 
@@ -480,7 +491,7 @@ class AttendanceTimesController extends Controller
                 $endTime = Carbon::parse($request->end_time);
 
                 $attendanceTime->end_time = $request->end_time;
-                $attendanceTime->end_photo_path = "編集済み";
+                $attendanceTime->end_photo_path = "111222";
 
                 $attendanceTime->save();
 
@@ -513,14 +524,21 @@ class AttendanceTimesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $user = attendance_times::find($request->id);
+                Log::info("request", ["request", $request->id]);
 
-                if ($user->end_photo_path) {
-                    Storage::disk('public')->delete($user->end_photo_path);
+                $userAttendance = attendance_times::find($request->id);
+
+                $startFilePath = 'public/' . $userAttendance->start_photo_path;
+
+                $endFilePath = 'public/' . $userAttendance->end_photo_path;
+
+                // ファイルの存在を確認してから削除する
+                if (Storage::exists($startFilePath)) {
+                    Storage::delete($startFilePath);
                 }
 
-                if ($user->start_photo_path) {
-                    Storage::disk('public')->delete($user->start_photo_path);
+                if (Storage::exists($endFilePath)) {
+                    Storage::delete($endFilePath);
                 }
 
                 // レコードを削除
@@ -543,6 +561,7 @@ class AttendanceTimesController extends Controller
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            Log::alert("error", ["error", $e]);
             return response()->json([
                 'message' => '勤怠時間の削除に失敗しました！
                 もう一度お試しください！'

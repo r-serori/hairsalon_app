@@ -18,8 +18,10 @@ class MonthlySalesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
+
+                $user_id = urldecode($id);
                 // 月別売上一覧を取得
-                $monthly_sales = monthly_sales::where('owner_id', $id)->get();
+                $monthly_sales = monthly_sales::where('owner_id', $user_id)->get();
                 if ($monthly_sales->isEmpty()) {
                     return response()->json([
                         "message" =>

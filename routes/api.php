@@ -38,6 +38,17 @@ Route::middleware('api')->group(
 
         Route::middleware('auth:sanctum')->group(function () {
 
+            Route::get('/check-session', function () {
+                try {
+                    return response()->json(['status' => 'authenticated'], 200);
+                } catch (\Exception $e) {
+                    // Log::error($e->getMessage());
+                    return response()->json([
+                        'status' => 'unauthenticated',
+                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+            });
+
             Route::prefix('/user')->group(function () {
                 //ログアウト処理 Gate,ALL
                 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);

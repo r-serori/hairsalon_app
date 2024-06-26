@@ -19,7 +19,10 @@ class OptionsController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
-                $options = options::where('owner_id', $id)->get();
+
+                $user_id = urldecode($id);
+
+                $options = options::where('owner_id', $user_id)->get();
                 if ($options->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンからオプションを作成しましょう！",

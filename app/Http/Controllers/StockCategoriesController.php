@@ -19,8 +19,9 @@ class StockCategoriesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
+                $user_id = urldecode($id);
                 // カテゴリ一覧を取得
-                $stock_categories = stock_categories::where('owner_id', $id)->get();
+                $stock_categories = stock_categories::where('owner_id', $user_id)->get();
                 if ($stock_categories->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンから在庫カテゴリを作成しましょう！",

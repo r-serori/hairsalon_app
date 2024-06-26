@@ -22,7 +22,9 @@ class UserGetController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
 
-                $staffs = staff::where('owner_id', $owner_id)->get();
+                $decodedOwnerId = urldecode($owner_id);
+
+                $staffs = staff::where('owner_id', $decodedOwnerId)->get();
 
                 if ($staffs->isEmpty()) {
                     return response()->json([
@@ -78,6 +80,8 @@ class UserGetController extends Controller
 
                     $users = User::whereIn('id', $userIds)->get();
 
+
+
                     $attendanceTimes = $users->map(function ($userId) {
                         $attendanceTime = attendance_times::where('user_id', $userId->id)->latest()->first();
                         if (empty($attendanceTime)) {
@@ -94,10 +98,14 @@ class UserGetController extends Controller
                     $users->map(function ($user) {
                         return $user->only(['id', 'name', 'isAttendance', 'created_at', 'updated_at']);
                     });
+
+                    $userCount = count($users);
+
                     return response()->json([
                         'message' => 'ユーザー情報を取得しました！',
                         'responseUsers' => $users,
                         'attendanceTimes' => $attendanceTimes,
+                        'userCount' => $userCount,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
@@ -119,7 +127,9 @@ class UserGetController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
-                $responseUser = User::find($id);
+                $decodedId = urldecode($id);
+
+                $responseUser = User::find($decodedId);
                 if (!empty($responseUser)) {
 
                     return response()->json([

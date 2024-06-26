@@ -18,7 +18,10 @@ class DailySalesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $daily_sales = daily_sales::where('owner_id', $id)->get();
+
+                $user_id = urldecode($id);
+
+                $daily_sales = daily_sales::where('owner_id', $user_id)->get();
                 if ($daily_sales->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",

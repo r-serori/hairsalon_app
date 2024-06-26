@@ -32,28 +32,30 @@ class CustomersController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 // 顧客データを取得
-                $customers = customers::where('owner_id', $id)->get();
+                $user_id = urldecode($id);
 
-                $courses = courses::where('owner_id', $id)->get();
+                $customers = customers::where('owner_id', $user_id)->get();
+
+                $courses = courses::where('owner_id', $user_id)->get();
 
                 $options =
-                    options::where('owner_id', $id)->get();
+                    options::where('owner_id', $user_id)->get();
 
                 $merchandises =
-                    merchandises::where('owner_id', $id)->get();
+                    merchandises::where('owner_id', $user_id)->get();
 
                 $hairstyles =
-                    hairstyles::where('owner_id', $id)->get();
+                    hairstyles::where('owner_id', $user_id)->get();
 
 
-                $staff = staff::where('owner_id', $id)->pluck('user_id');
+                $staff = staff::where('owner_id', $user_id)->pluck('user_id');
                 Log::info('staff', $staff->toArray());
 
                 if ($staff->isEmpty()) {
-                    $owner = owner::where('user_id', $id)->first();
+                    $owner = owner::where('user_id', $user_id)->first();
                     $users = User::find($owner->user_id);
                 } else {
-                    $owner = owner::where('user_id', $id)->first();
+                    $owner = owner::where('user_id', $user_id)->first();
                     Log::info('owner', $owner->toArray());
                     $user = User::find($owner->user_id);
                     Log::info('user', $user->toArray());

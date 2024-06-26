@@ -19,7 +19,10 @@ class YearlySalesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $yearly_sales = yearly_sales::where('owner_id', $id)->get();
+
+                $user_id = urldecode($id);
+
+                $yearly_sales = yearly_sales::where('owner_id', $user_id)->get();
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
                         "message" =>

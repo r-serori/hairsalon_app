@@ -32,7 +32,9 @@ class SchedulesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
-                $customers = customers::where('owner_id', $id)->get();
+                $user_id = urldecode($id);
+
+                $customers = customers::where('owner_id', $user_id)->get();
 
                 if ($customers->isEmpty()) {
                     return response()->json([
@@ -46,23 +48,23 @@ class SchedulesController extends Controller
                     ->where('owner_id', 1)
                     ->get();
 
-                $courses = courses::where('owner_id', $id)->get();
+                $courses = courses::where('owner_id', $user_id)->get();
 
-                $options = options::where('owner_id', $id)->get();
+                $options = options::where('owner_id', $user_id)->get();
 
-                $merchandises = merchandises::where('owner_id', $id)->get();
+                $merchandises = merchandises::where('owner_id', $user_id)->get();
 
-                $hairstyles = hairstyles::where('owner_id', $id)->get();
+                $hairstyles = hairstyles::where('owner_id', $user_id)->get();
 
 
-                $staff = staff::where('owner_id', $id)->pluck('user_id');
+                $staff = staff::where('owner_id', $user_id)->pluck('user_id');
                 Log::info('staff', $staff->toArray());
 
                 if ($staff->isEmpty()) {
-                    $owner = owner::where('user_id', $id)->first();
+                    $owner = owner::where('user_id', $user_id)->first();
                     $users = User::find($owner->user_id);
                 } else {
-                    $owner = owner::where('user_id', $id)->first();
+                    $owner = owner::where('user_id', $user_id)->first();
                     Log::info('owner', $owner->toArray());
                     $user = User::find($owner->user_id);
                     Log::info('user', $user->toArray());
@@ -76,15 +78,15 @@ class SchedulesController extends Controller
                     return ['id' => $user->id, 'name' => $user->name];
                 });
 
-                $courseCustomer = course_customers::where('owner_id', $id)->get();
+                $courseCustomer = course_customers::where('owner_id', $user_id)->get();
 
-                $optionCustomer = option_customers::where('owner_id', $id)->get();
+                $optionCustomer = option_customers::where('owner_id', $user_id)->get();
 
-                $merchandiseCustomer = merchandise_customers::where('owner_id', $id)->get();
+                $merchandiseCustomer = merchandise_customers::where('owner_id', $user_id)->get();
 
-                $hairstyleCustomer = hairstyle_customers::where('owner_id', $id)->get();
+                $hairstyleCustomer = hairstyle_customers::where('owner_id', $user_id)->get();
 
-                $userCustomer = customer_users::where('owner_id', $id)->get();
+                $userCustomer = customer_users::where('owner_id', $user_id)->get();
 
                 if ($selectSchedules->isEmpty()) {
                     return response()->json([
@@ -142,7 +144,11 @@ class SchedulesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
-                $customers = customers::where('owner_id', $id)->get();
+                $user_id = urldecode($id);
+
+                $decodeYear = urldecode($year);
+
+                $customers = customers::where('owner_id', $user_id)->get();
 
                 if ($customers->isEmpty()) {
                     return response()->json([
@@ -150,29 +156,29 @@ class SchedulesController extends Controller
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
-                $selectGetYear = $year;
+                $selectGetYear = $decodeYear;
 
                 $selectSchedules = schedules::whereYear('start_time', $selectGetYear)
                     ->where('owner_id', 1)
                     ->get();
 
-                $courses = courses::where('owner_id', $id)->get();
+                $courses = courses::where('owner_id', $user_id)->get();
 
-                $options = options::where('owner_id', $id)->get();
+                $options = options::where('owner_id', $user_id)->get();
 
-                $merchandises = merchandises::where('owner_id', $id)->get();
+                $merchandises = merchandises::where('owner_id', $user_id)->get();
 
-                $hairstyles = hairstyles::where('owner_id', $id)->get();
+                $hairstyles = hairstyles::where('owner_id', $user_id)->get();
 
 
-                $staff = staff::where('owner_id', $id)->pluck('user_id');
+                $staff = staff::where('owner_id', $user_id)->pluck('user_id');
                 Log::info('staff', $staff->toArray());
 
                 if ($staff->isEmpty()) {
-                    $owner = owner::where('user_id', $id)->first();
+                    $owner = owner::where('user_id', $user_id)->first();
                     $users = User::find($owner->user_id);
                 } else {
-                    $owner = owner::where('user_id', $id)->first();
+                    $owner = owner::where('user_id', $user_id)->first();
                     Log::info('owner', $owner->toArray());
                     $user = User::find($owner->user_id);
                     Log::info('user', $user->toArray());
@@ -187,15 +193,15 @@ class SchedulesController extends Controller
                     return ['id' => $user->id, 'name' => $user->name];
                 });
 
-                $courseCustomer = course_customers::where('owner_id', $id)->get();
+                $courseCustomer = course_customers::where('owner_id', $user_id)->get();
 
-                $optionCustomer = option_customers::where('owner_id', $id)->get();
+                $optionCustomer = option_customers::where('owner_id', $user_id)->get();
 
-                $merchandiseCustomer = merchandise_customers::where('owner_id', $id)->get();
+                $merchandiseCustomer = merchandise_customers::where('owner_id', $user_id)->get();
 
-                $hairstyleCustomer = hairstyle_customers::where('owner_id', $id)->get();
+                $hairstyleCustomer = hairstyle_customers::where('owner_id', $user_id)->get();
 
-                $userCustomer = customer_users::where('owner_id', $id)->get();
+                $userCustomer = customer_users::where('owner_id', $user_id)->get();
 
                 return response()->json([
                     'schedules' => $selectSchedules,

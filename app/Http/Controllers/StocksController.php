@@ -25,7 +25,9 @@ class StocksController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
-                $stocks = stocks::where('owner_id', $id)->get();
+                $user_id = urldecode($id);
+
+                $stocks = stocks::where('owner_id', $user_id)->get();
                 if ($stocks->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンから店の在庫を作成しましょう！",
