@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Models\User;
-use App\Models\staff;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
+use App\Models\Staff;
+
 use App\Enums\Roles;
-use App\Models\attendance_times;
+use App\Models\AttendanceTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -24,7 +22,7 @@ class UserGetController extends Controller
 
                 $decodedOwnerId = urldecode($owner_id);
 
-                $staffs = staff::where('owner_id', $decodedOwnerId)->get();
+                $staffs = Staff::where('owner_id', $decodedOwnerId)->get();
 
                 if ($staffs->isEmpty()) {
                     return response()->json([
@@ -67,7 +65,7 @@ class UserGetController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
-                $staffs = staff::where('owner_id', $owner_id)->get();
+                $staffs = Staff::where('owner_id', $owner_id)->get();
 
                 if ($staffs->isEmpty()) {
                     return response()->json([
@@ -83,7 +81,7 @@ class UserGetController extends Controller
 
 
                     $attendanceTimes = $users->map(function ($userId) {
-                        $attendanceTime = attendance_times::where('user_id', $userId->id)->latest()->first();
+                        $attendanceTime = AttendanceTime::where('user_id', $userId->id)->latest()->first();
                         if (empty($attendanceTime)) {
                             return [
                                 'user_id' => $userId->id,

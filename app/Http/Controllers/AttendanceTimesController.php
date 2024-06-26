@@ -3,13 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\attendance_times;
+use App\Models\AttendanceTime;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,14 +16,16 @@ class AttendanceTimesController extends Controller
 
     //クエリのuser:idを受け取り、そのユーザーの勤怠時間を１か月分取得　Gate,ALL
     //yearMonthが"000111"の場合は当月の勤怠時間を取得
-    public function selectedAttendanceTime($id, $yearMonth)
+    public function selectedAttendanceTime($yearMonth, $id)
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 $user_id = urldecode($id);
+                Log::info("user_id", ["user_id", $user_id]);
                 $yearMonth = urldecode($yearMonth);
+                Log::info("yearMonth", ["yearMonth", $yearMonth]);
                 if ($yearMonth !== "000111") {
                     //わたってきた('Y-m')形式の年月を取得
                     $currentYearAndMonth = $yearMonth;
@@ -35,7 +35,7 @@ class AttendanceTimesController extends Controller
                 }
 
                 //user_isdでデータを絞ってから、created_atで年月を絞る
-                $selectAttendanceTimes = attendance_times::where('user_id', $user_id)->whereYear('created_at', $currentYearAndMonth)->latest('created_at')->get();
+                $selectAttendanceTimes = AttendanceTime::where('user_id', $user_id)->whereYear('created_at', $currentYearAndMonth)->latest('created_at')->get();
 
                 //送信されるphoto_pathを確認
                 Log::info("selectAttendanceTimes", ["selectAttendanceTimes", $selectAttendanceTimes]);
@@ -48,7 +48,11 @@ class AttendanceTimesController extends Controller
                 });
 
                 $user = User::find($user_id)->only([
-                    'id', 'name', 'isAttendance', 'created_at', 'updated_at'
+                    'id',
+                    'name',
+                    'isAttendance',
+                    'created_at',
+                    'updated_at',
                 ]);
 
                 if ($selectAttendanceTimes->isEmpty() && $yearMonth === "000111") {
@@ -87,7 +91,7 @@ class AttendanceTimesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $user_id = urldecode($id);
-                $firstAttendanceTime = attendance_times::where('user_id', $user_id)->latest('created_at')->first();
+                $firstAttendanceTime = AttendanceTime::where('user_id', $user_id)->latest('created_at')->first();
 
                 return response()->json([
                     'attendanceTime' => $firstAttendanceTime,
@@ -185,8 +189,8 @@ class AttendanceTimesController extends Controller
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
                 $startTime = Carbon::parse($request->start_time);
 
-                $existAttendanceStart = attendance_times::where('user_id', $request->user_id)->whereDate('start_time', $startTime->format('Y-m-d'))->latest()->first();
-                $existAttendanceEnd = attendance_times::where('user_id', $request->user_id)->whereDate('end_time', $startTime->format('Y-m-d'))->latest()->first();
+                $existAttendanceStart = AttendanceTime::where('user_id', $request->user_id)->whereDate('start_time', $startTime->format('Y-m-d'))->latest()->first();
+                $existAttendanceEnd = AttendanceTime::where('user_id', $request->user_id)->whereDate('end_time', $startTime->format('Y-m-d'))->latest()->first();
 
                 if (!empty($existAttendanceStart) && !empty($existAttendanceEnd)) {
                     return response()->json(
@@ -222,7 +226,7 @@ class AttendanceTimesController extends Controller
                     Storage::disk('public')->put($fileName, $data);
 
                     // リクエストから受け取ったデータを使用してレコードを作成
-                    $attendanceTime = attendance_times::create([
+                    $attendanceTime = AttendanceTime::create([
                         'start_time' => $request->start_time,
                         'start_photo_path' =>  $fileName,
                         'user_id' => $request->user_id,
@@ -275,7 +279,7 @@ class AttendanceTimesController extends Controller
 
                 $yesterday = $endTime->subDay()->format('Y-m-d');
 
-                $existYesterdayStartTime = attendance_times::where('user_id', $request->user_id)->whereDate('start_time', $yesterday)->latest()->first();
+                $existYesterdayStartTime = AttendanceTime::where('user_id', $request->user_id)->whereDate('start_time', $yesterday)->latest()->first();
 
                 $existYesterdayStartTime->end_time = $request->end_time;
 
@@ -330,9 +334,9 @@ class AttendanceTimesController extends Controller
 
                 $yesterday = $endTime->subDay()->format('Y-m-d');
 
-                $existYesterdayStartTime = attendance_times::where('user_id', $request->user_id)->whereDate('start_time', $yesterday)->latest()->first();
+                $existYesterdayStartTime = AttendanceTime::where('user_id', $request->user_id)->whereDate('start_time', $yesterday)->latest()->first();
 
-                $existYesterdayEndTime = attendance_times::where('user_id', $request->user_id)->whereDate('end_time', $yesterday)->latest()->first();
+                $existYesterdayEndTime = AttendanceTime::where('user_id', $request->user_id)->whereDate('end_time', $yesterday)->latest()->first();
 
                 if (!empty($existYesterdayEndTime) && empty($existYesterdayStartTime)) {
 
@@ -379,7 +383,7 @@ class AttendanceTimesController extends Controller
 
                     $today = Carbon::now()->format('Y-m-d');
 
-                    $attendanceTime = attendance_times::where('user_id', $request->user_id)
+                    $attendanceTime = AttendanceTime::where('user_id', $request->user_id)
                         ->whereDate('start_time', $today)
                         ->latest()
                         ->first();
@@ -426,7 +430,7 @@ class AttendanceTimesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
                 // リクエストから受け取ったデータを使用してレコードを更新
-                $attendanceTime = attendance_times::find($request->id);
+                $attendanceTime = AttendanceTime::find($request->id);
 
                 if ($attendanceTime->start_photo_path) {
                     Storage::disk('public')->delete($attendanceTime->start_photo_path);
@@ -475,7 +479,7 @@ class AttendanceTimesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
                 // リクエストから受け取ったデータを使用してレコードを更新
-                $attendanceTime = attendance_times::find($request->id);
+                $attendanceTime = AttendanceTime::find($request->id);
 
                 if ($attendanceTime->end_photo_path) {
                     Storage::disk('public')->delete($attendanceTime->end_photo_path);
@@ -526,7 +530,7 @@ class AttendanceTimesController extends Controller
             if ($user && $user->hasRole(Roles::OWNER)) {
                 Log::info("request", ["request", $request->id]);
 
-                $userAttendance = attendance_times::find($request->id);
+                $userAttendance = AttendanceTime::find($request->id);
 
                 $startFilePath = 'public/' . $userAttendance->start_photo_path;
 
@@ -542,7 +546,7 @@ class AttendanceTimesController extends Controller
                 }
 
                 // レコードを削除
-                attendance_times::destroy($request->id);
+                AttendanceTime::destroy($request->id);
 
                 // 削除後に index 画面にリダイレクトする
 

@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\courses;
-use App\Enums\Permissions;
+use App\Models\Course;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
@@ -21,7 +20,7 @@ class CoursesController extends Controller
 
                 $user_id = urldecode($id);
 
-                $courses = courses::where('owner_id', $user_id)->get();
+                $courses = Course::where('owner_id', $user_id)->get();
                 if ($courses->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンからコースを作成しましょう！",
@@ -57,7 +56,7 @@ class CoursesController extends Controller
                     'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
-                $course = courses::create([
+                $course = Course::create([
                     'course_name' => $validatedData['course_name'],
                     'price' => $validatedData['price'],
                     'owner_id' => $validatedData['owner_id'],
@@ -83,7 +82,7 @@ class CoursesController extends Controller
     // {
     //     try {
 
-    //         $course = courses::find($id);
+    //         $course = Course::find($id);
     //         if (!$course) {
     //             return response()->json([
     //                 'message' =>
@@ -110,7 +109,7 @@ class CoursesController extends Controller
                     'price' => 'required',
                 ]);
 
-                $course = courses::find($request->id);
+                $course = Course::find($request->id);
 
                 $course->course_name = $validatedData['course_name'];
                 $course->price = $validatedData['price'];
@@ -140,7 +139,7 @@ class CoursesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $course = courses::find($request->id);
+                $course = Course::find($request->id);
                 if (!$course) {
                     return response()->json([
                         'message' =>

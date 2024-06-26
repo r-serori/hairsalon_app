@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\hairstyles;
+use App\Models\Hairstyle;
+
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use Illuminate\Http\JsonResponse;
@@ -22,7 +23,7 @@ class HairstylesController extends Controller
 
                 $user_id = urldecode($id);
 
-                $hairstyles = hairstyles::where('owner_id', $user_id)->get();
+                $hairstyles = Hairstyle::where('owner_id', $user_id)->get();
 
                 if ($hairstyles->isEmpty()) {
                     return response()->json([
@@ -57,7 +58,7 @@ class HairstylesController extends Controller
                     'hairstyle_name' => 'required',
                 ]);
 
-                $hairstyle = hairstyles::create([
+                $hairstyle = Hairstyle::create([
                     'hairstyle_name' => $validatedData['hairstyle_name'],
                 ]);
 
@@ -81,7 +82,7 @@ class HairstylesController extends Controller
     // {
     //     try {
 
-    //         $hairstyle = hairstyles::find($id);
+    //         $hairstyle = Hairstyle::find($id);
     //         if (!$hairstyle) {
     //             return response()->json([
     //                 'message' => 'ヘアスタイルが見つかりません！'
@@ -109,7 +110,7 @@ class HairstylesController extends Controller
                     'hairstyle_name' => 'required',
                 ]);
 
-                $hairstyle = hairstyles::find($request->id);
+                $hairstyle = Hairstyle::find($request->id);
                 $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
 
                 $hairstyle->save();
@@ -138,7 +139,7 @@ class HairstylesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
-                $hairstyle = hairstyles::find($request->id);
+                $hairstyle = Hairstyle::find($request->id);
                 if (!$hairstyle) {
                     return response()->json([
                         'message' => 'ヘアスタイルが見つかりません！

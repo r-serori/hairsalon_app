@@ -14,11 +14,11 @@ return new class extends Migration
     public function up()
     {
         Schema::create('customers', function (Blueprint $table) {
-            $table->id();
-            $table->string('customer_name', 100);
-            $table->string('phone_number', 100)->nullable();
-            $table->string('remarks', 300)->nullable();
-            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
+            $table->id()->unique();
+            $table->string('customer_name', 100)->nullable(false);
+            $table->string('phone_number', 20)->nullable();
+            $table->string('remarks', 150)->nullable();
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);
             $table->timestamps();
         });
     }

@@ -14,9 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::create('stock_categories', function (Blueprint $table) {
-            $table->id();
-            $table->string('category');
-            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
+            $table->id()->unique();
+            $table->string('category', 100)->nullable(false);
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);
             $table->timestamps();
         });
     }

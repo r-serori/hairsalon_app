@@ -50,7 +50,7 @@ Route::middleware('web')->group(function () {
 
         //userの勤怠時間のコントローラー
         //勤怠時間の取得userのidと年月を受け取る。yearMonthが"無し"の場合は当月の勤怠時間を取得　Gate,OWNER
-        Route::get('/images/selectedAttendanceTimes/{yearMonth}/{user_id}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
+        Route::get('/attendance_times/selectedAttendanceTimes/{yearMonth}/{user_id}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
         //クエリのuser:idを受け取り、そのユーザーの一番新しい勤怠時間を取得　Gate,ALL   
         Route::get('/firstAttendanceTimes/firstGet/{user_id}', [AttendanceTimesController::class, 'firstAttendanceTime']);
         //スタッフが前日に退勤を押さずに帰った時の編集依頼ボタンが押されたときの処理　Gate,ALL
@@ -102,7 +102,7 @@ Route::middleware('web')->group(function () {
         Route::post('/schedules/customers/double', [SchedulesController::class, 'double']);
         Route::post('/schedules/customers/doubleUpdate', [SchedulesController::class, 'doubleUpdate']);
         Route::post('/schedules/customers/customerOnlyUpdate', [SchedulesController::class, 'customerOnlyUpdate']);
-        Route::get('/schedules/{user_id}', [SchedulesController::class, 'index']);
+        Route::get('/schedules/{owner_id}', [SchedulesController::class, 'index']);
         Route::post('/schedules/store', [SchedulesController::class, 'store']);
 
         Route::post('/schedules/update', [SchedulesController::class, 'update']);

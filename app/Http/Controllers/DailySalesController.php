@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\daily_sales;
+use App\Models\DailySale;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +19,7 @@ class DailySalesController extends Controller
 
                 $user_id = urldecode($id);
 
-                $daily_sales = daily_sales::where('owner_id', $user_id)->get();
+                $daily_sales = DailySale::where('owner_id', $user_id)->get();
                 if ($daily_sales->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
@@ -65,7 +63,7 @@ class DailySalesController extends Controller
                     ]);
 
                 $daily_sales =
-                    daily_sales::create([
+                    DailySale::create([
                         'date' => $validatedData['date'],
                         'daily_sales' => $validatedData['daily_sales'],
                         'owner_id' => $validatedData['owner_id'],
@@ -91,7 +89,7 @@ class DailySalesController extends Controller
     // {
     //     try {
     //         if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-    //             $daily_sale = daily_sales::find($id);
+    //             $daily_sale = DailySale::find($id);
 
     //             return response()->json([
     //                 'dailySale' => $daily_sale
@@ -119,7 +117,7 @@ class DailySalesController extends Controller
                     'daily_sales' => 'required',
                 ]);
 
-                $daily_sale = daily_sales::find($request->id);
+                $daily_sale = DailySale::find($request->id);
 
                 $daily_sale->date = $validatedData['date'];
                 $daily_sale->daily_sales = $validatedData['daily_sales'];
@@ -152,7 +150,7 @@ class DailySalesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $daily_sale = daily_sales::find($request->id);
+                $daily_sale = DailySale::find($request->id);
                 if (!$daily_sale) {
                     return response()->json([
                         'message' =>

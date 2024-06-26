@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\merchandise_customers;
+use App\Models\MerchandiseCustomer;
 
 class MerchandiseCustomersController extends Controller
 {
     public function index()
     {
         try {
-            $merchandise_customers = merchandise_customers::all();
+            $merchandise_customers = MerchandiseCustomer::all();
 
             return response()->json([
                 'merchandise_customers' => $merchandise_customers

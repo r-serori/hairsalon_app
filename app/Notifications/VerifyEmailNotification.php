@@ -9,19 +9,27 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
+use App\Models\User;
 
 class VerifyEmailNotification extends Notification
 {
     use Queueable;
 
     /**
+     * The user instance.
+     *
+     * @var User
+     */
+    protected $user;
+
+    /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(User $user)
     {
-        //
+        $this->user = $user;
     }
 
     /**
@@ -44,7 +52,11 @@ class VerifyEmailNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
+
             ->subject('メールアドレスの確認')
+            ->greeting('こんにちは！ ' . $this->user->name . 'さん!')
+            ->line('ご登録ありがとうございます！Serori.Rです！')
+            ->line('この度は、HairSalonApp にご登録いただき、誠にありがとうございます！')
             ->line('以下のボタンをクリックしてメールアドレスを確認してください。')
             ->action('メールアドレスを確認する', $this->verificationUrl($notifiable))
             ->line('もし心当たりがない場合は、このメールを無視してください。');

@@ -14,9 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::create('course_customers', function (Blueprint $table) {
-            $table->foreignId('courses_id')->constrained('courses')->onDelete('cascade');
-            $table->foreignId('customers_id')->constrained('customers')->onDelete('cascade');
-            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
+            $table->foreignId('course_id')->constrained('courses')->onDelete('cascade')->nullable(false);
+            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade')->nullable(false);
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);
         });
     }
 

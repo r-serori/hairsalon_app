@@ -14,12 +14,12 @@ return new class extends Migration
     public function up()
     {
         Schema::create('attendance_times', function (Blueprint $table) {
-            $table->id();
-            $table->string('start_time')->nullable();
-            $table->string('end_time')->nullable();
-            $table->string('start_photo_path')->nullable();
-            $table->string('end_photo_path')->nullable();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->id()->unique();
+            $table->string('start_time', 30)->nullable();
+            $table->string('end_time', 30)->nullable();
+            $table->string('start_photo_path', 255)->nullable();
+            $table->string('end_photo_path', 255)->nullable();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade')->nullable(false);
             $table->timestamps();
         });
     }

@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\option_customers;
+use App\Models\OptionCustomer;
 
 class OptionCustomersController extends Controller
 {
@@ -11,7 +10,7 @@ class OptionCustomersController extends Controller
     public function index()
     {
         try {
-            $option_customers = option_customers::all();
+            $option_customers = OptionCustomer::all();
 
             return response()->json([
                 'option_customers' => $option_customers

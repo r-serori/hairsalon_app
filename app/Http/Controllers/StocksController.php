@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\stocks;
+use App\Models\Stock;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +25,7 @@ class StocksController extends Controller
 
                 $user_id = urldecode($id);
 
-                $stocks = stocks::where('owner_id', $user_id)->get();
+                $stocks = Stock::where('owner_id', $user_id)->get();
                 if ($stocks->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンから店の在庫を作成しましょう！",
@@ -71,7 +69,7 @@ class StocksController extends Controller
                 ]);
 
                 // 在庫モデルを作成して保存する
-                $stocks =  stocks::create([
+                $stocks =  Stock::create([
                     'product_name' => $validatedData['product_name'],
                     'quantity' => $validatedData['quantity'],
                     'product_price' => $validatedData['product_price'],
@@ -106,7 +104,7 @@ class StocksController extends Controller
     //     try {
     //         if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
     //             // 指定されたIDの在庫を取得
-    //             $stock = stocks::find($id);
+    //             $stock = Stock::find($id);
 
     //             // 在庫を表示
     //             return response()->json([
@@ -144,7 +142,7 @@ class StocksController extends Controller
                 ]);
 
                 // 在庫を取得する
-                $stock = stocks::find($request->id);
+                $stock = Stock::find($request->id);
 
                 // 在庫の属性を更新する
                 $stock->product_name = $validatedData['product_name'];
@@ -181,7 +179,7 @@ class StocksController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $stock = stocks::find($request->id);
+                $stock = Stock::find($request->id);
                 if (!$stock) {
                     return response()->json([
                         'message' => '在庫が見つかりませんでした！

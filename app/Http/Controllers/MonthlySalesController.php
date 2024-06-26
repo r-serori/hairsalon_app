@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\monthly_sales;
+use App\Models\MonthlySale;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +21,7 @@ class MonthlySalesController extends Controller
 
                 $user_id = urldecode($id);
                 // 月別売上一覧を取得
-                $monthly_sales = monthly_sales::where('owner_id', $user_id)->get();
+                $monthly_sales = MonthlySale::where('owner_id', $user_id)->get();
                 if ($monthly_sales->isEmpty()) {
                     return response()->json([
                         "message" =>
@@ -60,7 +60,7 @@ class MonthlySalesController extends Controller
                 ]);
 
                 // 月別売上モデルを作成して保存する
-                $monthly_sales = monthly_sales::create([
+                $monthly_sales = MonthlySale::create([
                     'year_month' => $validatedData['year_month'],
                     'monthly_sales' => $validatedData['monthly_sales'],
                     'owner_id' => $validatedData['owner_id'],
@@ -89,7 +89,7 @@ class MonthlySalesController extends Controller
     //     try {
     //         if (Gate::allows(Permissions::OWNER_PERMISSION)) {
     //             // 指定されたIDの月別売上を取得
-    //             $monthly_sale = monthly_sales::find($id);
+    //             $monthly_sale = MonthlySale::find($id);
 
     //             // 月別売上を表示
     //             return response()->json([
@@ -122,7 +122,7 @@ class MonthlySalesController extends Controller
                 ]);
 
                 // 月別売上を取得する
-                $monthly_sale = monthly_sales::find($request->id);
+                $monthly_sale = MonthlySale::find($request->id);
 
                 // 月別売上を更新する
                 $monthly_sale->year = $validatedData['year_month'];
@@ -156,7 +156,7 @@ class MonthlySalesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $monthly_sale = monthly_sales::find($request->id);
+                $monthly_sale = MonthlySale::find($request->id);
                 if (!$monthly_sale) {
                     return response()->json([
                         'message' =>

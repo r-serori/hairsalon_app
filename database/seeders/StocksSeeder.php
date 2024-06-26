@@ -39,5 +39,17 @@ class StocksSeeder extends Seeder
             'created_at' => now(),
             "updated_at" => now(),
         ]);
+        DB::table('stocks')->insert([
+            'product_name' => 'キャップ',
+            'product_price' => 2000,
+            'quantity' => 20,
+            'remarks' => 'なし',
+            'supplier' => '株式会社B',
+            "notice" => "10",
+            'stock_category_id' => null,
+            'owner_id' => 1,
+            'created_at' => now(),
+            "updated_at" => now(),
+        ]);
     }
 }

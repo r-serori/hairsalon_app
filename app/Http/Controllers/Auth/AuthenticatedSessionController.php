@@ -20,8 +20,8 @@ use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
-use App\Models\owner;
-use App\Models\staff;
+use App\Models\Owner;
+use App\Models\Staff;
 use Illuminate\Support\Facades\Log;
 
 class AuthenticatedSessionController extends Controller
@@ -66,7 +66,7 @@ class AuthenticatedSessionController extends Controller
         return $this->loginPipeline($request)->then(function ($request) {
             try {
 
-                $existOwner = owner::where('user_id', $request->user()->id)->first();
+                $existOwner = Owner::where('user_id', $request->user()->id)->first();
 
                 if (!empty($existOwner)) {
                     return response()->json([
@@ -75,9 +75,9 @@ class AuthenticatedSessionController extends Controller
                         'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
-                    $staff = staff::where('user_id', $request->user()->id)->first();
+                    $staff = Staff::where('user_id', $request->user()->id)->first();
 
-                    $owner = owner::find($staff->owner_id);
+                    $owner = Owner::find($staff->owner_id);
 
                     return response()->json([
                         'message' => 'スタッフ用ユーザーとしてログインしました!',

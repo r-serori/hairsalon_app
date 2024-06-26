@@ -14,9 +14,9 @@ return new class extends Migration
     public function up()
     {
         Schema::create('merchandise_customers', function (Blueprint $table) {
-            $table->foreignId('merchandises_id')->constrained('merchandises')->onDelete('cascade');
-            $table->foreignId('customers_id')->constrained('customers')->onDelete('cascade');
-            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
+            $table->foreignId('merchandise_id')->constrained('merchandises')->onDelete('cascade')->nullable(false);
+            $table->foreignId('customer_id')->constrained('customers')->onDelete('cascade')->nullable(false);
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);
         });
     }
 

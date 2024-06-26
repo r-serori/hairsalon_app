@@ -3,10 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\yearly_sales;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
-use Illuminate\Support\Facades\Validator;
+use App\Models\YearlySale;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
@@ -22,7 +19,7 @@ class YearlySalesController extends Controller
 
                 $user_id = urldecode($id);
 
-                $yearly_sales = yearly_sales::where('owner_id', $user_id)->get();
+                $yearly_sales = YearlySale::where('owner_id', $user_id)->get();
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
                         "message" =>
@@ -59,7 +56,7 @@ class YearlySalesController extends Controller
                     'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
-                $yearly_sale = yearly_sales::create([
+                $yearly_sale = YearlySale::create([
                     'year' => $validatedData['year'],
                     'yearly_sales' => $validatedData['yearly_sales'],
                     'owner_id' => $validatedData['owner_id'],
@@ -85,7 +82,7 @@ class YearlySalesController extends Controller
     // {
     //     try {
     //         if (Gate::allows(Permissions::OWNER_PERMISSION)) {
-    //             $yearly_sale = yearly_sales::find($id);
+    //             $yearly_sale = YearlySale::find($id);
 
     //             return response()->json([
     //                 'yearlySale' => $yearly_sale
@@ -115,7 +112,7 @@ class YearlySalesController extends Controller
                     'yearly_sales' => 'required|integer',
                 ]);
 
-                $yearly_sale = yearly_sales::find($request->id);
+                $yearly_sale = YearlySale::find($request->id);
 
                 $yearly_sale->year = $validatedData['year'];
                 $yearly_sale->yearly_sales = $validatedData['yearly_sales'];
@@ -148,7 +145,7 @@ class YearlySalesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $yearly_sale = yearly_sales::find($request->id);
+                $yearly_sale = YearlySale::find($request->id);
                 if (!$yearly_sale) {
                     return response()->json([
                         'message' =>

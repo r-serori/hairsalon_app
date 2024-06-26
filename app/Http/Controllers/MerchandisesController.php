@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\merchandises;
+use App\Models\Merchandise;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +22,7 @@ class MerchandisesController extends Controller
 
                 $user_id = urldecode($id);
 
-                $merchandises = merchandises::where('owner_id', $user_id)->get();
+                $merchandises = Merchandise::where('owner_id', $user_id)->get();
 
                 if ($merchandises->isEmpty()) {
                     return response()->json([
@@ -60,7 +60,7 @@ class MerchandisesController extends Controller
                     'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
-                $merchandise = merchandises::create([
+                $merchandise = Merchandise::create([
                     'merchandise_name' => $validatedData['merchandise_name'],
                     'price' => $validatedData['price'],
                     'owner_id' => $validatedData['owner_id'],
@@ -87,7 +87,7 @@ class MerchandisesController extends Controller
     // public function show($id)
     // {
     //     try {
-    //         $merchandise = merchandises::find($id);
+    //         $merchandise = Merchandise::find($id);
 
     //         return response()->json([
     //             'merchandise' => $merchandise
@@ -113,7 +113,7 @@ class MerchandisesController extends Controller
                     'price' => 'required',
                 ]);
 
-                $merchandise = merchandises::find($request->id);
+                $merchandise = Merchandise::find($request->id);
 
 
                 $merchandise->merchandise_name = $validatedData['merchandise_name'];
@@ -146,7 +146,7 @@ class MerchandisesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $merchandise = merchandises::find($request->id);
+                $merchandise = Merchandise::find($request->id);
                 if (!$merchandise) {
                     return response()->json([
                         'message' =>

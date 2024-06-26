@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class staff extends Model
+class Staff extends Model
 {
     use HasFactory;
 
@@ -14,4 +14,14 @@ class staff extends Model
         'user_id',
         'owner_id',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(Owner::class, 'owner_id');
+    }
 }

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\course_customers;
+
+use App\Models\CourseCustomer;
 
 class CourseCustomersController extends Controller
 {
@@ -11,7 +11,7 @@ class CourseCustomersController extends Controller
     {
         try {
 
-            $course_customers = course_customers::all();
+            $course_customers = CourseCustomer::all();
 
             return response()->json([
                 'course_customers' => $course_customers

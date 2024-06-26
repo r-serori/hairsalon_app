@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Roles;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
+use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -20,8 +21,8 @@ class User extends Authenticatable implements MustVerifyEmailContract
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
-    use Notifiable;
     use HasRoles;
+    use MustVerifyEmail;
 
     /**
      * The attributes that are mass assignable.

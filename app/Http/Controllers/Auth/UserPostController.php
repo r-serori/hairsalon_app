@@ -5,13 +5,11 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
-use App\Models\owner;
-use App\Models\staff;
+use App\Models\Owner;
+use App\Models\Staff;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,7 +32,7 @@ class UserPostController extends Controller
             $user = User::where('id', $request->user_id)->first();
 
             if (!empty($user)) {
-                $owner = owner::create([
+                $owner = Owner::create([
                     'store_name' => $request->store_name,
                     'address' => $request->address,
                     'phone_number' => $request->phone_number,

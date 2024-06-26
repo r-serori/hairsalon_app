@@ -14,15 +14,15 @@ return new class extends Migration
     public function up()
     {
         Schema::create('stocks', function (Blueprint $table) {
-            $table->id();
-            $table->string('product_name'); //商品名
-            $table->integer('product_price'); //商品価格 
-            $table->integer('quantity'); //数量
-            $table->string('remarks')->nullable(); //備考
-            $table->string('supplier')->nullable(); //仕入先
-            $table->integer('notice');
-            $table->foreignId('stock_category_id')->constrained('stock_categories')->onDelete('cascade');
-            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
+            $table->id()->unique();
+            $table->string('product_name', 100)->nullable(false); //商品名
+            $table->unsignedInteger('product_price')->nullable(false); //商品価格 
+            $table->unsignedInteger('quantity')->default(0)->nullable(false); //数量
+            $table->string('remarks', 150)->nullable(); //備考
+            $table->string('supplier', 100)->nullable(); //仕入先
+            $table->unsignedInteger('notice')->default(0)->nullable(false); //通知
+            $table->foreignId('stock_category_id')->nullable()->constrained('stock_categories')->onDelete('cascade');
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);;
             $table->timestamps();
         });
     }

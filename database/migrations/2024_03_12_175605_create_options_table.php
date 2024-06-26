@@ -14,10 +14,10 @@ return new class extends Migration
     public function up()
     {
         Schema::create('options', function (Blueprint $table) {
-            $table->id();
-            $table->string('option_name', 100);
-            $table->integer('price');
-            $table->foreignId('owner_id')->constrained()->onDelete('cascade');
+            $table->id()->unique();
+            $table->string('option_name', 100)->nullable(false);
+            $table->unsignedInteger('price')->nullable(false);
+            $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);
             $table->timestamps();
         });
     }

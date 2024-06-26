@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\customer_users;
+use App\Models\CustomerUser;
 
 class CustomerAttendancesController extends Controller
 {
   public function index()
   {
     try {
-      $customer_users = customer_users::all();
+      $customer_users = CustomerUser::all();
       return response()->json([
         'customer_users' => $customer_users
       ]);

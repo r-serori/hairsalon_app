@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\hairstyle_customers;
+use App\Models\HairstyleCustomer;
 
 class HairstyleCustomersController extends Controller
 {
     public function index()
     {
         try {
-            $hairstyle_customers = hairstyle_customers::all();
+            $hairstyle_customers = HairstyleCustomer::all();
 
             return response()->json([
                 'hairstyle_customers' => $hairstyle_customers

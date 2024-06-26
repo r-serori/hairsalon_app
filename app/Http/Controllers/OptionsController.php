@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Permissions;
 use Illuminate\Http\Request;
-use App\Models\options;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Redis;
+use App\Models\Option;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +20,7 @@ class OptionsController extends Controller
 
                 $user_id = urldecode($id);
 
-                $options = options::where('owner_id', $user_id)->get();
+                $options = Option::where('owner_id', $user_id)->get();
                 if ($options->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンからオプションを作成しましょう！",
@@ -57,7 +55,7 @@ class OptionsController extends Controller
                     'price' => 'required',
                 ]);
                 $option =
-                    options::create([
+                    Option::create([
                         'option_name' => $validatedData['option_name'],
                         'price' => $validatedData['price'],
 
@@ -82,7 +80,7 @@ class OptionsController extends Controller
     // public function show($id)
     // {
     //     try {
-    //         $option = options::find($id);
+    //         $option = Option::find($id);
 
     //         return response()->json([
     //             'option' => $option
@@ -106,7 +104,7 @@ class OptionsController extends Controller
                     'price' => 'required',
                 ]);
 
-                $option = options::find($request->id);
+                $option = Option::find($request->id);
 
                 $option->option_name = $validatedData['option_name'];
                 $option->price = $validatedData['price'];
@@ -140,7 +138,7 @@ class OptionsController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
-                $option = options::find($request->id);
+                $option = Option::find($request->id);
                 if (!$option) {
                     return response()->json([
                         'message' =>
