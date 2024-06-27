@@ -131,8 +131,6 @@ class UserPostController extends Controller
                         'phone_number' => $user->phone_number,
                         'role' => $user->role,
                         'isAttendance' => $user->isAttendance,
-                        'created_at' => $user->created_at,
-                        'updated_at' => $user->updated_at,
                     ];
                     return response()->json(
                         [
@@ -178,7 +176,7 @@ class UserPostController extends Controller
 
                     return response()->json([
                         'message' => '権限の変更に成功しました！',
-                        'responseUser' => $user->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']),
+                        'responseUser' => $user->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance']),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([

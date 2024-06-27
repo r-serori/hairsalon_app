@@ -36,7 +36,7 @@ class UserGetController extends Controller
                     $users = User::whereIn('id', $userIds)->get();
 
                     $users->map(function ($user) {
-                        return $user->only(['id', 'name', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']);
+                        return $user->only(['id', 'name', 'phone_number', 'role', 'isAttendance']);
                     });
 
                     $userCount = count($users);
@@ -94,7 +94,7 @@ class UserGetController extends Controller
                     });
 
                     $users->map(function ($user) {
-                        return $user->only(['id', 'name', 'isAttendance', 'created_at', 'updated_at']);
+                        return $user->only(['id', 'name', 'isAttendance']);
                     });
 
                     $userCount = count($users);
@@ -132,7 +132,7 @@ class UserGetController extends Controller
 
                     return response()->json([
                         'message' => 'ユーザー情報を取得しました!',
-                        'responseUser' => $responseUser->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at']),
+                        'responseUser' => $responseUser->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance']),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([

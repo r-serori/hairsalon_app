@@ -72,7 +72,7 @@ class AuthenticatedSessionController extends Controller
                     return response()->json([
                         'message' => 'オーナー用ユーザーとしてログインしました!',
                         'responseOwnerId' => $existOwner->id,
-                        'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'),
+                        'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance'),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     $staff = Staff::where('user_id', $request->user()->id)->first();
@@ -82,7 +82,7 @@ class AuthenticatedSessionController extends Controller
                     return response()->json([
                         'message' => 'スタッフ用ユーザーとしてログインしました!',
                         'responseOwnerId' => $owner->id,
-                        'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at'),
+                        'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance'),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } catch (\Exception $e) {

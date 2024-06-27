@@ -51,8 +51,6 @@ class AttendanceTimesController extends Controller
                     'id',
                     'name',
                     'isAttendance',
-                    'created_at',
-                    'updated_at',
                 ]);
 
                 if ($selectAttendanceTimes->isEmpty() && $yearMonth === "000111") {
