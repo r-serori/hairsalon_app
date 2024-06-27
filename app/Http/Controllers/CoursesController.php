@@ -7,7 +7,7 @@ use App\Models\Course;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
-
+use Illuminate\Support\Facades\Cache;
 
 class CoursesController extends Controller
 {
@@ -20,7 +20,16 @@ class CoursesController extends Controller
 
                 $user_id = urldecode($id);
 
-                $courses = Course::where('owner_id', $user_id)->get();
+
+                $coursesCacheKey = 'owner_' . $user_id . 'courses';
+
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
+                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($user_id) {
+                    return  Course::where('owner_id', $user_id)->get();
+                });
+
+
                 if ($courses->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンからコースを作成しましょう！",
@@ -51,8 +60,8 @@ class CoursesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
-                    'course_name' => 'required',
-                    'price' => 'required',
+                    'course_name' => 'required|string',
+                    'price' => 'required|integer',
                     'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
@@ -61,6 +70,10 @@ class CoursesController extends Controller
                     'price' => $validatedData['price'],
                     'owner_id' => $validatedData['owner_id'],
                 ]);
+
+                $coursesCacheKey = 'owner_' . $request->owner_id . 'courses';
+
+                Cache::forget($coursesCacheKey);
 
                 return response()->json([
                     "course" => $course
@@ -105,8 +118,8 @@ class CoursesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
-                    'course_name' => 'required',
-                    'price' => 'required',
+                    'course_name' => 'required|string',
+                    'price' => 'required|integer',
                 ]);
 
                 $course = Course::find($request->id);
@@ -115,6 +128,11 @@ class CoursesController extends Controller
                 $course->price = $validatedData['price'];
 
                 $course->save();
+
+                $coursesCacheKey = 'owner_' . $request->owner_id . 'courses';
+
+                Cache::forget($coursesCacheKey);
+
 
                 return response()->json(
                     [
@@ -148,6 +166,11 @@ class CoursesController extends Controller
                 }
 
                 $course->delete();
+
+                $coursesCacheKey = 'owner_' . $request->owner_id . 'courses';
+
+                Cache::forget($coursesCacheKey);
+
 
                 return response()->json(
                     [

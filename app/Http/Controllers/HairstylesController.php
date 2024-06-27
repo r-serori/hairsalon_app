@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
+use Illuminate\Support\Facades\Cache;
 
 class HairstylesController extends Controller
 {
@@ -22,8 +23,13 @@ class HairstylesController extends Controller
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 $user_id = urldecode($id);
+                $hairstylesCacheKey = 'owner_' . $user_id . 'hairstyles';
 
-                $hairstyles = Hairstyle::where('owner_id', $user_id)->get();
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
+                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($user_id) {
+                    return Hairstyle::where('owner_id', $user_id)->get();
+                });
 
                 if ($hairstyles->isEmpty()) {
                     return response()->json([
@@ -55,13 +61,15 @@ class HairstylesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
-                    'hairstyle_name' => 'required',
+                    'hairstyle_name' => 'required|string',
                 ]);
 
                 $hairstyle = Hairstyle::create([
                     'hairstyle_name' => $validatedData['hairstyle_name'],
                 ]);
+                $hairstylesCacheKey = 'owner_' . $request->owner_id . 'hairstyles';
 
+                Cache::forget($hairstylesCacheKey);
                 return response()->json([
                     "hairstyle" => $hairstyle
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -107,14 +115,16 @@ class HairstylesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
-                    'hairstyle_name' => 'required',
+                    'hairstyle_name' => 'required|string',
                 ]);
 
                 $hairstyle = Hairstyle::find($request->id);
                 $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
 
                 $hairstyle->save();
+                $hairstylesCacheKey = 'owner_' . $request->owner_id . 'hairstyles';
 
+                Cache::forget($hairstylesCacheKey);
                 return response()->json(
                     [
                         "hairstyle" => $hairstyle
@@ -147,6 +157,9 @@ class HairstylesController extends Controller
                     ], 500);
                 }
                 $hairstyle->delete();
+                $hairstylesCacheKey = 'owner_' . $request->owner_id . 'hairstyles';
+
+                Cache::forget($hairstylesCacheKey);
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');

@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class StocksController extends Controller
 {
@@ -24,8 +25,13 @@ class StocksController extends Controller
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 $user_id = urldecode($id);
+                $stocksCacheKey = 'owner_' . $user_id . 'stocks';
 
-                $stocks = Stock::where('owner_id', $user_id)->get();
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
+                $stocks = Cache::remember($stocksCacheKey, $expirationInSeconds, function () use ($user_id) {
+                    return Stock::where('owner_id', $user_id)->get();
+                });
                 if ($stocks->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンから店の在庫を作成しましょう！",
@@ -80,7 +86,9 @@ class StocksController extends Controller
                     'owner_id' => $validatedData['owner_id'],
                 ]);
 
+                $stocksCacheKey = 'owner_' . $request->owner_id . 'stocks';
 
+                Cache::forget($stocksCacheKey);
                 // 成功したらリダイレクト
                 return response()->json([
                     "stock" => $stocks
@@ -155,7 +163,9 @@ class StocksController extends Controller
 
                 // 在庫を保存する
                 $stock->save();
+                $stocksCacheKey = 'owner_' . $request->owner_id . 'stocks';
 
+                Cache::forget($stocksCacheKey);
                 // 成功したらリダイレクト
                 return response()->json([
                     "stock" => $stock
@@ -188,6 +198,9 @@ class StocksController extends Controller
                 }
 
                 $stock->delete();
+                $stocksCacheKey = 'owner_' . $request->owner_id . 'stocks';
+
+                Cache::forget($stocksCacheKey);
                 return response()->json([
                     "deleteId"  => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');

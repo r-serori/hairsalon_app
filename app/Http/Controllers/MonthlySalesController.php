@@ -9,7 +9,7 @@ use App\Enums\Permissions;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
-
+use Illuminate\Support\Facades\Cache;
 
 class MonthlySalesController extends Controller
 {
@@ -20,8 +20,15 @@ class MonthlySalesController extends Controller
             if ($user && $user->hasRole(Roles::OWNER)) {
 
                 $user_id = urldecode($id);
+                $monthlySalesCacheKey = 'owner_' . $user_id . 'monthlySales';
+
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
                 // 月別売上一覧を取得
-                $monthly_sales = MonthlySale::where('owner_id', $user_id)->get();
+                $monthly_sales = Cache::remember($monthlySalesCacheKey, $expirationInSeconds, function () use ($user_id) {
+                    return MonthlySale::where('owner_id', $user_id)->get();
+                });
+
                 if ($monthly_sales->isEmpty()) {
                     return response()->json([
                         "message" =>
@@ -65,7 +72,9 @@ class MonthlySalesController extends Controller
                     'monthly_sales' => $validatedData['monthly_sales'],
                     'owner_id' => $validatedData['owner_id'],
                 ]);
+                $monthlySalesCacheKey = 'owner_' . $request->owner_id . 'monthlySales';
 
+                Cache::forget($monthlySalesCacheKey);
                 // 成功したらリダイレクト
                 return response()->json([
                     "monthlySale" => $monthly_sales
@@ -128,7 +137,9 @@ class MonthlySalesController extends Controller
                 $monthly_sale->year = $validatedData['year_month'];
                 $monthly_sale->monthly_sales = $validatedData['monthly_sales'];
                 $monthly_sale->save();
+                $monthlySalesCacheKey = 'owner_' . $request->owner_id . 'monthlySales';
 
+                Cache::forget($monthlySalesCacheKey);
                 // 成功したらリダイレクト
                 return response()->json(
                     [
@@ -166,6 +177,9 @@ class MonthlySalesController extends Controller
                 }
 
                 $monthly_sale->delete();
+                $monthlySalesCacheKey = 'owner_' . $request->owner_id . 'monthlySales';
+
+                Cache::forget($monthlySalesCacheKey);
                 return response()->json([
                     "deleteId" => $request->id
 

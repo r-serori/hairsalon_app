@@ -7,7 +7,7 @@ use App\Models\YearlySale;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
-
+use Illuminate\Support\Facades\Cache;
 
 class YearlySalesController extends Controller
 {
@@ -18,8 +18,13 @@ class YearlySalesController extends Controller
             if ($user && $user->hasRole(Roles::OWNER)) {
 
                 $user_id = urldecode($id);
+                $yearlySalesCacheKey = 'owner_' . $user_id . 'yearlysales';
 
-                $yearly_sales = YearlySale::where('owner_id', $user_id)->get();
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
+                $yearly_sales = Cache::remember($yearlySalesCacheKey, $expirationInSeconds, function () use ($user_id) {
+                    return YearlySale::where('owner_id', $user_id)->get();
+                });
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
                         "message" =>
@@ -61,6 +66,9 @@ class YearlySalesController extends Controller
                     'yearly_sales' => $validatedData['yearly_sales'],
                     'owner_id' => $validatedData['owner_id'],
                 ]);
+                $yearlySalesCacheKey = 'owner_' . $request->owner_id . 'yearlysales';
+
+                Cache::forget($yearlySalesCacheKey);
 
                 return response()->json([
                     "yearlySale" => $yearly_sale
@@ -117,6 +125,9 @@ class YearlySalesController extends Controller
                 $yearly_sale->year = $validatedData['year'];
                 $yearly_sale->yearly_sales = $validatedData['yearly_sales'];
                 $yearly_sale->save();
+                $yearlySalesCacheKey = 'owner_' . $request->owner_id . 'yearlysales';
+
+                Cache::forget($yearlySalesCacheKey);
 
                 return response()->json(
                     [
@@ -154,6 +165,9 @@ class YearlySalesController extends Controller
                 }
 
                 $yearly_sale->delete();
+                $yearlySalesCacheKey = 'owner_' . $request->owner_id . 'yearlysales';
+
+                Cache::forget($yearlySalesCacheKey);
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');

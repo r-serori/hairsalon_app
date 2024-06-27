@@ -10,13 +10,14 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class AttendanceTimesController extends Controller
 {
 
-    //クエリのuser:idを受け取り、そのユーザーの勤怠時間を１か月分取得　Gate,ALL
+    //クエリのuser_idを受け取り、そのユーザーの勤怠時間を１か月分取得　Gate,ALL
     //yearMonthが"000111"の場合は当月の勤怠時間を取得
-    public function selectedAttendanceTime($yearMonth, $id)
+    public function selectedAttendanceTime($yearMonth, $id, $owner_id)
     {
         try {
             $user = User::find(Auth::id());
@@ -34,8 +35,15 @@ class AttendanceTimesController extends Controller
                     $currentYearAndMonth = Carbon::now()->format('Y-m');
                 }
 
+                $attendanceTimesCacheKey = 'owner_' . $owner_id . 'staff_' . $user_id . 'attendanceTimes';
+
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
                 //user_isdでデータを絞ってから、created_atで年月を絞る
-                $selectAttendanceTimes = AttendanceTime::where('user_id', $user_id)->whereYear('created_at', $currentYearAndMonth)->latest('created_at')->get();
+                $selectAttendanceTimes = Cache::remember($attendanceTimesCacheKey, $expirationInSeconds, function () use ($user_id, $currentYearAndMonth) {
+                    return AttendanceTime::where('user_id', $user_id)->whereYear('created_at', $currentYearAndMonth)->latest('created_at')->get();
+                });
+
 
                 //送信されるphoto_pathを確認
                 Log::info("selectAttendanceTimes", ["selectAttendanceTimes", $selectAttendanceTimes]);
@@ -230,6 +238,11 @@ class AttendanceTimesController extends Controller
                         'user_id' => $request->user_id,
                     ]);
 
+                    $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+
+
+                    Cache::forget($attendanceTimesCacheKey);
+
 
                     $user = User::find($request->user_id);
 
@@ -284,6 +297,13 @@ class AttendanceTimesController extends Controller
                 $existYesterdayStartTime->end_photo_path = $request->end_photo_path;
 
                 $existYesterdayStartTime->save();
+
+
+                $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+
+
+                Cache::forget($attendanceTimesCacheKey);
+
 
                 $user = User::find($request->user_id);
 
@@ -345,6 +365,13 @@ class AttendanceTimesController extends Controller
 
                     $existYesterdayStartTime->save();
 
+
+                    $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+
+
+                    Cache::forget($attendanceTimesCacheKey);
+
+
                     $user = User::find($request->user_id);
 
                     $user->isAttendance = 0;
@@ -390,6 +417,13 @@ class AttendanceTimesController extends Controller
                     $attendanceTime->end_photo_path = $fileName;
 
                     $attendanceTime->save();
+
+
+                    $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+
+
+                    Cache::forget($attendanceTimesCacheKey);
+
 
                     $user = User::find($request->user_id);
 
@@ -441,13 +475,19 @@ class AttendanceTimesController extends Controller
                     'user_id' => 'required|exists:users,id',
                 ]);
 
-                $startTime = Carbon::parse($request->start_time);
 
                 $attendanceTime->start_time = $request->start_time;
                 $attendanceTime->start_photo_path =
                     "111222";
 
                 $attendanceTime->save();
+
+
+                $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+
+
+                Cache::forget($attendanceTimesCacheKey);
+
 
                 return
                     response()->json(
@@ -490,12 +530,16 @@ class AttendanceTimesController extends Controller
                     'user_id' => 'required|exists:users,id',
                 ]);
 
-                $endTime = Carbon::parse($request->end_time);
 
                 $attendanceTime->end_time = $request->end_time;
                 $attendanceTime->end_photo_path = "111222";
 
                 $attendanceTime->save();
+
+                $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+
+
+                Cache::forget($attendanceTimesCacheKey);
 
                 return
                     response()->json(
@@ -545,6 +589,11 @@ class AttendanceTimesController extends Controller
 
                 // レコードを削除
                 AttendanceTime::destroy($request->id);
+
+                $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->id . 'attendanceTimes';
+
+
+                Cache::forget($attendanceTimesCacheKey);
 
                 // 削除後に index 画面にリダイレクトする
 

@@ -9,7 +9,7 @@ use App\Enums\Permissions;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
-
+use Illuminate\Support\Facades\Cache;
 
 class MerchandisesController extends Controller
 {
@@ -21,8 +21,13 @@ class MerchandisesController extends Controller
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 $user_id = urldecode($id);
+                $merchandisesCacheKey = 'owner_' . $user_id . 'merchandises';
 
-                $merchandises = Merchandise::where('owner_id', $user_id)->get();
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
+                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($user_id) {
+                    return Merchandise::where('owner_id', $user_id)->get();
+                });
 
                 if ($merchandises->isEmpty()) {
                     return response()->json([
@@ -55,8 +60,8 @@ class MerchandisesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER)) {
                 $validatedData = $request->validate([
-                    'merchandise_name' => 'required',
-                    'price' => 'required',
+                    'merchandise_name' => 'required|string|max:255',
+                    'price' => 'required|integer',
                     'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
@@ -66,7 +71,9 @@ class MerchandisesController extends Controller
                     'owner_id' => $validatedData['owner_id'],
 
                 ]);
+                $merchandisesCacheKey = 'owner_' . $request->owner_id . 'merchandises';
 
+                Cache::forget($merchandisesCacheKey);
                 return response()->json([
                     "merchandise" => $merchandise
 
@@ -120,7 +127,9 @@ class MerchandisesController extends Controller
                 $merchandise->price = $validatedData['price'];
 
                 $merchandise->save();
+                $merchandisesCacheKey = 'owner_' . $request->owner_id . 'merchandises';
 
+                Cache::forget($merchandisesCacheKey);
 
                 return response()->json(
                     [
@@ -156,6 +165,9 @@ class MerchandisesController extends Controller
                 }
 
                 $merchandise->delete();
+                $merchandisesCacheKey = 'owner_' . $request->owner_id . 'merchandises';
+
+                Cache::forget($merchandisesCacheKey);
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');

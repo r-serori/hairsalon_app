@@ -8,6 +8,7 @@ use App\Models\Option;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class OptionsController extends Controller
 {
@@ -19,8 +20,14 @@ class OptionsController extends Controller
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
 
                 $user_id = urldecode($id);
+                $optionsCacheKey = 'owner_' . $user_id . 'options';
 
-                $options = Option::where('owner_id', $user_id)->get();
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
+                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($user_id) {
+                    return Option::where('owner_id', $user_id)->get();
+                });
+
                 if ($options->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！新規作成ボタンからオプションを作成しましょう！",
@@ -51,8 +58,8 @@ class OptionsController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
-                    'option_name' => 'required',
-                    'price' => 'required',
+                    'option_name' => 'required|string',
+                    'price' => 'required|integer',
                 ]);
                 $option =
                     Option::create([
@@ -60,7 +67,9 @@ class OptionsController extends Controller
                         'price' => $validatedData['price'],
 
                     ]);
+                $optionsCacheKey = 'owner_' . $request->owner_id . 'options';
 
+                Cache::forget($optionsCacheKey);
                 return response()->json([
                     "option" => $option
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -100,8 +109,8 @@ class OptionsController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
                 $validatedData = $request->validate([
-                    'option_name' => 'required',
-                    'price' => 'required',
+                    'option_name' => 'required|string',
+                    'price' => 'required|integer',
                 ]);
 
                 $option = Option::find($request->id);
@@ -110,7 +119,9 @@ class OptionsController extends Controller
                 $option->price = $validatedData['price'];
 
                 $option->save();
+                $optionsCacheKey = 'owner_' . $request->owner_id . 'options';
 
+                Cache::forget($optionsCacheKey);
                 return response()->json(
                     [
                         "option" => $option
@@ -147,6 +158,9 @@ class OptionsController extends Controller
                 }
 
                 $option->delete();
+                $optionsCacheKey = 'owner_' . $request->owner_id . 'options';
+
+                Cache::forget($optionsCacheKey);
                 return response()->json([
                     'message' => 'オプションを削除しました！
                     もう一度お試しください！',

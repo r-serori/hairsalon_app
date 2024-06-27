@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class DailySalesController extends Controller
 {
@@ -19,7 +20,16 @@ class DailySalesController extends Controller
 
                 $user_id = urldecode($id);
 
-                $daily_sales = DailySale::where('owner_id', $user_id)->get();
+
+                $dailySalesCacheKey = 'owner_' . $user_id . 'dailySales';
+
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
+
+                $daily_sales = Cache::remember($dailySalesCacheKey, $expirationInSeconds, function () use ($user_id) {
+                    return DailySale::where('owner_id', $user_id)->get();
+                });
+
                 if ($daily_sales->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
@@ -57,8 +67,8 @@ class DailySalesController extends Controller
             if ($user && $user->hasRole(Roles::OWNER)) {
                 $validatedData
                     = $request->validate([
-                        'date' => 'required',
-                        'daily_sales' => 'required',
+                        'date' => 'required|string',
+                        'daily_sales' => 'required|integer',
                         'owner_id' => 'required|integer|exists:owners,id',
                     ]);
 
@@ -68,6 +78,11 @@ class DailySalesController extends Controller
                         'daily_sales' => $validatedData['daily_sales'],
                         'owner_id' => $validatedData['owner_id'],
                     ]);
+
+                $dailySalesCacheKey = 'owner_' . $request->owner_id . 'dailySales';
+
+                Cache::forget($dailySalesCacheKey);
+
 
                 return response()->json([
                     "dailySale" => $daily_sales
@@ -123,7 +138,9 @@ class DailySalesController extends Controller
                 $daily_sale->daily_sales = $validatedData['daily_sales'];
                 $daily_sale->save();
 
+                $dailySalesCacheKey = 'owner_' . $request->owner_id . 'dailySales';
 
+                Cache::forget($dailySalesCacheKey);
                 return response()->json(
                     [
                         "dailySale" => $daily_sale
@@ -159,6 +176,9 @@ class DailySalesController extends Controller
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
                 $daily_sale->delete();
+                $dailySalesCacheKey = 'owner_' . $request->owner_id . 'dailySales';
+
+                Cache::forget($dailySalesCacheKey);
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
