@@ -38,7 +38,22 @@ Route::middleware('api')->group(
 
         Route::middleware('auth:sanctum')->group(function () {
 
-            Route::get('getKey', function () {
+            Route::get('/vio-role', function () {
+                try {
+                    return response()->json([
+                        'owner_role' => env('REACT_APP_OWNER_ROLE'),
+                        'manager_role' => env('REACT_APP_MANAGER_ROLE'),
+                        'staff_role' => env('REACT_APP_STAFF_ROLE'),
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } catch (\Exception $e) {
+                    Log::error($e->getMessage());
+                    return response()->json([
+                        'message' => 'エラーが発生しました。もう一度やり直してください！',
+                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+            });
+
+            Route::get('/getKey', function () {
                 try {
                     return response()->json(['key' => env('REACT_APP_ENCRYPTION_KEY')], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } catch (\Exception $e) {
