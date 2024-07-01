@@ -15,7 +15,7 @@ class YearlySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
 
                 $user_id = urldecode($id);
                 $yearlySalesCacheKey = 'owner_' . $user_id . 'yearlysales';
@@ -54,7 +54,7 @@ class YearlySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $validatedData = $request->validate([
                     'year' => 'required|string',
                     'yearly_sales' => 'required|integer',
@@ -89,7 +89,7 @@ class YearlySalesController extends Controller
     // public function show($id)
     // {
     //     try {
-    //         if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+    //         if (Gate::allows(Permissions::$OWNER_PERMISSION)) {
     //             $yearly_sale = YearlySale::find($id);
 
     //             return response()->json([
@@ -114,7 +114,7 @@ class YearlySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $validatedData = $request->validate([
                     'year' => 'required|string',
                     'yearly_sales' => 'required|integer',
@@ -155,7 +155,7 @@ class YearlySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $yearly_sale = YearlySale::find($request->id);
                 if (!$yearly_sale) {
                     return response()->json([

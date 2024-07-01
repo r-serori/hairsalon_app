@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Enums\Roles;
 
 class UserSeeder extends Seeder
 {
@@ -21,7 +22,7 @@ class UserSeeder extends Seeder
             'email' => 'owner@hairmail.com',
             'phone_number' => '090-1234-5678',
             'password' => Hash::make('password123'),
-            'role' => 'オーナー',
+            'role' => Roles::$OWNER,
             'isAttendance' => 0,
             'created_at' => now(),
             'updated_at' => now(),
@@ -31,7 +32,7 @@ class UserSeeder extends Seeder
             'email' => 'manager@hairmail.com',
             'phone_number' => '080-1234-5678',
             'password' => Hash::make('password123'),
-            'role' => 'マネージャー',
+            'role' => Roles::$MANAGER,
             'isAttendance' => 0,
             'created_at' => now(),
             'updated_at' => now(),
@@ -41,7 +42,7 @@ class UserSeeder extends Seeder
             'email' => 'staff@hairmail.com',
             'phone_number' => '070-1234-5678',
             'password' => Hash::make('password123'),
-            'role' => 'スタッフ',
+            'role' => Roles::$STAFF,
             'isAttendance' => 0,
             'created_at' => now(),
             'updated_at' => now(),

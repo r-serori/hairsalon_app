@@ -9,6 +9,9 @@ use App\Enums\Permissions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\Roles;
+
 
 
 class ResetUserPassword implements ResetsUserPasswords
@@ -23,7 +26,9 @@ class ResetUserPassword implements ResetsUserPasswords
     public function reset($user, array $input): JsonResponse
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+
 
                 Validator::make($input, [
                     'password' => $this->passwordRules(),
@@ -34,18 +39,15 @@ class ResetUserPassword implements ResetsUserPasswords
                 ])->save();
 
                 return response()->json([
-                    'resStatus' => 'success',
                     'message' => 'パスワードのリセットに成功しました!'
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    'resStatus' => 'error',
                     'message' => 'あなたは権限がありません。',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
-                'resStatus' => 'error',
                 'message' => 'エラーが発生しました。もう一度やり直してください。',
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }

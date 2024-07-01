@@ -22,7 +22,7 @@ class StocksController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 $user_id = urldecode($id);
                 $stocksCacheKey = 'owner_' . $user_id . 'stocks';
@@ -61,7 +61,7 @@ class StocksController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'product_name' => 'required',
@@ -110,7 +110,7 @@ class StocksController extends Controller
     // public function show($id)
     // {
     //     try {
-    //         if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+    //         if (Gate::allows(Permissions::$MANAGER_PERMISSION)) {
     //             // 指定されたIDの在庫を取得
     //             $stock = Stock::find($id);
 
@@ -137,7 +137,7 @@ class StocksController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'product_name' => 'required',
@@ -188,7 +188,7 @@ class StocksController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $stock = Stock::find($request->id);
                 if (!$stock) {
                     return response()->json([

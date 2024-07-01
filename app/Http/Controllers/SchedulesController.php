@@ -34,7 +34,7 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 $decodedOwnerId = urldecode($owner_id);
 
@@ -188,7 +188,7 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 $decodedOwnerId = urldecode($owner_id);
 
@@ -325,13 +325,13 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'title' => 'required|string',
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'in:0,1',
-                    'owner_id' => 'required|integer|exists:owners,id',
+                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
 
                 $schedule = Schedule::create([
@@ -367,7 +367,7 @@ class SchedulesController extends Controller
     // public function show($id)
     // {
     //     try {
-    //         if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+    //         if (Gate::allows(Permissions::$OWNER_PERMISSION)) {
     //             $schedule = Schedule::find($id);
 
     //             return response()->json([
@@ -392,7 +392,7 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'Sid' => 'required|integer|exists:schedules,id',
                     'title' => 'required|string',
@@ -442,7 +442,7 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $schedule = Schedule::find($request->id);
                 if (!$schedule) {
                     return response()->json([
@@ -479,7 +479,7 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
@@ -498,7 +498,7 @@ class SchedulesController extends Controller
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'required|in:0,1',
-                    'owner_id' => 'required|integer|exists:owners,id',
+                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
 
                 $ownerId = $validatedData['owner_id'];
@@ -644,7 +644,7 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'Sid' => 'required|integer|exists:schedules,id',
                     'customer_name' => 'required|string',
@@ -665,7 +665,7 @@ class SchedulesController extends Controller
                     'end_time' => 'nullable',
                     'allDay' => 'required|in:0,1',
                     'customer_id' => 'required',
-                    'owner_id' => 'required|integer|exists:owners,id',
+                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
 
                 $ownerId = $validatedData['owner_id'];
@@ -814,7 +814,7 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
@@ -834,7 +834,7 @@ class SchedulesController extends Controller
                     'end_time' => 'nullable',
                     'allDay' => 'required',
                     'customer_id' => 'required',
-                    'owner_id' => 'required|integer|exists:owners,id',
+                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
 
                 $ownerId = $validatedData['owner_id'];

@@ -17,7 +17,7 @@ class StockCategoriesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 $user_id = urldecode($id);
                 $stockCategoriesCacheKey = 'owner_' . $user_id . 'stockCategories';
@@ -56,7 +56,7 @@ class StockCategoriesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'category' => 'required|string',
@@ -94,7 +94,7 @@ class StockCategoriesController extends Controller
     // public function show($id)
     // {
     //     try {
-    //         if (Gate::allows(Permissions::MANAGER_PERMISSION)) {
+    //         if (Gate::allows(Permissions::$MANAGER_PERMISSION)) {
     //             // 指定されたIDの在庫カテゴリを取得
     //             $stock_category = StockCategory::find($id);
 
@@ -120,7 +120,7 @@ class StockCategoriesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'category' => 'required|string',
@@ -160,7 +160,7 @@ class StockCategoriesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // 指定されたIDの在庫カテゴリを取得
                 $stock_category = StockCategory::find($request->id);
 

@@ -17,7 +17,7 @@ class MonthlySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
 
                 $user_id = urldecode($id);
                 $monthlySalesCacheKey = 'owner_' . $user_id . 'monthlySales';
@@ -58,7 +58,7 @@ class MonthlySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'year_month' => 'required|string',
@@ -96,7 +96,7 @@ class MonthlySalesController extends Controller
     // public function show($id)
     // {
     //     try {
-    //         if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+    //         if (Gate::allows(Permissions::$OWNER_PERMISSION)) {
     //             // 指定されたIDの月別売上を取得
     //             $monthly_sale = MonthlySale::find($id);
 
@@ -123,7 +123,7 @@ class MonthlySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'year_month' => 'required|string',
@@ -166,7 +166,7 @@ class MonthlySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $monthly_sale = MonthlySale::find($request->id);
                 if (!$monthly_sale) {
                     return response()->json([

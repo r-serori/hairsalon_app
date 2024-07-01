@@ -50,7 +50,7 @@ Route::middleware('web')->group(function () {
 
         //userの勤怠時間のコントローラー
         //勤怠時間の取得userのidと年月を受け取る。yearMonthが"無し"の場合は当月の勤怠時間を取得　Gate,OWNER
-        Route::get('/attendance_times/selectedAttendanceTimes/{yearMonth}/{user_id}/{owner_id}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
+        Route::get('/attendance_times/selectedAttendanceTimes/{yearMonth}/{user_id}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
         //クエリのuser:idを受け取り、そのユーザーの一番新しい勤怠時間を取得　Gate,ALL   
         Route::get('/firstAttendanceTimes/firstGet/{user_id}', [AttendanceTimesController::class, 'firstAttendanceTime']);
         //スタッフが前日に退勤を押さずに帰った時の編集依頼ボタンが押されたときの処理　Gate,ALL
@@ -68,41 +68,41 @@ Route::middleware('web')->group(function () {
 
 
         //顧客情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER  , index = Gate,ALL
-        Route::get('/customers/{owner_id}', [CustomersController::class, 'index']);
+        Route::get('/customers/{user_id}', [CustomersController::class, 'index']);
         Route::post('/customers/store', [CustomersController::class, 'store']);
         Route::post('/customers/update', [CustomersController::class, 'update']);
         Route::post('/customers/delete', [CustomersController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   , index = Gate,ALL
-        Route::get('/courses/{owner_id}', [CoursesController::class, 'index']);
+        Route::get('/courses/{user_id}', [CoursesController::class, 'index']);
         Route::post('/courses/store', [CoursesController::class, 'store']);
         Route::post('/courses/update', [CoursesController::class, 'update']);
         Route::post('/courses/delete', [CoursesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   , index = Gate,ALL
-        Route::get('/options/{owner_id}', [OptionsController::class, 'index']);
+        Route::get('/options/{user_id}', [OptionsController::class, 'index']);
         Route::post('/options/store', [OptionsController::class, 'store']);
         Route::post('/options/update', [OptionsController::class, 'update']);
         Route::post('/options/delete', [OptionsController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   , index = Gate,ALL
-        Route::get('/merchandises/{owner_id}', [MerchandisesController::class, 'index']);
+        Route::get('/merchandises/{user_id}', [MerchandisesController::class, 'index']);
         Route::post('/merchandises/store', [MerchandisesController::class, 'store']);
         Route::post('/merchandises/update', [MerchandisesController::class, 'update']);
         Route::post('/merchandises/delete', [MerchandisesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   , index = Gate,ALL
-        Route::get('/hairstyles/{owner_id}', [HairstylesController::class, 'index']);
+        Route::get('/hairstyles/{user_id}', [HairstylesController::class, 'index']);
         Route::post('/hairstyles/store', [HairstylesController::class, 'store']);
         Route::post('/hairstyles/update', [HairstylesController::class, 'update']);
         Route::post('/hairstyles/delete', [HairstylesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   , index = Gate,ALL
-        Route::get('/schedules/customers/selectGetYear/{owner_id}/{year}', [SchedulesController::class, 'selectGetYear']);
+        Route::get('/schedules/customers/selectGetYear/{user_id}/{year}', [SchedulesController::class, 'selectGetYear']);
         Route::post('/schedules/customers/double', [SchedulesController::class, 'double']);
         Route::post('/schedules/customers/doubleUpdate', [SchedulesController::class, 'doubleUpdate']);
         Route::post('/schedules/customers/customerOnlyUpdate', [SchedulesController::class, 'customerOnlyUpdate']);
-        Route::get('/schedules/{owner_id}', [SchedulesController::class, 'index']);
+        Route::get('/schedules/{user_id}', [SchedulesController::class, 'index']);
         Route::post('/schedules/store', [SchedulesController::class, 'store']);
 
         Route::post('/schedules/update', [SchedulesController::class, 'update']);
@@ -111,31 +111,31 @@ Route::middleware('web')->group(function () {
 
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   
-        Route::get('/daily_sales/{owner_id}', [DailySalesController::class, 'index']);
+        Route::get('/daily_sales/{user_id}', [DailySalesController::class, 'index']);
         Route::post('/daily_sales/store', [DailySalesController::class, 'store']);
         Route::post('/daily_sales/update', [DailySalesController::class, 'update']);
         Route::post('/daily_sales/delete', [DailySalesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   
-        Route::get('monthly_sales/{owner_id}', [MonthlySalesController::class, 'index']);
+        Route::get('monthly_sales/{user_id}', [MonthlySalesController::class, 'index']);
         Route::post('/monthly_sales/store', [MonthlySalesController::class, 'store']);
         Route::post('/monthly_sales/update', [MonthlySalesController::class, 'update']);
         Route::post('/monthly_sales/delete', [MonthlySalesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   
-        Route::get('/yearly_sales/{owner_id}', [YearlySalesController::class, 'index']);
+        Route::get('/yearly_sales/{user_id}', [YearlySalesController::class, 'index']);
         Route::post('/yearly_sales/store', [YearlySalesController::class, 'store']);
         Route::post('/yearly_sales/update', [YearlySalesController::class, 'update']);
         Route::post('/yearly_sales/delete', [YearlySalesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   , index = Gate,ALL
-        Route::get('/stocks/{owner_id}', [StocksController::class, 'index']);
+        Route::get('/stocks/{user_id}', [StocksController::class, 'index']);
         Route::post('/stocks/store', [StocksController::class, 'store']);
         Route::post('/stocks/update', [StocksController::class, 'update']);
         Route::post('/stocks/delete', [StocksController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   , index = Gate,ALL;
-        Route::get('/stock_categories/{owner_id}', [StockCategoriesController::class, 'index']);
+        Route::get('/stock_categories/{user_id}', [StockCategoriesController::class, 'index']);
         Route::post('/stock_categories/store', [StockCategoriesController::class, 'store']);
         Route::post('/stock_categories/update', [StockCategoriesController::class, 'update']);
         Route::post('/stock_categories/delete', [StockCategoriesController::class, 'destroy']);

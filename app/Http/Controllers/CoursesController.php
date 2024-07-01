@@ -16,7 +16,7 @@ class CoursesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 $user_id = urldecode($id);
 
@@ -58,11 +58,11 @@ class CoursesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'course_name' => 'required|string',
                     'price' => 'required|integer',
-                    'owner_id' => 'required|integer|exists:owners,id',
+                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
 
                 $course = Course::create([
@@ -116,7 +116,7 @@ class CoursesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'course_name' => 'required|string',
                     'price' => 'required|integer',
@@ -156,7 +156,7 @@ class CoursesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $course = Course::find($request->id);
                 if (!$course) {
                     return response()->json([

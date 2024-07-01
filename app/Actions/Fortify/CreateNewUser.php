@@ -49,7 +49,7 @@ class CreateNewUser implements CreatesNewUsers
                 'email' => $input['email'],
                 'phone_number' => $input['phone_number'],
                 'password' => Hash::make($input['password']),
-                'role' =>  Roles::OWNER,
+                'role' =>  Roles::$OWNER,
                 'isAttendance' => $input['isAttendance'] ? 1 : 0,
             ]);
 

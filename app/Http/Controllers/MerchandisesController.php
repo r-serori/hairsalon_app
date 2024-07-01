@@ -18,7 +18,7 @@ class MerchandisesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 $user_id = urldecode($id);
                 $merchandisesCacheKey = 'owner_' . $user_id . 'merchandises';
@@ -58,7 +58,7 @@ class MerchandisesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $validatedData = $request->validate([
                     'merchandise_name' => 'required|string|max:255',
                     'price' => 'required|integer',
@@ -113,7 +113,7 @@ class MerchandisesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
 
                 $validatedData = $request->validate([
                     'merchandise_name' => 'required',
@@ -154,7 +154,7 @@ class MerchandisesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $merchandise = Merchandise::find($request->id);
                 if (!$merchandise) {
                     return response()->json([

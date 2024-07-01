@@ -9,13 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\Roles;
 
 class DeleteUserMain
 {
     public function deleteUser(Request $request)
     {
         try {
-            if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::$OWNER)) {
 
                 $user = User::find($request->id); // 例: リクエストからユーザーIDを取得
 

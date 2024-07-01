@@ -8,9 +8,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
-use Spatie\Permission\Contracts\Permission;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\Roles;
 
 class UpdateUserPassword implements UpdatesUserPasswords
 {
@@ -25,7 +24,9 @@ class UpdateUserPassword implements UpdatesUserPasswords
     public function update($user, array $input): JsonResponse
     {
         try {
-            if (Gate::allows(Permissions::ALL_PERMISSION)) {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+
                 // パスワードのバリデーション
                 Validator::make($input, [
                     'current_password' => ['required', 'string', 'current_password:web'],
@@ -42,17 +43,17 @@ class UpdateUserPassword implements UpdatesUserPasswords
                 return response()->json(['status' => 'success', 'message' => 'Password updated successfully.']);
             } else {
                 return response()->json([
-                    'resStatus' => 'error',
+
                     'message' => 'あなたは権限がありません。',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (ValidationException $e) {
             if ($e->validator->errors()->has('current_password')) {
                 // パスワードが間違っている場合のエラーメッセージ
-                return response()->json(['resStatus' => 'error', 'message' => __('送信されたパスワードが既存のパスワードと一致しません！もう一度試してください！')], 422);
+                return response()->json(['message' => __('送信されたパスワードが既存のパスワードと一致しません！もう一度試してください！')], 422);
             } else {
                 return response()->json([
-                    'resStatus' => 'error',
+
                     'message' => $e->validator->errors()->first(),
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }

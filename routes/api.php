@@ -17,6 +17,9 @@ use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Jetstream\DeleteUserMain;
 use Illuminate\Support\Facades\Log;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\Roles;
 
 Route::middleware('api')->group(
     function () {
@@ -40,11 +43,27 @@ Route::middleware('api')->group(
 
             Route::get('/vio-role', function () {
                 try {
-                    return response()->json([
-                        'owner_role' => env('REACT_APP_OWNER_ROLE'),
-                        'manager_role' => env('REACT_APP_MANAGER_ROLE'),
-                        'staff_role' => env('REACT_APP_STAFF_ROLE'),
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    $user = User::find(Auth::id());
+                    if ($user && $user->hasRole(Roles::$OWNER)) {
+
+                        return response()->json([
+                            'myRole' => 'オーナー'
+                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    } else if ($user && $user->hasRole(Roles::$MANAGER)) {
+
+                        return response()->json([
+                            'myRole' => 'マネージャー'
+                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    } else if ($user && $user->hasRole(Roles::$STAFF)) {
+
+                        return response()->json([
+                            'myRole' => 'スタッフ'
+                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    } else {
+                        return response()->json([
+                            'message' => '権限がありません。'
+                        ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    }
                 } catch (\Exception $e) {
                     Log::error($e->getMessage());
                     return response()->json([
@@ -55,7 +74,16 @@ Route::middleware('api')->group(
 
             Route::get('/getKey', function () {
                 try {
-                    return response()->json(['key' => env('REACT_APP_ENCRYPTION_KEY')], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    $user = User::find(Auth::id());
+                    if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+
+
+                        return response()->json(['roleKey' => env('REACT_APP_ENCRYPTION_KEY')], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    } else {
+                        return response()->json([
+                            'message' => '権限がありません。',
+                        ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    }
                 } catch (\Exception $e) {
                     Log::error($e->getMessage());
                     return response()->json([
@@ -66,7 +94,15 @@ Route::middleware('api')->group(
 
             Route::get('/check-session', function () {
                 try {
-                    return response()->json(['status' => 'authenticated'], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    $user = User::find(Auth::id());
+                    if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+
+                        return response()->json(['status' => 'authenticated'], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    } else {
+                        return response()->json([
+                            'status' => 'unauthenticated',
+                        ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    }
                 } catch (\Exception $e) {
                     // Log::error($e->getMessage());
                     return response()->json([
@@ -106,9 +142,9 @@ Route::middleware('api')->group(
         Route::prefix('/user')->group(function () {
 
             //オーナーがスタッフの情報を取得 Gate,OWNER
-            Route::get('/getUsers/{owner_id}', [UserGetController::class, 'getUsers']);
+            Route::get('/getUsers/{user_id}', [UserGetController::class, 'getUsers']);
 
-            Route::get('/getAttendanceUsers/{owner_id}', [UserGetController::class, 'getAttendanceUsers']);
+            Route::get('/getAttendanceUsers/{user_id}', [UserGetController::class, 'getAttendanceUsers']);
 
             //オーナーがスタッフの権限を変更 Gate,OWNER
             Route::post('/updatePermission', [UserPostController::class, 'updatePermission']);

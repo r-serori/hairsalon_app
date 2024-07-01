@@ -20,7 +20,7 @@ class HairstylesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 $user_id = urldecode($id);
                 $hairstylesCacheKey = 'owner_' . $user_id . 'hairstyles';
@@ -59,7 +59,7 @@ class HairstylesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'hairstyle_name' => 'required|string',
                 ]);
@@ -113,7 +113,7 @@ class HairstylesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'hairstyle_name' => 'required|string',
                 ]);
@@ -148,7 +148,7 @@ class HairstylesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
                 $hairstyle = Hairstyle::find($request->id);
                 if (!$hairstyle) {
                     return response()->json([

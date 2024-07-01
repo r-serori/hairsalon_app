@@ -28,7 +28,7 @@ class CustomersController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
                 // 顧客データを取得
                 $decodedOwnerId = urldecode($owner_id);
 
@@ -160,7 +160,7 @@ class CustomersController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
@@ -322,7 +322,7 @@ class CustomersController extends Controller
 
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
 
                 $validatedData = $request->validate([
                     'customer_name' => 'required|string',
@@ -466,7 +466,7 @@ class CustomersController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 // 指定されたIDの顧客データを取得
                 $customer = Customer::find($request->id);
                 if (!$customer) {

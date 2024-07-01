@@ -17,7 +17,7 @@ class OptionsController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 $user_id = urldecode($id);
                 $optionsCacheKey = 'owner_' . $user_id . 'options';
@@ -56,7 +56,7 @@ class OptionsController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'option_name' => 'required|string',
                     'price' => 'required|integer',
@@ -107,7 +107,7 @@ class OptionsController extends Controller
 
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
                     'option_name' => 'required|string',
                     'price' => 'required|integer',
@@ -148,7 +148,7 @@ class OptionsController extends Controller
 
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $option = Option::find($request->id);
                 if (!$option) {
                     return response()->json([

@@ -11,17 +11,19 @@ use Illuminate\Support\Facades\Storage;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class AttendanceTimesController extends Controller
 {
 
     //クエリのuser_idを受け取り、そのユーザーの勤怠時間を１か月分取得　Gate,ALL
     //yearMonthが"000111"の場合は当月の勤怠時間を取得
-    public function selectedAttendanceTime($yearMonth, $id, $owner_id)
+    public function selectedAttendanceTime($yearMonth, $id)
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
 
                 $user_id = urldecode($id);
                 Log::info("user_id", ["user_id", $user_id]);
@@ -35,7 +37,16 @@ class AttendanceTimesController extends Controller
                     $currentYearAndMonth = Carbon::now()->format('Y-m');
                 }
 
-                $attendanceTimesCacheKey = 'owner_' . $owner_id . 'staff_' . $user_id . 'attendanceTimes';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                if (empty($ownerId)) {
+                    return response()->json([
+                        'message' => 'オーナーが見つかりませんでした！',
+                    ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $user_id . 'attendanceTimes';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
@@ -90,30 +101,30 @@ class AttendanceTimesController extends Controller
         }
     }
 
-    public function firstAttendanceTime($id)
-    {
+    // public function firstAttendanceTime($user_id)
+    // {
 
-        try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
-                $user_id = urldecode($id);
-                $firstAttendanceTime = AttendanceTime::where('user_id', $user_id)->latest('created_at')->first();
+    //     try {
+    //         $user = User::find(Auth::id());
+    //         if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+    //             $decodedUser_id = urldecode($user_id);
+    //             $firstAttendanceTime = AttendanceTime::where('user_id',  $decodedUser_id)->latest('created_at')->first();
 
-                return response()->json([
-                    'attendanceTime' => $firstAttendanceTime,
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    'message' => 'あなたには権限がありません！',
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => '勤怠時間の取得に失敗しました！
-                もう一度やり直してください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-        }
-    }
+    //             return response()->json([
+    //                 'attendanceTime' => $firstAttendanceTime,
+    //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    //         } else {
+    //             return response()->json([
+    //                 'message' => 'あなたには権限がありません！',
+    //             ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    //         }
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'message' => '勤怠時間の取得に失敗しました！
+    //             もう一度やり直してください！'
+    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    //     }
+    // }
 
 
     // public function startPhotos($fileName)
@@ -192,7 +203,7 @@ class AttendanceTimesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
                 $startTime = Carbon::parse($request->start_time);
 
                 $existAttendanceStart = AttendanceTime::where('user_id', $request->user_id)->whereDate('start_time', $startTime->format('Y-m-d'))->latest()->first();
@@ -238,7 +249,20 @@ class AttendanceTimesController extends Controller
                         'user_id' => $request->user_id,
                     ]);
 
-                    $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+                    $staff = Staff::where('user_id', $request->user_id)->first();
+
+                    if (empty($staff)) {
+                        $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                    } else {
+                        $ownerId = $staff->owner_id;
+                    }
+
+
+
+
+
+
+                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
 
 
                     Cache::forget($attendanceTimesCacheKey);
@@ -279,7 +303,7 @@ class AttendanceTimesController extends Controller
 
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
                 $request->validate([
                     'end_time' => 'required',
                     'end_photo_path' => 'required',
@@ -342,7 +366,7 @@ class AttendanceTimesController extends Controller
 
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
                 $request->validate([
                     'end_time' => 'required',
                     'end_photo_path' => 'required',
@@ -460,7 +484,7 @@ class AttendanceTimesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 // リクエストから受け取ったデータを使用してレコードを更新
                 $attendanceTime = AttendanceTime::find($request->id);
 
@@ -515,7 +539,7 @@ class AttendanceTimesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 // リクエストから受け取ったデータを使用してレコードを更新
                 $attendanceTime = AttendanceTime::find($request->id);
 
@@ -569,7 +593,7 @@ class AttendanceTimesController extends Controller
 
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 Log::info("request", ["request", $request->id]);
 
                 $userAttendance = AttendanceTime::find($request->id);

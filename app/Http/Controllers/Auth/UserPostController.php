@@ -82,7 +82,13 @@ class UserPostController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
+
+                $owner = Owner::find(Auth::id());
+
+                if (empty($owner)) {
+                    throw new \Exception('オーナー情報が見つかりませんでした！');
+                }
 
                 $request->validate([
                     'name' => ['required', 'string', 'max:50'],
@@ -91,9 +97,8 @@ class UserPostController extends Controller
                     'password' => [
                         'required',
                     ],
-                    'role' => ['required', 'string', 'max:10'],
+                    'role' => ['required', 'string', 'max:30'],
                     'isAttendance' => ['required', 'boolean'],
-                    'owner_id' => ['required', 'integer', 'exists:owners,id'],
                 ]);
 
                 $userID = User::where('email', $request->email)->first();
@@ -111,8 +116,9 @@ class UserPostController extends Controller
                         'email' => $request->email,
                         'phone_number' => $request->phone_number,
                         'password' => Hash::make($request->password),
-                        'role' => $request->role === 'マネージャー' ? Roles::MANAGER : Roles::STAFF,
+                        'role' => $request->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF,
                         'isAttendance' => $request->isAttendance,
+
                     ]);
 
                     // event(new Registered($user));
@@ -121,7 +127,7 @@ class UserPostController extends Controller
 
                     $staff = staff::create([
                         'user_id' => $user->id,
-                        'owner_id' => $request->owner_id,
+                        'owner_id' => $owner->id,
                     ]);
 
                     $responseUser = [
@@ -136,7 +142,6 @@ class UserPostController extends Controller
                         [
                             'message' => 'スタッフ用ユーザー登録に成功しました!',
                             'responseUser' => $responseUser,
-                            'responseStaff' => $staff,
                         ],
                         200,
                         [],
@@ -161,22 +166,27 @@ class UserPostController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
 
+                $owner = Owner::find(Auth::id());
+
+                if (empty($owner)) {
+                    throw new \Exception('オーナー情報が見つかりませんでした！');
+                }
                 $request->validate([
                     'id' => ['required', 'integer', 'exists:users,id'],
-                    'role' => ['required', 'string', 'max:10'],
+                    'role' => ['required', 'string', 'max:30'],
                 ]);
 
                 $user = User::where('id', $request->id)->first();
 
                 if (!empty($user)) {
-                    $user->role = $request->role;
+                    $user->role =  $request->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF;
                     $user->save();
 
                     return response()->json([
                         'message' => '権限の変更に成功しました！',
-                        'responseUser' => $user->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance']),
+                        'responseUser' => $user->only(['id', 'name', 'email', 'phone_number',, 'isAttendance']),
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([

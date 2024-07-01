@@ -16,7 +16,7 @@ class DailySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
 
                 $user_id = urldecode($id);
 
@@ -64,7 +64,7 @@ class DailySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $validatedData
                     = $request->validate([
                         'date' => 'required|string',
@@ -103,7 +103,7 @@ class DailySalesController extends Controller
     // public function show($id)
     // {
     //     try {
-    //         if (Gate::allows(Permissions::OWNER_PERMISSION)) {
+    //         if (Gate::allows(Permissions::$OWNER_PERMISSION)) {
     //             $daily_sale = DailySale::find($id);
 
     //             return response()->json([
@@ -126,7 +126,7 @@ class DailySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $validatedData = $request->validate([
                     'date' => 'required',
                     'daily_sales' => 'required',
@@ -166,7 +166,7 @@ class DailySalesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
                 $daily_sale = DailySale::find($request->id);
                 if (!$daily_sale) {
                     return response()->json([

@@ -59,13 +59,13 @@ class User extends Authenticatable implements MustVerifyEmailContract
 
     public function attendance_times()
     {
-        return $this->hasMany(attendance_times::class);
+        return $this->hasMany(AttendanceTime::class);
     }
 
 
     public function customers()
     {
-        return $this->belongsToMany(customers::class, 'customer_users', 'users_id', 'customers_id');
+        return $this->belongsToMany(Customer::class, 'customer_users', 'user_id', 'customer_id');
     }
 
     public function ownedTeams()

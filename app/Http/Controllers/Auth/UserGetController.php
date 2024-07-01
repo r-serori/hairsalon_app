@@ -11,18 +11,20 @@ use App\Enums\Roles;
 use App\Models\AttendanceTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\Owner;
 
 class UserGetController extends Controller
 {
-    public function getUsers($owner_id): JsonResponse
+    public function getUsers($user_id): JsonResponse
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER)) {
+                $decodedUserId = urldecode($user_id);
 
-                $decodedOwnerId = urldecode($owner_id);
+                $owner = Owner::find($decodedUserId);
 
-                $staffs = Staff::where('owner_id', $decodedOwnerId)->get();
+                $staffs = Staff::where('owner_id', $owner->id)->get();
 
                 if ($staffs->isEmpty()) {
                     return response()->json([
@@ -36,7 +38,7 @@ class UserGetController extends Controller
                     $users = User::whereIn('id', $userIds)->get();
 
                     $users->map(function ($user) {
-                        return $user->only(['id', 'name', 'phone_number', 'role', 'isAttendance']);
+                        return $user->only(['id', 'name', 'phone_number',  'isAttendance']);
                     });
 
                     $userCount = count($users);
@@ -59,13 +61,17 @@ class UserGetController extends Controller
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
-    public function getAttendanceUsers($owner_id): JsonResponse
+    public function getAttendanceUsers($user_id): JsonResponse
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $staffs = Staff::where('owner_id', $owner_id)->get();
+                $decodedUserId = urldecode($user_id);
+
+                $owner = Owner::find($decodedUserId);
+
+                $staffs = Staff::where('owner_id', $owner->id)->get();
 
                 if ($staffs->isEmpty()) {
                     return response()->json([
@@ -119,20 +125,22 @@ class UserGetController extends Controller
         }
     }
 
-    public function show($id): JsonResponse
+    public function show($user_id): JsonResponse
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $decodedId = urldecode($id);
+                $decodedUserId = urldecode($user_id);
 
-                $responseUser = User::find($decodedId);
+                $responseUser = User::find($decodedUserId);
                 if (!empty($responseUser)) {
+
+                    $responseUser->only(['id', 'name', 'email', 'phone_number', 'isAttendance']);
 
                     return response()->json([
                         'message' => 'ユーザー情報を取得しました!',
-                        'responseUser' => $responseUser->only(['id', 'name', 'email', 'phone_number', 'role', 'isAttendance']),
+                        'responseUser' => $responseUser,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([

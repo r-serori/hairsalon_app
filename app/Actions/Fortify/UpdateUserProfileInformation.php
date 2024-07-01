@@ -30,7 +30,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::OWNER) || $user->hasRole(Roles::MANAGER) || $user->hasRole(Roles::STAFF)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 Validator::make($input, [
                     'name' => ['required', 'string', 'max:255'],
@@ -43,6 +43,20 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                     $user instanceof MustVerifyEmail
                 ) {
                     $this->updateVerifiedUser($user, $input);
+
+                    return response()->json(
+                        [
+
+                            'message' => 'プロフィール情報の更新に成功しました!確認メールを送信しました!',
+
+                        ],
+                        200,
+                        [],
+                        JSON_UNESCAPED_UNICODE
+                    )->header(
+                        'Content-Type',
+                        'application/json; charset=UTF-8'
+                    );
                 } else {
                     $user->forceFill([
                         'name' => $input['name'],
@@ -50,11 +64,11 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                         'phone_number' => $input['phone_number'],
                     ])->save();
 
+
+
                     return response()->json(
                         [
-                            'resStatus' => "success",
                             'message' => 'プロフィール情報の更新に成功しました!',
-                            'responseUser' => $user->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at')
                         ],
                         200,
                         [],
@@ -67,7 +81,6 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
             } else {
                 return response()->json(
                     [
-                        'resStatus' => "error",
                         'message' => 'あなたは権限がありません!',
                     ],
                     403,
@@ -81,9 +94,8 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         } catch (\Exception $e) {
             return response()->json(
                 [
-                    'resStatus' => "error",
                     'message' => 'プロフィール情報の更新に失敗しました!',
-                    'error' => $e->getMessage()
+
                 ],
                 500,
                 [],
@@ -100,7 +112,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
      *
      * @param  mixed  $user
      * @param  array  $input
-     * @return JsonResponse
+     * @return mixed 
      */
     protected function updateVerifiedUser($user, array $input)
     {
@@ -114,32 +126,9 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 
             $user->sendEmailVerificationNotification();
 
-            return response()->json(
-                [
-                    'resStatus' => "success",
-                    'message' => 'プロフィール情報の更新に成功しました!',
-                    'responseUser' => $user->only('id', 'name', 'email', 'phone_number', 'role', 'isAttendance', 'created_at', 'updated_at')
-                ],
-                200,
-                [],
-                JSON_UNESCAPED_UNICODE
-            )->header(
-                'Content-Type',
-                'application/json; charset=UTF-8'
-            );
+            return $user;
         } catch (\Exception $e) {
-            return response()->json(
-                [
-                    'resStatus' => 'error',
-                    'message' =>   $e->getMessage()
-                ],
-                500,
-                [],
-                JSON_UNESCAPED_UNICODE
-            )->header(
-                'Content-Type',
-                'application/json; charset=UTF-8'
-            );
+            return throw new \Exception($e->getMessage());
         }
     }
 }
