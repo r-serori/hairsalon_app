@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class StocksController extends Controller
 {
@@ -18,19 +20,26 @@ class StocksController extends Controller
      * @return  JsonResponse
      */
 
-    public function index($id): JsonResponse
+    public function index(): JsonResponse
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $user_id = urldecode($id);
-                $stocksCacheKey = 'owner_' . $user_id . 'stocks';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $stocksCacheKey = 'owner_' . $ownerId . 'stocks';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $stocks = Cache::remember($stocksCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return Stock::where('owner_id', $user_id)->get();
+                $stocks = Cache::remember($stocksCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return Stock::where('owner_id', $ownerId)->get();
                 });
                 if ($stocks->isEmpty()) {
                     return response()->json([
@@ -71,8 +80,15 @@ class StocksController extends Controller
                     'remarks' => 'nullable|string',
                     "notice" => "required|integer",
                     'stock_category_id' => 'required|exists:stock_categories,id',
-                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
                 // 在庫モデルを作成して保存する
                 $stocks =  Stock::create([
@@ -83,10 +99,10 @@ class StocksController extends Controller
                     'remarks' => $validatedData['remarks'],
                     'notice' => $validatedData['notice'],
                     'stock_category_id' => $validatedData['stock_category_id'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId
                 ]);
 
-                $stocksCacheKey = 'owner_' . $request->owner_id . 'stocks';
+                $stocksCacheKey = 'owner_' . $ownerId . 'stocks';
 
                 Cache::forget($stocksCacheKey);
                 // 成功したらリダイレクト
@@ -163,7 +179,16 @@ class StocksController extends Controller
 
                 // 在庫を保存する
                 $stock->save();
-                $stocksCacheKey = 'owner_' . $request->owner_id . 'stocks';
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $stocksCacheKey = 'owner_' . $ownerId . 'stocks';
 
                 Cache::forget($stocksCacheKey);
                 // 成功したらリダイレクト
@@ -198,7 +223,10 @@ class StocksController extends Controller
                 }
 
                 $stock->delete();
-                $stocksCacheKey = 'owner_' . $request->owner_id . 'stocks';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $stocksCacheKey = 'owner_' . $ownerId . 'stocks';
 
                 Cache::forget($stocksCacheKey);
                 return response()->json([

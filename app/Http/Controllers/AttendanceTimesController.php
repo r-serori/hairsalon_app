@@ -242,24 +242,28 @@ class AttendanceTimesController extends Controller
                     // ファイルを保存
                     Storage::disk('public')->put($fileName, $data);
 
-                    // リクエストから受け取ったデータを使用してレコードを作成
-                    $attendanceTime = AttendanceTime::create([
-                        'start_time' => $request->start_time,
-                        'start_photo_path' =>  $fileName,
-                        'user_id' => $request->user_id,
-                    ]);
-
-                    $staff = Staff::where('user_id', $request->user_id)->first();
+                    $staff = Staff::where(
+                        'user_id',
+                        $request->user_id
+                    )->first();
 
                     if (empty($staff)) {
-                        $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                        $ownerId = Owner::where(
+                            'user_id',
+                            $request->user_id
+                        )->first()->value('id');
                     } else {
                         $ownerId = $staff->owner_id;
                     }
 
 
-
-
+                    // リクエストから受け取ったデータを使用してレコードを作成
+                    $attendanceTime = AttendanceTime::create([
+                        'start_time' => $request->start_time,
+                        'start_photo_path' =>  $fileName,
+                        'user_id' => $request->user_id,
+                        'owner_id' => $ownerId,
+                    ]);
 
 
                     $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
@@ -322,23 +326,34 @@ class AttendanceTimesController extends Controller
 
                 $existYesterdayStartTime->save();
 
+                $staff = Staff::where('user_id', $request->user_id)->first();
 
-                $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
+                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
 
                 Cache::forget($attendanceTimesCacheKey);
+                $EditUser = User::find($request->user_id);
 
+                $EditUser->isAttendance = 0;
 
-                $user = User::find($request->user_id);
+                $EditUser->save();
 
-                $user->isAttendance = 0;
+                $responseUser = $EditUser->only([
+                    'id',
+                    'name',
+                    'isAttendance',
+                ]);
 
-                $user->save();
 
                 return response()->json(
                     [
                         "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、その後出勤ボタンを押してください！",
-                        "attendanceTime" => $existYesterdayStartTime, "responseUser" => $user
+                        "attendanceTime" => $existYesterdayStartTime, "responseUser" => $responseUser
                     ],
                     200,
                     [],
@@ -389,16 +404,29 @@ class AttendanceTimesController extends Controller
 
                     $existYesterdayStartTime->save();
 
+                    $staff = Staff::where('user_id', $request->user_id)->first();
 
-                    $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+                    if (empty($staff)) {
+                        $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                    } else {
+                        $ownerId = $staff->owner_id;
+                    }
 
+                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
 
                     Cache::forget($attendanceTimesCacheKey);
 
+                    $EditUser = User::find($request->user_id);
 
-                    $user = User::find($request->user_id);
+                    $EditUser->isAttendance = 0;
 
-                    $user->isAttendance = 0;
+                    $EditUser->save();
+
+                    $responseUser = $EditUser->only([
+                        'id',
+                        'name',
+                        'isAttendance',
+                    ]);
 
                     $user->save();
                     return
@@ -442,25 +470,36 @@ class AttendanceTimesController extends Controller
 
                     $attendanceTime->save();
 
+                    $staff = Staff::where('user_id', $request->user_id)->first();
 
-                    $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+                    if (empty($staff)) {
+                        $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                    } else {
+                        $ownerId = $staff->owner_id;
+                    }
 
+                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
 
                     Cache::forget($attendanceTimesCacheKey);
 
+                    $EditUser = User::find($request->user_id);
 
-                    $user = User::find($request->user_id);
+                    $EditUser->isAttendance = 0;
 
-                    $user->isAttendance = 0;
+                    $EditUser->save();
 
-                    $user->save();
+                    $responseUser = $EditUser->only([
+                        'id',
+                        'name',
+                        'isAttendance',
+                    ]);
 
                     return
                         response()->json(
 
                             [
                                 "attendanceTime" => $attendanceTime,
-                                "responseUser" => $user
+                                "responseUser" => $responseUser
                             ],
                             200,
                             [],
@@ -506,8 +545,16 @@ class AttendanceTimesController extends Controller
 
                 $attendanceTime->save();
 
+                $staff = Staff::where('user_id', $request->user_id)->first();
 
-                $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+
+                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
 
 
                 Cache::forget($attendanceTimesCacheKey);
@@ -560,7 +607,15 @@ class AttendanceTimesController extends Controller
 
                 $attendanceTime->save();
 
-                $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->user_id . 'attendanceTimes';
+                $staff = Staff::where('user_id', $request->user_id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
 
 
                 Cache::forget($attendanceTimesCacheKey);
@@ -614,8 +669,9 @@ class AttendanceTimesController extends Controller
                 // レコードを削除
                 AttendanceTime::destroy($request->id);
 
-                $attendanceTimesCacheKey = 'owner_' . $request->owner_id . 'staff_' . $request->id . 'attendanceTimes';
+                $ownerId = Owner::find($user->id)->value('id');
 
+                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->id . 'attendanceTimes';
 
                 Cache::forget($attendanceTimesCacheKey);
 

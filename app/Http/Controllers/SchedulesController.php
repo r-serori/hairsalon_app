@@ -29,22 +29,27 @@ use Illuminate\Support\Facades\Cache;
 class SchedulesController extends Controller
 {
     //owner_idを受け取り、スケジュールを取得
-    public function index($owner_id)
+    public function index()
 
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $decodedOwnerId = urldecode($owner_id);
+                $staff = Staff::where('user_id', $user->id)->first();
 
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
-                $customersCacheKey = 'owner_' . $decodedOwnerId . 'customers';
+                $customersCacheKey = 'owner_' . $ownerId . 'customers';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Customer::where('owner_id', $decodedOwnerId)->get();
+                $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Customer::where('owner_id', $ownerId)->get();
                 });
 
                 if ($customers->isEmpty()) {
@@ -55,47 +60,47 @@ class SchedulesController extends Controller
 
                 $currentYear = Carbon::now()->year;
 
-                $schedulesCacheKey = 'owner_' . $decodedOwnerId . 'schedules';
+                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
 
-                $selectSchedules = Cache::remember($schedulesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId, $currentYear) {
+                $selectSchedules = Cache::remember($schedulesCacheKey, $expirationInSeconds, function () use ($ownerId, $currentYear) {
                     return Schedule::whereYear('start_time', $currentYear)
-                        ->where('owner_id', $decodedOwnerId)
+                        ->where('owner_id', $ownerId)
                         ->get();
                 });
 
-                $coursesCacheKey = 'owner_' . $decodedOwnerId . 'courses';
+                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
 
-                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Course::where('owner_id', $decodedOwnerId)->get();
+                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Course::where('owner_id', $ownerId)->get();
                 });
 
-                $optionsCacheKey = 'owner_' . $decodedOwnerId . 'options';
+                $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
-                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Option::where('owner_id', $decodedOwnerId)->get();
+                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Option::where('owner_id', $ownerId)->get();
                 });
 
-                $merchandisesCacheKey = 'owner_' . $decodedOwnerId . 'merchandises';
+                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
-                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Merchandise::where('owner_id', $decodedOwnerId)->get();
+                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Merchandise::where('owner_id', $ownerId)->get();
                 });
 
-                $hairstylesCacheKey = 'owner_' . $decodedOwnerId . 'hairstyles';
+                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
-                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Hairstyle::where('owner_id', $decodedOwnerId)->get();
+                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Hairstyle::where('owner_id', $ownerId)->get();
                 });
 
-                $staffs = Staff::where('owner_id', $decodedOwnerId)->pluck('user_id');
+                $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
                 // Log::info('staff', $staff->toArray());
 
                 if ($staffs->isEmpty()) {
-                    $owner = Owner::find($decodedOwnerId);
+                    $owner = Owner::find($ownerId);
                     $users = User::find($owner->user_id);
                 } else {
-                    $owner = Owner::find($decodedOwnerId);
+                    $owner = Owner::find($ownerId);
                     // Log::info('owner', $owner->toArray());
                     $OwnersUser = User::find($owner->user_id);
                     // Log::info('user', $user->toArray());
@@ -109,30 +114,30 @@ class SchedulesController extends Controller
                     return ['id' => $user->id, 'name' => $user->name];
                 });
 
-                $courseCustomersCache = 'owner_' . $decodedOwnerId . 'course_customers';
+                $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
 
-                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  CourseCustomer::where('owner_id', $decodedOwnerId)->get();
+                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  CourseCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $optionCustomersCache = 'owner_' . $decodedOwnerId . 'option_customers';
+                $optionCustomersCache = 'owner_' . $ownerId . 'option_customers';
 
-                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  OptionCustomer::where('owner_id', $decodedOwnerId)->get();
+                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  OptionCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $merchandiseCustomersCache = 'owner_' . $decodedOwnerId . 'merchandise_customers';
+                $merchandiseCustomersCache = 'owner_' . $ownerId . 'merchandise_customers';
 
-                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  MerchandiseCustomer::where('owner_id', $decodedOwnerId)->get();
+                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  MerchandiseCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $hairstyleCustomersCache = 'owner_' . $decodedOwnerId . 'hairstyle_customers';
+                $hairstyleCustomersCache = 'owner_' . $ownerId . 'hairstyle_customers';
 
-                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  HairstyleCustomer::where('owner_id', $decodedOwnerId)->get();
+                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  HairstyleCustomer::where('owner_id', $ownerId)->get();
                 });
-                $userCustomer = CustomerUser::where('owner_id', $decodedOwnerId)->get();
+                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
                 if ($selectSchedules->isEmpty()) {
                     return response()->json([
@@ -184,22 +189,28 @@ class SchedulesController extends Controller
         }
     }
 
-    public function selectGetYear($owner_id, $year)
+    public function selectGetYear($year)
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $decodedOwnerId = urldecode($owner_id);
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
                 $decodeYear = urldecode($year);
 
-                $customersCacheKey = 'owner_' . $decodedOwnerId . 'customers';
+                $customersCacheKey = 'owner_' . $ownerId . 'customers';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Customer::where('owner_id', $decodedOwnerId)->get();
+                $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Customer::where('owner_id', $ownerId)->get();
                 });
 
                 if ($customers->isEmpty()) {
@@ -211,47 +222,47 @@ class SchedulesController extends Controller
                 $selectGetYear = $decodeYear;
 
 
-                $schedulesCacheKey = 'owner_' . $decodedOwnerId . 'schedules';
+                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
 
-                $selectSchedules = Cache::remember($schedulesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId, $selectGetYear) {
+                $selectSchedules = Cache::remember($schedulesCacheKey, $expirationInSeconds, function () use ($ownerId, $selectGetYear) {
                     return Schedule::whereYear('start_time', $selectGetYear)
-                        ->where('owner_id', 1)
+                        ->where('owner_id', $ownerId)
                         ->get();
                 });
 
-                $coursesCacheKey = 'owner_' . $decodedOwnerId . 'courses';
+                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
 
-                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Course::where('owner_id', $decodedOwnerId)->get();
+                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Course::where('owner_id', $ownerId)->get();
                 });
 
-                $optionsCacheKey = 'owner_' . $decodedOwnerId . 'options';
+                $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
-                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Option::where('owner_id', $decodedOwnerId)->get();
+                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Option::where('owner_id', $ownerId)->get();
                 });
 
-                $merchandisesCacheKey = 'owner_' . $decodedOwnerId . 'merchandises';
+                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
-                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Merchandise::where('owner_id', $decodedOwnerId)->get();
+                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Merchandise::where('owner_id', $ownerId)->get();
                 });
 
-                $hairstylesCacheKey = 'owner_' . $decodedOwnerId . 'hairstyles';
+                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
-                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Hairstyle::where('owner_id', $decodedOwnerId)->get();
+                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Hairstyle::where('owner_id', $ownerId)->get();
                 });
 
-                $staff = Staff::where('owner_id', $decodedOwnerId)->pluck('user_id');
+                $staff = Staff::where('owner_id', $ownerId)->pluck('user_id');
                 Log::info('staff', $staff->toArray());
 
                 if ($staff->isEmpty()) {
-                    $owner = Owner::where('user_id', $decodedOwnerId)->first();
+                    $owner = Owner::where('user_id', $ownerId)->first();
                     $users = User::find($owner->user_id);
                 } else {
-                    $owner = Owner::where('user_id', $decodedOwnerId)->first();
+                    $owner = Owner::where('user_id', $ownerId)->first();
                     Log::info('owner', $owner->toArray());
                     $user = User::find($owner->user_id);
                     Log::info('user', $user->toArray());
@@ -266,31 +277,31 @@ class SchedulesController extends Controller
                     return ['id' => $user->id, 'name' => $user->name];
                 });
 
-                $courseCustomersCache = 'owner_' . $decodedOwnerId . 'course_customers';
+                $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
 
-                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  CourseCustomer::where('owner_id', $decodedOwnerId)->get();
+                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  CourseCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $optionCustomersCache = 'owner_' . $decodedOwnerId . 'option_customers';
+                $optionCustomersCache = 'owner_' . $ownerId . 'option_customers';
 
-                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  OptionCustomer::where('owner_id', $decodedOwnerId)->get();
+                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  OptionCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $merchandiseCustomersCache = 'owner_' . $decodedOwnerId . 'merchandise_customers';
+                $merchandiseCustomersCache = 'owner_' . $ownerId . 'merchandise_customers';
 
-                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  MerchandiseCustomer::where('owner_id', $decodedOwnerId)->get();
+                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  MerchandiseCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $hairstyleCustomersCache = 'owner_' . $decodedOwnerId . 'hairstyle_customers';
+                $hairstyleCustomersCache = 'owner_' . $ownerId . 'hairstyle_customers';
 
-                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  HairstyleCustomer::where('owner_id', $decodedOwnerId)->get();
+                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  HairstyleCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $userCustomer = CustomerUser::where('owner_id', $decodedOwnerId)->get();
+                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
                 return response()->json([
                     'schedules' => $selectSchedules,
@@ -331,18 +342,25 @@ class SchedulesController extends Controller
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'in:0,1',
-                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
                 $schedule = Schedule::create([
                     'title' => $validatedData['title'],
                     'start_time' => $validatedData['start_time'],
                     'end_time' => $validatedData['end_time'],
                     'allDay' => $validatedData['allDay'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId,
                 ]);
 
-                $schedulesCacheKey = 'owner_' . $request->owner_id . 'schedules';
+                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
 
                 Cache::forget($schedulesCacheKey);
 
@@ -411,7 +429,15 @@ class SchedulesController extends Controller
 
                 $schedule->save();
 
-                $schedulesCacheKey = 'owner_' . $request->owner_id . 'schedules';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
 
                 Cache::forget($schedulesCacheKey);
 
@@ -442,7 +468,7 @@ class SchedulesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $schedule = Schedule::find($request->id);
                 if (!$schedule) {
                     return response()->json([
@@ -453,7 +479,16 @@ class SchedulesController extends Controller
                 }
 
                 $schedule->delete();
-                $schedulesCacheKey = 'owner_' . $request->owner_id . 'schedules';
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
 
                 Cache::forget($schedulesCacheKey);
 

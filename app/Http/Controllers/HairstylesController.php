@@ -12,23 +12,32 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class HairstylesController extends Controller
 {
 
-    public function index($id): JsonResponse
+    public function index(): JsonResponse
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $user_id = urldecode($id);
-                $hairstylesCacheKey = 'owner_' . $user_id . 'hairstyles';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return Hairstyle::where('owner_id', $user_id)->get();
+                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return Hairstyle::where('owner_id', $ownerId)->get();
                 });
 
                 if ($hairstyles->isEmpty()) {
@@ -64,10 +73,20 @@ class HairstylesController extends Controller
                     'hairstyle_name' => 'required|string',
                 ]);
 
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
                 $hairstyle = Hairstyle::create([
                     'hairstyle_name' => $validatedData['hairstyle_name'],
+                    'owner_id' => $ownerId
                 ]);
-                $hairstylesCacheKey = 'owner_' . $request->owner_id . 'hairstyles';
+
+                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
                 Cache::forget($hairstylesCacheKey);
                 return response()->json([
@@ -121,8 +140,17 @@ class HairstylesController extends Controller
                 $hairstyle = Hairstyle::find($request->id);
                 $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
 
+
                 $hairstyle->save();
-                $hairstylesCacheKey = 'owner_' . $request->owner_id . 'hairstyles';
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
                 Cache::forget($hairstylesCacheKey);
                 return response()->json(
@@ -157,7 +185,10 @@ class HairstylesController extends Controller
                     ], 500);
                 }
                 $hairstyle->delete();
-                $hairstylesCacheKey = 'owner_' . $request->owner_id . 'hairstyles';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
                 Cache::forget($hairstylesCacheKey);
                 return response()->json([

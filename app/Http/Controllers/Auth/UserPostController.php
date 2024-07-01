@@ -24,9 +24,9 @@ class UserPostController extends Controller
         try {
             $request->validate([
                 'store_name' => ['required', 'string', 'max:50'],
-                'address' => ['required', 'string', 'max:255'],
-                'phone_number' => ['required', 'string', 'max:13'],
-                'user_id' => ['required', 'integer',],
+                'address' => ['required', 'string', 'max:200'],
+                'phone_number' => ['required', 'string', 'max:20'],
+                'user_id' => ['required', 'integer', 'exists:users,id'],
             ]);
 
             $user = User::where('id', $request->user_id)->first();
@@ -92,8 +92,8 @@ class UserPostController extends Controller
 
                 $request->validate([
                     'name' => ['required', 'string', 'max:50'],
-                    'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                    'phone_number' => ['required', 'string', 'max:13'],
+                    'email' => ['required', 'string', 'email', 'max:200', 'unique:users'],
+                    'phone_number' => ['required', 'string', 'max:20'],
                     'password' => [
                         'required',
                     ],
@@ -118,7 +118,6 @@ class UserPostController extends Controller
                         'password' => Hash::make($request->password),
                         'role' => $request->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF,
                         'isAttendance' => $request->isAttendance,
-
                     ]);
 
                     // event(new Registered($user));
@@ -135,7 +134,7 @@ class UserPostController extends Controller
                         'name' => $user->name,
                         'email' => $user->email,
                         'phone_number' => $user->phone_number,
-                        'role' => $user->role,
+                        'role' => $user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
                         'isAttendance' => $user->isAttendance,
                     ];
                     return response()->json(
@@ -178,15 +177,23 @@ class UserPostController extends Controller
                     'role' => ['required', 'string', 'max:30'],
                 ]);
 
-                $user = User::where('id', $request->id)->first();
+                $updateUser = User::where('id', $request->id)->first();
 
                 if (!empty($user)) {
-                    $user->role =  $request->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF;
-                    $user->save();
+                    $updateUser->role = $request->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF;
+                    $updateUser->save();
+
+                    $responseUser = [
+                        'id' => $updateUser->id,
+                        'name' => $updateUser->name,
+                        'phone_number' => $updateUser->phone_number,
+                        'role' => $updateUser->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
+                        'isAttendance' => $updateUser->isAttendance,
+                    ];
 
                     return response()->json([
                         'message' => '権限の変更に成功しました！',
-                        'responseUser' => $user->only(['id', 'name', 'email', 'phone_number',, 'isAttendance']),
+                        'responseUser' => $responseUser,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([

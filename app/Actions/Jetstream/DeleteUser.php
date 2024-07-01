@@ -19,16 +19,16 @@ class DeleteUserMain
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $user = User::find($request->id); // 例: リクエストからユーザーIDを取得
+                $deleteUser = User::find($request->id); // 例: リクエストからユーザーIDを取得
 
-                if (!$user) {
+                if (!$deleteUser) {
                     return response()->json([
                         'resStatus' => 'error',
                         'message' => 'ユーザーが見つかりませんでした。',
                     ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
-                $user->delete();
+                $deleteUser->delete();
 
                 return response()->json([
                     'resStatus' => 'success',

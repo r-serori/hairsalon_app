@@ -9,23 +9,32 @@ use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class OptionsController extends Controller
 {
 
-    public function index($id)
+    public function index()
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $user_id = urldecode($id);
-                $optionsCacheKey = 'owner_' . $user_id . 'options';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return Option::where('owner_id', $user_id)->get();
+                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return Option::where('owner_id', $ownerId)->get();
                 });
 
                 if ($options->isEmpty()) {
@@ -61,13 +70,23 @@ class OptionsController extends Controller
                     'option_name' => 'required|string',
                     'price' => 'required|integer',
                 ]);
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
                 $option =
                     Option::create([
                         'option_name' => $validatedData['option_name'],
                         'price' => $validatedData['price'],
-
+                        'owner_id' => $ownerId
                     ]);
-                $optionsCacheKey = 'owner_' . $request->owner_id . 'options';
+
+                $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
                 Cache::forget($optionsCacheKey);
                 return response()->json([
@@ -119,7 +138,15 @@ class OptionsController extends Controller
                 $option->price = $validatedData['price'];
 
                 $option->save();
-                $optionsCacheKey = 'owner_' . $request->owner_id . 'options';
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+                $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
                 Cache::forget($optionsCacheKey);
                 return response()->json(
@@ -158,7 +185,9 @@ class OptionsController extends Controller
                 }
 
                 $option->delete();
-                $optionsCacheKey = 'owner_' . $request->owner_id . 'options';
+
+                $ownerId = Owner::find($user->id)->value('id');
+                $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
                 Cache::forget($optionsCacheKey);
                 return response()->json([

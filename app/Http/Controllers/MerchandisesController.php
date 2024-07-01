@@ -10,23 +10,32 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class MerchandisesController extends Controller
 {
 
-    public function index($id)
+    public function index()
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $user_id = urldecode($id);
-                $merchandisesCacheKey = 'owner_' . $user_id . 'merchandises';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return Merchandise::where('owner_id', $user_id)->get();
+                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return Merchandise::where('owner_id', $ownerId)->get();
                 });
 
                 if ($merchandises->isEmpty()) {
@@ -62,16 +71,23 @@ class MerchandisesController extends Controller
                 $validatedData = $request->validate([
                     'merchandise_name' => 'required|string|max:255',
                     'price' => 'required|integer',
-                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
                 $merchandise = Merchandise::create([
                     'merchandise_name' => $validatedData['merchandise_name'],
                     'price' => $validatedData['price'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId
 
                 ]);
-                $merchandisesCacheKey = 'owner_' . $request->owner_id . 'merchandises';
+                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
                 Cache::forget($merchandisesCacheKey);
                 return response()->json([
@@ -127,7 +143,16 @@ class MerchandisesController extends Controller
                 $merchandise->price = $validatedData['price'];
 
                 $merchandise->save();
-                $merchandisesCacheKey = 'owner_' . $request->owner_id . 'merchandises';
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
                 Cache::forget($merchandisesCacheKey);
 
@@ -165,7 +190,10 @@ class MerchandisesController extends Controller
                 }
 
                 $merchandise->delete();
-                $merchandisesCacheKey = 'owner_' . $request->owner_id . 'merchandises';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
                 Cache::forget($merchandisesCacheKey);
                 return response()->json([

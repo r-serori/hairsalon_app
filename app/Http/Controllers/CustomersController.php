@@ -24,55 +24,62 @@ use Illuminate\Support\Facades\Cache;
 class CustomersController extends Controller
 {
 
-    public function index($owner_id)
+    public function index()
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
                 // 顧客データを取得
-                $decodedOwnerId = urldecode($owner_id);
 
-                $customersCacheKey = 'owner_' . $decodedOwnerId . 'customers';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $customersCacheKey = 'owner_' . $ownerId . 'customers';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Customer::where('owner_id', $decodedOwnerId)->get();
+                $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Customer::where('owner_id', $ownerId)->get();
                 });
 
-                $coursesCacheKey = 'owner_' . $decodedOwnerId . 'courses';
+                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
 
-                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Course::where('owner_id', $decodedOwnerId)->get();
+                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Course::where('owner_id', $ownerId)->get();
                 });
 
-                $optionsCacheKey = 'owner_' . $decodedOwnerId . 'options';
+                $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
-                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Option::where('owner_id', $decodedOwnerId)->get();
+                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Option::where('owner_id', $ownerId)->get();
                 });
 
-                $merchandisesCacheKey = 'owner_' . $decodedOwnerId . 'merchandises';
+                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
-                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Merchandise::where('owner_id', $decodedOwnerId)->get();
+                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Merchandise::where('owner_id', $ownerId)->get();
                 });
 
-                $hairstylesCacheKey = 'owner_' . $decodedOwnerId . 'hairstyles';
+                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
-                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  Hairstyle::where('owner_id', $decodedOwnerId)->get();
+                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Hairstyle::where('owner_id', $ownerId)->get();
                 });
 
-                $staffs = Staff::where('owner_id', $decodedOwnerId)->pluck('user_id');
+                $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
                 // Log::info('staff', $staff->toArray());
 
                 if ($staffs->isEmpty()) {
-                    $owner = Owner::find($decodedOwnerId);
+                    $owner = Owner::find($ownerId);
                     $users = User::find($owner->user_id);
                 } else {
-                    $owner = Owner::find($decodedOwnerId);
+                    $owner = Owner::find($ownerId);
                     // Log::info('owner', $owner->toArray());
                     $OwnersUser = User::find($owner->user_id);
                     // Log::info('user', $user->toArray());
@@ -87,31 +94,31 @@ class CustomersController extends Controller
                     return ['id' => $user->id, 'name' => $user->name];
                 });
 
-                $courseCustomersCache = 'owner_' . $decodedOwnerId . 'course_customers';
+                $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
 
-                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  CourseCustomer::where('owner_id', $decodedOwnerId)->get();
+                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  CourseCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $optionCustomersCache = 'owner_' . $decodedOwnerId . 'option_customers';
+                $optionCustomersCache = 'owner_' . $ownerId . 'option_customers';
 
-                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  OptionCustomer::where('owner_id', $decodedOwnerId)->get();
+                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  OptionCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $merchandiseCustomersCache = 'owner_' . $decodedOwnerId . 'merchandise_customers';
+                $merchandiseCustomersCache = 'owner_' . $ownerId . 'merchandise_customers';
 
-                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  MerchandiseCustomer::where('owner_id', $decodedOwnerId)->get();
+                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  MerchandiseCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $hairstyleCustomersCache = 'owner_' . $decodedOwnerId . 'hairstyle_customers';
+                $hairstyleCustomersCache = 'owner_' . $ownerId . 'hairstyle_customers';
 
-                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($decodedOwnerId) {
-                    return  HairstyleCustomer::where('owner_id', $decodedOwnerId)->get();
+                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
+                    return  HairstyleCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $userCustomer = CustomerUser::where('owner_id', $decodedOwnerId)->get();
+                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
                 if ($customers->isEmpty()) {
                     return response()->json([
@@ -175,18 +182,25 @@ class CustomersController extends Controller
                     'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
                     'user_id' => 'nullable|array',
                     'user_id.*' => 'nullable|integer|exists:users,id',
-                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
 
                 // 顧客を作成
                 $customer = Customer::create([
                     'customer_name' => $validatedData['customer_name'],
                     'phone_number' => $validatedData['phone_number'],
                     'remarks' => $validatedData['remarks'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId
                 ]);
 
-                $ownerId = $request->owner_id;
 
                 $customersCacheKey = 'owner_' . $ownerId . 'customers';
 
@@ -201,35 +215,35 @@ class CustomersController extends Controller
 
                 $pivotData = [];
                 foreach ($courseIds as $courseId) {
-                    $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$courseId] = ['owner_id' => $ownerId];
                 }
 
                 $customer->courses()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($optionIds as $optionId) {
-                    $pivotData[$optionId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$optionId] = ['owner_id' => $ownerId];
                 }
 
                 $customer->options()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($merchandiseIds as $merchandiseId) {
-                    $pivotData[$merchandiseId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
                 }
 
                 $customer->merchandises()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($hairstyleIds as $hairstyleId) {
-                    $pivotData[$hairstyleId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
                 }
 
                 $customer->hairstyles()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($userIds as $userId) {
-                    $pivotData[$userId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$userId] = ['owner_id' => $ownerId];
                 }
                 $customer->users()->sync($pivotData);
 
@@ -269,7 +283,7 @@ class CustomersController extends Controller
                 });
 
 
-                $userCustomer = CustomerUser::where('owner_id', $validatedData['owner_id'])->get();
+                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
                 return
                     response()->json(
@@ -287,7 +301,7 @@ class CustomersController extends Controller
                     )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "message" => "あなたには権限が！！"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
@@ -338,10 +352,8 @@ class CustomersController extends Controller
                     'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
                     'user_id' => 'nullable|array',
                     'user_id.*' => 'nullable|integer|exists:users,id',
-                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
-                $ownerId = $request->owner_id;
 
                 // 指定されたIDの顧客データを取得
                 $customer = Customer::find($request->id);
@@ -352,6 +364,16 @@ class CustomersController extends Controller
                 $customer->remarks = $validatedData['remarks'];
 
                 $customer->save();
+
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
 
                 $customersCacheKey = 'owner_' . $ownerId . 'customers';
 
@@ -478,8 +500,9 @@ class CustomersController extends Controller
                 // 顧客データを削除
                 $customer->delete();
 
+                $ownerId = Owner::find($user->id)->value('id');
 
-                $customersCacheKey = 'owner_' . $request->owner_id . 'customers';
+                $customersCacheKey = 'owner_' . $ownerId . 'customers';
 
                 Cache::forget($customersCacheKey);
 

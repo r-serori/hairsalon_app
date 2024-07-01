@@ -10,23 +10,28 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
+
 
 class MonthlySalesController extends Controller
 {
-    public function index($id)
+    public function index()
     {
         try {
             $user = User::find(Auth::id());
+
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $user_id = urldecode($id);
-                $monthlySalesCacheKey = 'owner_' . $user_id . 'monthlySales';
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
                 // 月別売上一覧を取得
-                $monthly_sales = Cache::remember($monthlySalesCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return MonthlySale::where('owner_id', $user_id)->get();
+                $monthly_sales = Cache::remember($monthlySalesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return MonthlySale::where('owner_id', $ownerId)->get();
                 });
 
                 if ($monthly_sales->isEmpty()) {
@@ -63,16 +68,18 @@ class MonthlySalesController extends Controller
                 $validatedData = $request->validate([
                     'year_month' => 'required|string',
                     'monthly_sales' => 'required|integer',
-                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
+
+                $ownerId = Owner::find($user->id)->value('id');
 
                 // 月別売上モデルを作成して保存する
                 $monthly_sales = MonthlySale::create([
                     'year_month' => $validatedData['year_month'],
                     'monthly_sales' => $validatedData['monthly_sales'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId
                 ]);
-                $monthlySalesCacheKey = 'owner_' . $request->owner_id . 'monthlySales';
+
+                $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
                 Cache::forget($monthlySalesCacheKey);
                 // 成功したらリダイレクト
@@ -137,7 +144,10 @@ class MonthlySalesController extends Controller
                 $monthly_sale->year = $validatedData['year_month'];
                 $monthly_sale->monthly_sales = $validatedData['monthly_sales'];
                 $monthly_sale->save();
-                $monthlySalesCacheKey = 'owner_' . $request->owner_id . 'monthlySales';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
                 Cache::forget($monthlySalesCacheKey);
                 // 成功したらリダイレクト
@@ -177,7 +187,10 @@ class MonthlySalesController extends Controller
                 }
 
                 $monthly_sale->delete();
-                $monthlySalesCacheKey = 'owner_' . $request->owner_id . 'monthlySales';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
                 Cache::forget($monthlySalesCacheKey);
                 return response()->json([

@@ -8,25 +8,32 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class CoursesController extends Controller
 {
 
-    public function index($id)
+    public function index()
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $user_id = urldecode($id);
+                $staff = Staff::where('user_id', $user->id)->first();
 
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
-                $coursesCacheKey = 'owner_' . $user_id . 'courses';
+                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return  Course::where('owner_id', $user_id)->get();
+                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return  Course::where('owner_id', $ownerId)->get();
                 });
 
 
@@ -62,16 +69,23 @@ class CoursesController extends Controller
                 $validatedData = $request->validate([
                     'course_name' => 'required|string',
                     'price' => 'required|integer',
-                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
                 $course = Course::create([
                     'course_name' => $validatedData['course_name'],
                     'price' => $validatedData['price'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId
                 ]);
 
-                $coursesCacheKey = 'owner_' . $request->owner_id . 'courses';
+                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
                 Cache::forget($coursesCacheKey);
 
@@ -129,10 +143,17 @@ class CoursesController extends Controller
 
                 $course->save();
 
-                $coursesCacheKey = 'owner_' . $request->owner_id . 'courses';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
                 Cache::forget($coursesCacheKey);
-
 
                 return response()->json(
                     [
@@ -167,7 +188,9 @@ class CoursesController extends Controller
 
                 $course->delete();
 
-                $coursesCacheKey = 'owner_' . $request->owner_id . 'courses';
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
                 Cache::forget($coursesCacheKey);
 

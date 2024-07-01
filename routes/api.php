@@ -116,7 +116,7 @@ Route::middleware('api')->group(
                 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
 
                 //各スタッフが自分の情報を取得 Gate,ALL
-                Route::get('/showUser/{user_id}', [UserGetController::class, 'show']);
+                Route::get('/showUser', [UserGetController::class, 'show']);
 
                 //ユーザーが自分の個人情報を変更 Gate,ALL
                 Route::post('/updateUser', [UpdateUserProfileInformation::class, 'update']);
@@ -142,9 +142,9 @@ Route::middleware('api')->group(
         Route::prefix('/user')->group(function () {
 
             //オーナーがスタッフの情報を取得 Gate,OWNER
-            Route::get('/getUsers/{user_id}', [UserGetController::class, 'getUsers']);
+            Route::get('/getUsers', [UserGetController::class, 'getUsers']);
 
-            Route::get('/getAttendanceUsers/{user_id}', [UserGetController::class, 'getAttendanceUsers']);
+            Route::get('/getAttendanceUsers', [UserGetController::class, 'getAttendanceUsers']);
 
             //オーナーがスタッフの権限を変更 Gate,OWNER
             Route::post('/updatePermission', [UserPostController::class, 'updatePermission']);

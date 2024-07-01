@@ -10,23 +10,32 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class StockCategoriesController extends Controller
 {
-    public function index($id)
+    public function index()
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $user_id = urldecode($id);
-                $stockCategoriesCacheKey = 'owner_' . $user_id . 'stockCategories';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
                 // カテゴリ一覧を取得
 
-                $stock_categories = Cache::remember($stockCategoriesCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return StockCategory::where('owner_id', $user_id)->get();
+                $stock_categories = Cache::remember($stockCategoriesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return StockCategory::where('owner_id', $ownerId)->get();
                 });
 
                 if ($stock_categories->isEmpty()) {
@@ -60,16 +69,23 @@ class StockCategoriesController extends Controller
                 // バリデーションルールを定義する
                 $validatedData = $request->validate([
                     'category' => 'required|string',
-                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
 
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
                 // 在庫モデルを作成して保存する
                 $stock_category = StockCategory::create([
                     'category' => $validatedData['category'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId
                 ]);
-                $stockCategoriesCacheKey = 'owner_' . $request->owner_id . 'stockCategories';
+
+                $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
 
                 Cache::forget($stockCategoriesCacheKey);
 
@@ -135,7 +151,16 @@ class StockCategoriesController extends Controller
 
                 // 在庫を保存する
                 $stock_category->save();
-                $stockCategoriesCacheKey = 'owner_' . $request->owner_id . 'stockCategories';
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
 
                 Cache::forget($stockCategoriesCacheKey);
 
@@ -175,7 +200,10 @@ class StockCategoriesController extends Controller
 
                 // 在庫カテゴリを削除する
                 $stock_category->delete();
-                $stockCategoriesCacheKey = 'owner_' . $request->owner_id . 'stockCategories';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
 
                 Cache::forget($stockCategoriesCacheKey);
                 return response()->json([

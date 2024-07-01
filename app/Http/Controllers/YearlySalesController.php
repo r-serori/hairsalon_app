@@ -8,22 +8,31 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class YearlySalesController extends Controller
 {
-    public function index($id)
+    public function index()
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $user_id = urldecode($id);
-                $yearlySalesCacheKey = 'owner_' . $user_id . 'yearlysales';
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $yearly_sales = Cache::remember($yearlySalesCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return YearlySale::where('owner_id', $user_id)->get();
+                $yearly_sales = Cache::remember($yearlySalesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return YearlySale::where('owner_id', $ownerId)->get();
                 });
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
@@ -58,15 +67,22 @@ class YearlySalesController extends Controller
                 $validatedData = $request->validate([
                     'year' => 'required|string',
                     'yearly_sales' => 'required|integer',
-                    'owner_id' => 'required|integer|exists:owners,id',
                 ]);
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
                 $yearly_sale = YearlySale::create([
                     'year' => $validatedData['year'],
                     'yearly_sales' => $validatedData['yearly_sales'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId
                 ]);
-                $yearlySalesCacheKey = 'owner_' . $request->owner_id . 'yearlysales';
+                $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
                 Cache::forget($yearlySalesCacheKey);
 
@@ -125,7 +141,16 @@ class YearlySalesController extends Controller
                 $yearly_sale->year = $validatedData['year'];
                 $yearly_sale->yearly_sales = $validatedData['yearly_sales'];
                 $yearly_sale->save();
-                $yearlySalesCacheKey = 'owner_' . $request->owner_id . 'yearlysales';
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
+                $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
                 Cache::forget($yearlySalesCacheKey);
 
@@ -165,7 +190,10 @@ class YearlySalesController extends Controller
                 }
 
                 $yearly_sale->delete();
-                $yearlySalesCacheKey = 'owner_' . $request->owner_id . 'yearlysales';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
                 Cache::forget($yearlySalesCacheKey);
                 return response()->json([

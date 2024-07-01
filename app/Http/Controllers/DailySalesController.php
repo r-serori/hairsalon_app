@@ -8,26 +8,27 @@ use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Owner;
+use App\Models\Staff;
 
 class DailySalesController extends Controller
 {
 
-    public function index($id)
+    public function index()
     {
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $user_id = urldecode($id);
+                $ownerId = Owner::find($user->id)->value('id');
 
-
-                $dailySalesCacheKey = 'owner_' . $user_id . 'dailySales';
+                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
 
-                $daily_sales = Cache::remember($dailySalesCacheKey, $expirationInSeconds, function () use ($user_id) {
-                    return DailySale::where('owner_id', $user_id)->get();
+                $daily_sales = Cache::remember($dailySalesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return DailySale::where('owner_id',  $ownerId)->get();
                 });
 
                 if ($daily_sales->isEmpty()) {
@@ -69,17 +70,19 @@ class DailySalesController extends Controller
                     = $request->validate([
                         'date' => 'required|string',
                         'daily_sales' => 'required|integer',
-                        'owner_id' => 'required|integer|exists:owners,id',
                     ]);
+
+                $ownerId = Owner::find($user->id)->value('id');
 
                 $daily_sales =
                     DailySale::create([
                         'date' => $validatedData['date'],
                         'daily_sales' => $validatedData['daily_sales'],
-                        'owner_id' => $validatedData['owner_id'],
+                        'owner_id' => $ownerId
                     ]);
 
-                $dailySalesCacheKey = 'owner_' . $request->owner_id . 'dailySales';
+
+                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
                 Cache::forget($dailySalesCacheKey);
 
@@ -138,7 +141,10 @@ class DailySalesController extends Controller
                 $daily_sale->daily_sales = $validatedData['daily_sales'];
                 $daily_sale->save();
 
-                $dailySalesCacheKey = 'owner_' . $request->owner_id . 'dailySales';
+                $ownerId = Owner::find($user->id)->value('id');
+
+
+                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
                 Cache::forget($dailySalesCacheKey);
                 return response()->json(
@@ -176,7 +182,10 @@ class DailySalesController extends Controller
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
                 $daily_sale->delete();
-                $dailySalesCacheKey = 'owner_' . $request->owner_id . 'dailySales';
+
+                $ownerId = Owner::find($user->id)->value('id');
+
+                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
                 Cache::forget($dailySalesCacheKey);
                 return response()->json([
