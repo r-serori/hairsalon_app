@@ -36,13 +36,13 @@ class UserGetController extends Controller
 
                     $users = User::whereIn('id', $userIds)->get();
 
-                    $users->map(function ($user) {
+                    $responseUsers =  $users->map(function ($user) {
                         return [
                             'id' => $user->id,
                             'name' => $user->name,
                             'email' => $user->email,
                             'phone_number' => $user->phone_number,
-                            'role' => $user->role === Roles::$OWNER ? 'オーナー' : ($user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
+                            'role' => $user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
                             'isAttendance' => $user->isAttendance,
                         ];
                     });
@@ -51,7 +51,7 @@ class UserGetController extends Controller
 
                     return response()->json([
                         'message' => 'ユーザー情報を取得しました!',
-                        'responseUsers' => $users,
+                        'responseUsers' => $responseUsers,
                         'userCount' => $userCount,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
