@@ -390,35 +390,35 @@ class CustomersController extends Controller
 
                 $pivotData = [];
                 foreach ($courseIds as $courseId) {
-                    $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$courseId] = ['owner_id' => $ownerId];
                 }
 
                 $customer->courses()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($optionIds as $optionId) {
-                    $pivotData[$optionId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$optionId] = ['owner_id' => $ownerId];
                 }
 
                 $customer->options()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($merchandiseIds as $merchandiseId) {
-                    $pivotData[$merchandiseId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
                 }
 
                 $customer->merchandises()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($hairstyleIds as $hairstyleId) {
-                    $pivotData[$hairstyleId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
                 }
 
                 $customer->hairstyles()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($userIds as $userId) {
-                    $pivotData[$userId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$userId] = ['owner_id' => $ownerId];
                 }
                 $customer->users()->sync($pivotData);
 
@@ -458,7 +458,7 @@ class CustomersController extends Controller
                     return  HairstyleCustomer::where('owner_id', $ownerId)->get();
                 });
 
-                $userCustomer = CustomerUser::where('owner_id', $validatedData['owner_id'])->get();
+                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
 
                 return

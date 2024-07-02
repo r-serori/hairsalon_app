@@ -191,7 +191,7 @@ class MerchandisesController extends Controller
 
                 $merchandise->delete();
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 

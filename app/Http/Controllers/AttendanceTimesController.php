@@ -37,8 +37,7 @@ class AttendanceTimesController extends Controller
                     $currentYearAndMonth = Carbon::now()->format('Y-m');
                 }
 
-
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 if (empty($ownerId)) {
                     return response()->json([
@@ -669,7 +668,7 @@ class AttendanceTimesController extends Controller
                 // レコードを削除
                 AttendanceTime::destroy($request->id);
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->id . 'attendanceTimes';
 

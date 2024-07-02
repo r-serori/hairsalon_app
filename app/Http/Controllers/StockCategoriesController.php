@@ -201,7 +201,7 @@ class StockCategoriesController extends Controller
                 // 在庫カテゴリを削除する
                 $stock_category->delete();
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
 

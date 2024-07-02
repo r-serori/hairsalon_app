@@ -185,8 +185,7 @@ class OptionsController extends Controller
                 }
 
                 $option->delete();
-
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
                 $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
                 Cache::forget($optionsCacheKey);

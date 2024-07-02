@@ -19,13 +19,11 @@ class YearlySalesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $staff = Staff::where('user_id', $user->id)->first();
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+
+
+                $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+
 
                 $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
@@ -37,7 +35,7 @@ class YearlySalesController extends Controller
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
                         "message" =>
-                        "初めまして！予約表画面の月次売上作成ボタンから月次売上を作成しましょう！",
+                        "初めまして！予約表画面の年次売上作成ボタンから年次売上を作成しましょう！",
                         'yearlySales' => $yearly_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
@@ -53,7 +51,7 @@ class YearlySalesController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' =>
-                '月次売上が見つかりません！
+                '年次売上が見つかりません！
                 もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
@@ -69,14 +67,7 @@ class YearlySalesController extends Controller
                     'yearly_sales' => 'required|integer',
                 ]);
 
-                $staff = Staff::where('user_id', $user->id)->first();
-
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-
+                $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
                 $yearly_sale = YearlySale::create([
                     'year' => $validatedData['year'],
                     'yearly_sales' => $validatedData['yearly_sales'],
@@ -96,7 +87,7 @@ class YearlySalesController extends Controller
             }
         } catch (\Exception $e) {
             return response()->json([
-                "message" => "月次売上の作成に失敗しました！
+                "message" => "年次売上の作成に失敗しました！
                 もう一度お試しください！"
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
@@ -119,7 +110,7 @@ class YearlySalesController extends Controller
     //     } catch (\Exception $e) {
     //         return response()->json([
     //             'message' =>
-    //             '月次売上が見つかりません！'
+    //             '年次売上が見つかりません！'
     //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     //     }
     // }
@@ -141,15 +132,7 @@ class YearlySalesController extends Controller
                 $yearly_sale->year = $validatedData['year'];
                 $yearly_sale->yearly_sales = $validatedData['yearly_sales'];
                 $yearly_sale->save();
-
-                $staff = Staff::where('user_id', $user->id)->first();
-
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-
+                $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
                 $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
                 Cache::forget($yearlySalesCacheKey);
@@ -170,7 +153,7 @@ class YearlySalesController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' =>
-                '月次売上が見つかりません！
+                '年次売上が見つかりません！
                 もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
@@ -185,13 +168,13 @@ class YearlySalesController extends Controller
                 if (!$yearly_sale) {
                     return response()->json([
                         'message' =>
-                        '月次売上が見つかりません！'
+                        '年次売上が見つかりません！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $yearly_sale->delete();
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
@@ -208,7 +191,7 @@ class YearlySalesController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' =>
-                '月次売上が見つかりません！
+                '年次売上が見つかりません！
             もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }

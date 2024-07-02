@@ -186,7 +186,7 @@ class HairstylesController extends Controller
                 }
                 $hairstyle->delete();
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 

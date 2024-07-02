@@ -224,7 +224,7 @@ class StocksController extends Controller
 
                 $stock->delete();
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $stocksCacheKey = 'owner_' . $ownerId . 'stocks';
 

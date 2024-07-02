@@ -20,7 +20,7 @@ class DailySalesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
@@ -72,7 +72,7 @@ class DailySalesController extends Controller
                         'daily_sales' => 'required|integer',
                     ]);
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $daily_sales =
                     DailySale::create([
@@ -140,8 +140,7 @@ class DailySalesController extends Controller
                 $daily_sale->date = $validatedData['date'];
                 $daily_sale->daily_sales = $validatedData['daily_sales'];
                 $daily_sale->save();
-
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
 
                 $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
@@ -183,7 +182,7 @@ class DailySalesController extends Controller
                 }
                 $daily_sale->delete();
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 

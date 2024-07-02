@@ -23,7 +23,7 @@ class MonthlySalesController extends Controller
 
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
@@ -70,7 +70,7 @@ class MonthlySalesController extends Controller
                     'monthly_sales' => 'required|integer',
                 ]);
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 // 月別売上モデルを作成して保存する
                 $monthly_sales = MonthlySale::create([
@@ -145,7 +145,7 @@ class MonthlySalesController extends Controller
                 $monthly_sale->monthly_sales = $validatedData['monthly_sales'];
                 $monthly_sale->save();
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
@@ -188,7 +188,7 @@ class MonthlySalesController extends Controller
 
                 $monthly_sale->delete();
 
-                $ownerId = Owner::find($user->id)->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
