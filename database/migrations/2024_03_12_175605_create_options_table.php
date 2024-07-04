@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -20,6 +21,18 @@ return new class extends Migration
             $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);
             $table->timestamps();
         });
+
+        // すべてのオーナーに '無し' オプションを挿入する
+        $owners = \App\Models\Owner::all();
+        foreach ($owners as $owner) {
+            DB::table('options')->insert([
+                'option_name' => '無し',
+                'price' => 0, // 任意の価格を設定してください
+                'owner_id' => $owner->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**

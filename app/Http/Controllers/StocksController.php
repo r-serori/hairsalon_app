@@ -79,7 +79,7 @@ class StocksController extends Controller
                     'supplier' => 'nullable|string',
                     'remarks' => 'nullable|string',
                     "notice" => "required|integer",
-                    'stock_category_id' => 'required|exists:stock_categories,id',
+                    'stock_category_id' => 'nullable|exists:stock_categories,id',
                 ]);
 
                 $staff = Staff::where('user_id', $user->id)->first();
@@ -90,6 +90,15 @@ class StocksController extends Controller
                     $ownerId = $staff->owner_id;
                 }
 
+
+
+                if (empty($request->stock_category_id)) {
+                    $stockCategoryId = $validatedData['stock_category_id'];
+                } else {
+                    $stockCategoryId = 1;
+                }
+
+
                 // 在庫モデルを作成して保存する
                 $stocks =  Stock::create([
                     'product_name' => $validatedData['product_name'],
@@ -98,7 +107,7 @@ class StocksController extends Controller
                     'supplier' => $validatedData['supplier'],
                     'remarks' => $validatedData['remarks'],
                     'notice' => $validatedData['notice'],
-                    'stock_category_id' => $validatedData['stock_category_id'],
+                    'stock_category_id' => $stockCategoryId,
                     'owner_id' => $ownerId
                 ]);
 
@@ -172,10 +181,10 @@ class StocksController extends Controller
                 $stock->product_name = $validatedData['product_name'];
                 $stock->quantity = $validatedData['quantity'];
                 $stock->product_price = $validatedData['product_price'];
-                $stock->supplier = $validatedData['supplier'];
-                $stock->remarks = $validatedData['remarks'];
+                $stock->supplier = $validatedData['supplier'] ?? '無し';
+                $stock->remarks = $validatedData['remarks'] ?? '無し';
                 $stock->notice = $validatedData['notice'];
-                $stock->stock_category_id = $validatedData['stock_category_id'];
+                $stock->stock_category_id = $validatedData['stock_category_id'] ?? 1;
 
                 // 在庫を保存する
                 $stock->save();

@@ -11,7 +11,11 @@ class Owner extends Model
 
     protected $fillable = [
         'store_name',
-        'address',
+        'postal_code',
+        'prefecture',
+        'city',
+        'addressLine1',
+        'addressLine2',
         'phone_number',
         'user_id',
     ];

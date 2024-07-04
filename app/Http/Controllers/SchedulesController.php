@@ -527,8 +527,8 @@ class SchedulesController extends Controller
                     'merchandise_id.*' => 'nullable|integer|exists:merchandises,id',
                     'hairstyle_id' => 'nullable|array',
                     'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
-                    'user_id' => 'nullable|array',
-                    'user_id.*' => 'nullable|integer|exists:users,id',
+                    'user_id' => 'required|array',
+                    'user_id.*' => 'required|integer|exists:users,id',
                     'title' => 'nullable',
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
@@ -552,13 +552,35 @@ class SchedulesController extends Controller
 
                 Cache::forget($customersCacheKey);
 
-                // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'];
-                $optionIds = $validatedData['option_id'];
-                $merchandiseIds = $validatedData['merchandise_id'];
-                $hairstyleIds = $validatedData['hairstyle_id'];
-                $userIds = $validatedData['user_id'];
 
+                // 中間テーブルにデータを挿入
+
+                if ($request->course_id == null || empty($request->course_id)) {
+                    $courseIds = [1];
+                } else {
+                    $courseIds = $validatedData['course_id'];
+                }
+
+                if ($request->option_id == null || empty($request->option_id)) {
+                    $optionIds = [1];
+                } else {
+                    $optionIds = $validatedData['option_id'];
+                }
+
+
+                if ($request->merchandise_id == null || empty($request->merchandise_id)) {
+                    $merchandiseIds = [1];
+                } else {
+                    $merchandiseIds = $validatedData['merchandise_id'];
+                }
+
+                if ($request->hairstyle_id == null || empty($request->hairstyle_id)) {
+                    $hairstyleIds = [1];
+                } else {
+                    $hairstyleIds = $validatedData['
+                    hairstyle_id'];
+                }
+                $userIds = $validatedData['user_id'];
 
 
                 $pivotData = [];
@@ -693,8 +715,8 @@ class SchedulesController extends Controller
                     'merchandise_id.*' => 'nullable|integer|exists:merchandises,id',
                     'hairstyle_id' => 'nullable|array',
                     'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
-                    'user_id' => 'nullable|array',
-                    'user_id.*' => 'nullable|integer|exists:users,id',
+                    'user_id' => 'required|array',
+                    'user_id.*' => 'required|integer|exists:users,id',
                     'title' => 'nullable',
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
@@ -711,8 +733,8 @@ class SchedulesController extends Controller
                 $customer = Customer::find($customerId);
 
                 $customer->customer_name = $validatedData['customer_name'];
-                $customer->phone_number = $validatedData['phone_number'];
-                $customer->remarks = $validatedData['remarks'];
+                $customer->phone_number = $validatedData['phone_number'] ?? '0000000000';
+                $customer->remarks = $validatedData['remarks'] ?? '無し';
 
                 $customer->save();
 
@@ -722,10 +744,32 @@ class SchedulesController extends Controller
 
 
                 // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'];
-                $optionIds = $validatedData['option_id'];
-                $merchandiseIds = $validatedData['merchandise_id'];
-                $hairstyleIds = $validatedData['hairstyle_id'];
+
+                if ($request->course_id == null || empty($request->course_id)) {
+                    $courseIds = [1];
+                } else {
+                    $courseIds = $validatedData['course_id'];
+                }
+
+                if ($request->option_id == null || empty($request->option_id)) {
+                    $optionIds = [1];
+                } else {
+                    $optionIds = $validatedData['option_id'];
+                }
+
+
+                if ($request->merchandise_id == null || empty($request->merchandise_id)) {
+                    $merchandiseIds = [1];
+                } else {
+                    $merchandiseIds = $validatedData['merchandise_id'];
+                }
+
+                if ($request->hairstyle_id == null || empty($request->hairstyle_id)) {
+                    $hairstyleIds = [1];
+                } else {
+                    $hairstyleIds = $validatedData['
+                    hairstyle_id'];
+                }
                 $userIds = $validatedData['user_id'];
 
 
@@ -863,8 +907,8 @@ class SchedulesController extends Controller
                     'hairstyle_id' => 'nullable|array',
                     'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
                     'user_id' => 'nullable|array',
-                    'user_id.*' => 'nullable|integer|exists:users,id',
-                    'title' => 'nullable',
+                    'user_id.*' => 'required|integer|exists:users,id',
+                    'title' => 'required',
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'required',
@@ -880,8 +924,8 @@ class SchedulesController extends Controller
                 $customer = Customer::find($customerId);
 
                 $customer->customer_name = $validatedData['customer_name'];
-                $customer->phone_number = $validatedData['phone_number'];
-                $customer->remarks = $validatedData['remarks'];
+                $customer->phone_number = $validatedData['phone_number'] ?? '0000000000';
+                $customer->remarks = $validatedData['remarks'] ?? '無し';
 
 
                 $customer->save();
@@ -892,12 +936,36 @@ class SchedulesController extends Controller
 
 
 
+
                 // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'];
-                $optionIds = $validatedData['option_id'];
-                $merchandiseIds = $validatedData['merchandise_id'];
-                $hairstyleIds = $validatedData['hairstyle_id'];
+
+                if ($request->course_id == null || empty($request->course_id)) {
+                    $courseIds = [1];
+                } else {
+                    $courseIds = $validatedData['course_id'];
+                }
+
+                if ($request->option_id == null || empty($request->option_id)) {
+                    $optionIds = [1];
+                } else {
+                    $optionIds = $validatedData['option_id'];
+                }
+
+
+                if ($request->merchandise_id == null || empty($request->merchandise_id)) {
+                    $merchandiseIds = [1];
+                } else {
+                    $merchandiseIds = $validatedData['merchandise_id'];
+                }
+
+                if ($request->hairstyle_id == null || empty($request->hairstyle_id)) {
+                    $hairstyleIds = [1];
+                } else {
+                    $hairstyleIds = $validatedData['
+                    hairstyle_id'];
+                }
                 $userIds = $validatedData['user_id'];
+
                 $pivotData = [];
                 foreach ($courseIds as $courseId) {
                     $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];

@@ -18,7 +18,11 @@ class OwnerSeeder extends Seeder
     {
         DB::table("owners")->insert([
             'store_name' => 'HairSalon_Tanaka',
-            'address' => 'Tokyo-to, Chiyoda-ku, Kudanminami 1-1-1',
+            'postal_code' => '123-4567',
+            'prefecture' => '大阪府',
+            'city' => '大阪市中央区',
+            'addressLine1' => 'こんにちは町1-2-3',
+            'addressLine2' => 'ビル101号室',
             'phone_number' => '03-1234-5678',
             'user_id' => 1,
             'created_at' => now(),

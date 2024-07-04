@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
             'name' => 'owner123',
             'email' => 'owner@hairmail.com',
             'phone_number' => '090-1234-5678',
-            'password' => Hash::make('password123'),
+            'password' => Hash::make('Password_123'),
             'role' => Roles::$OWNER,
             'isAttendance' => 0,
             'created_at' => now(),

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -19,7 +20,19 @@ return new class extends Migration
             $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);
             $table->timestamps();
         });
+
+        // すべてのオーナーに '無し' ヘアスタイルを挿入する
+        $owners = \App\Models\Owner::all();
+        foreach ($owners as $owner) {
+            DB::table('hairstyles')->insert([
+                "hairstyle_name" => "無し",
+                "owner_id" => $owner->id,
+                "created_at" => now(),
+                "updated_at" => now()
+            ]);
+        }
     }
+
 
     /**
      * Reverse the migrations.

@@ -23,8 +23,12 @@ class UserPostController extends Controller
     {
         try {
             $request->validate([
-                'store_name' => ['required', 'string', 'max:50'],
-                'address' => ['required', 'string', 'max:200'],
+                'store_name' => ['required', 'string', 'max:100'],
+                'postal_code' => ['required', 'string', 'max:10'],
+                'prefecture' => ['required', 'string', 'max:100'],
+                'city' => ['required', 'string', 'max:100'],
+                'addressLine1' => ['required', 'string', 'max:200'],
+                'addressLine2' => ['nullable', 'string', 'max:200'],
                 'phone_number' => ['required', 'string', 'max:20'],
                 'user_id' => ['required', 'integer', 'exists:users,id'],
             ]);
@@ -32,25 +36,23 @@ class UserPostController extends Controller
             $user = User::where('id', $request->user_id)->first();
 
             if (!empty($user)) {
-                $owner = Owner::create([
+                Owner::create([
                     'store_name' => $request->store_name,
-                    'address' => $request->address,
+                    'postal_code' => $request->postal_code,
+                    'prefecture' => $request->prefecture,
+                    'city' => $request->city,
+                    'addressLine1' => $request->addressLine1,
+                    'addressLine2' => $request->addressLine2 ? $request->addressLine2 : '無し', // 三項演算子で'無し'を代入
                     'phone_number' => $request->phone_number,
                     'user_id' => $request->user_id,
                 ]);
 
-                $responseOwner = [
-                    'id' => $owner->id,
-                    'store_name' => $owner->store_name,
-                    'address' => $request->address,
-                    'phone_number' => $request->phone_number,
-                    'user_id' => $request->user_id,
-                ];
+
 
                 return response()->json(
                     [
                         'message' => 'オーナー用ユーザー登録に成功しました!',
-                        'responseOwner' => $responseOwner,
+
                     ],
                     200,
                     [],
