@@ -32,18 +32,20 @@ class UserGetController extends Controller
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
 
-                    $userIds = $staffs->pluck('user_id')->toArray();
+                    $userIds = $staffs->pluck('user_id');
+
+                    $userIds->push($user->id);
 
                     $users = User::whereIn('id', $userIds)->get();
 
-                    $responseUsers =  $users->map(function ($user) {
+                    $responseUsers = $users->map(function ($usera) {
                         return [
-                            'id' => $user->id,
-                            'name' => $user->name,
-                            'email' => $user->email,
-                            'phone_number' => $user->phone_number,
-                            'role' => $user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
-                            'isAttendance' => $user->isAttendance,
+                            'id' => $usera->id,
+                            'name' => $usera->name,
+                            'email' => $usera->email,
+                            'phone_number' => $usera->phone_number,
+                            'role' => $usera->role === Roles::$OWNER ? 'オーナー' : ($usera->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
+                            'isAttendance' => $usera->isAttendance,
                         ];
                     });
 
