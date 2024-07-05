@@ -19,10 +19,7 @@ class YearlySalesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-
-
-
-                $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
 
                 $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
@@ -67,7 +64,7 @@ class YearlySalesController extends Controller
                     'yearly_sales' => 'required|integer',
                 ]);
 
-                $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
                 $yearly_sale = YearlySale::create([
                     'year' => $validatedData['year'],
                     'yearly_sales' => $validatedData['yearly_sales'],
@@ -132,7 +129,7 @@ class YearlySalesController extends Controller
                 $yearly_sale->year = $validatedData['year'];
                 $yearly_sale->yearly_sales = $validatedData['yearly_sales'];
                 $yearly_sale->save();
-                $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
                 $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
                 Cache::forget($yearlySalesCacheKey);

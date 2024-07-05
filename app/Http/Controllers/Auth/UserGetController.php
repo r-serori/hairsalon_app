@@ -25,10 +25,11 @@ class UserGetController extends Controller
 
                 $staffs = Staff::where('owner_id', $owner->id)->get();
 
+
                 if ($staffs->isEmpty()) {
                     return response()->json([
                         'message' => 'スタッフ情報がありません!登録してください！',
-                        'responseUsers' => []
+                        'responseUsers' => [],
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
 
@@ -78,7 +79,7 @@ class UserGetController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }

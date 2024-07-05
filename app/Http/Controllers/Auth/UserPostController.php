@@ -24,7 +24,7 @@ class UserPostController extends Controller
         try {
             $request->validate([
                 'store_name' => ['required', 'string', 'max:100'],
-                'postal_code' => ['required', 'string', 'max:10'],
+                'postal_code' => ['required', 'integer'],
                 'prefecture' => ['required', 'string', 'max:100'],
                 'city' => ['required', 'string', 'max:100'],
                 'addressLine1' => ['required', 'string', 'max:200'],
@@ -47,8 +47,6 @@ class UserPostController extends Controller
                     'user_id' => $request->user_id,
                 ]);
 
-
-
                 return response()->json(
                     [
                         'message' => 'オーナー用ユーザー登録に成功しました!',
@@ -69,6 +67,7 @@ class UserPostController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             return response()->json(
                 [
                     "message" => "オーナー用ユーザー登録に失敗しました！",
@@ -101,6 +100,7 @@ class UserPostController extends Controller
                     ],
                     'role' => ['required', 'string', 'max:30'],
                     'isAttendance' => ['required', 'boolean'],
+                    'user_id' => ['required', 'integer', 'exists:users,id'],
                 ]);
 
                 $userID = User::where('email', $request->email)->first();
@@ -120,6 +120,7 @@ class UserPostController extends Controller
                         'password' => Hash::make($request->password),
                         'role' => $request->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF,
                         'isAttendance' => $request->isAttendance,
+                        'user_id' => $owner->id,
                     ]);
 
                     // event(new Registered($user));

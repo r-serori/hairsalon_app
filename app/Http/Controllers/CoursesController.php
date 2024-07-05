@@ -10,6 +10,8 @@ use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\Log;
+use PgSql\Lob;
 
 class CoursesController extends Controller
 {
@@ -18,15 +20,21 @@ class CoursesController extends Controller
     {
         try {
             $user = User::find(Auth::id());
+
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
+                Log::info(['user', $user->id]);
+
                 $staff = Staff::where('user_id', $user->id)->first();
+                Log::info(['isStaff', $staff]);
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
+                    Log::info(['ownerでっせ', $ownerId]);
                 } else {
                     $ownerId = $staff->owner_id;
                 }
+                Log::info(['ownerId', $ownerId]);
 
                 $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
@@ -36,6 +44,7 @@ class CoursesController extends Controller
                     return  Course::where('owner_id', $ownerId)->get();
                 });
 
+                Log::info(['courses', $courses]);
 
                 if ($courses->isEmpty()) {
                     return response()->json([
@@ -74,7 +83,7 @@ class CoursesController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
@@ -146,7 +155,7 @@ class CoursesController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }

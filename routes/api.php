@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\Roles;
+use Illuminate\Support\Facades\Http;
 
 Route::middleware('api')->group(
     function () {
@@ -28,6 +29,18 @@ Route::middleware('api')->group(
             return response()->json([
                 'message' => 'CSRF token has been set successfully.',
             ]);
+        });
+
+
+        Route::get('/search/{zipCode}', function ($code) {
+
+            $decodedCode = urldecode($code);
+
+            $response = Http::get('https://zipcloud.ibsnet.co.jp/api/search', [
+                'zipcode' => $decodedCode,
+            ]);
+
+            return response()->json($response->json());
         });
 
         //購入者ownerがuser登録するときの処理

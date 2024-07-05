@@ -24,7 +24,7 @@ class StockCategoriesController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
@@ -74,7 +74,7 @@ class StockCategoriesController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
@@ -155,7 +155,7 @@ class StockCategoriesController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }

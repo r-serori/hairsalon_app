@@ -34,7 +34,7 @@ class CustomersController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
@@ -77,7 +77,9 @@ class CustomersController extends Controller
 
                 if ($staffs->isEmpty()) {
                     $owner = Owner::find($ownerId);
-                    $users = User::find($owner->user_id);
+                    $owUser = User::find($owner->user_id);
+                    $responseUsers =
+                        ['id' => $owUser->id, 'name' => $owUser->name];
                 } else {
                     $owner = Owner::find($ownerId);
                     // Log::info('owner', $owner->toArray());
@@ -87,12 +89,14 @@ class CustomersController extends Controller
                     // Log::info('staff', $staff->toArray());
                     $users = User::whereIn('id', $staffs)->get();
                     // Log::info('users', $users->toArray());
+                    $responseUsers =
+                        $users->map(function ($user) {
+                            return ['id' => $user->id, 'name' => $user->name];
+                        });
                 }
 
 
-                $responseUsers = $users->map(function ($user) {
-                    return ['id' => $user->id, 'name' => $user->name];
-                });
+                Log::info(['responseUsers', $responseUsers]);
 
                 $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
 
@@ -153,7 +157,7 @@ class CustomersController extends Controller
                 }
             } else {
                 return response()->json([
-                    "message" => "あなたには権限が！！"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
@@ -187,7 +191,7 @@ class CustomersController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
@@ -391,7 +395,7 @@ class CustomersController extends Controller
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }

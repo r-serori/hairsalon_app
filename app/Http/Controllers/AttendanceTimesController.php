@@ -250,7 +250,7 @@ class AttendanceTimesController extends Controller
                         $ownerId = Owner::where(
                             'user_id',
                             $request->user_id
-                        )->first()->value('id');
+                        )->value('id');
                     } else {
                         $ownerId = $staff->owner_id;
                     }
@@ -328,7 +328,7 @@ class AttendanceTimesController extends Controller
                 $staff = Staff::where('user_id', $request->user_id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $request->user_id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
@@ -406,7 +406,7 @@ class AttendanceTimesController extends Controller
                     $staff = Staff::where('user_id', $request->user_id)->first();
 
                     if (empty($staff)) {
-                        $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                        $ownerId = Owner::where('user_id', $request->user_id)->value('id');
                     } else {
                         $ownerId = $staff->owner_id;
                     }
@@ -472,7 +472,7 @@ class AttendanceTimesController extends Controller
                     $staff = Staff::where('user_id', $request->user_id)->first();
 
                     if (empty($staff)) {
-                        $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                        $ownerId = Owner::where('user_id', $request->user_id)->value('id');
                     } else {
                         $ownerId = $staff->owner_id;
                     }
@@ -547,7 +547,7 @@ class AttendanceTimesController extends Controller
                 $staff = Staff::where('user_id', $request->user_id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $request->user_id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
@@ -609,7 +609,7 @@ class AttendanceTimesController extends Controller
                 $staff = Staff::where('user_id', $request->user_id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $request->user_id)->first()->value('id');
+                    $ownerId = Owner::where('user_id', $request->user_id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
