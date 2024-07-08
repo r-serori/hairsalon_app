@@ -102,7 +102,5 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         //レート制限の設定
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        //パスワードリセット時などにメールアドレスが合っているかどうかを確認するミドルウェア
-        'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
     ];
 }

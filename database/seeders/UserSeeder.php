@@ -26,6 +26,7 @@ class UserSeeder extends Seeder
             'isAttendance' => 0,
             'created_at' => now(),
             'updated_at' => now(),
+            'email_verified_at' => now(), // Optional: if you want to mark the user as verified
         ]);
         DB::table('users')->insert([
             'name' => 'manager123',
@@ -36,6 +37,7 @@ class UserSeeder extends Seeder
             'isAttendance' => 0,
             'created_at' => now(),
             'updated_at' => now(),
+            'email_verified_at' => now(), // Optional: if you want to mark the user as verified
         ]);
         DB::table('users')->insert([
             'name' => 'staff123',
@@ -46,6 +48,7 @@ class UserSeeder extends Seeder
             'isAttendance' => 0,
             'created_at' => now(),
             'updated_at' => now(),
+            'email_verified_at' => now(), // Optional: if you want to mark the user as verified
         ]);
     }
 }

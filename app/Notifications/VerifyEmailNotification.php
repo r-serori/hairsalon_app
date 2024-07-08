@@ -70,12 +70,15 @@ class VerifyEmailNotification extends Notification
      */
     protected function verificationUrl($notifiable)
     {
-        return URL::temporarySignedRoute(
-            'verification.verify', // ルート名
-            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)), // リンクの有効期限
-            ['id' => $notifiable->getKey(), 'hash' => sha1($notifiable->getEmailForVerification())] // パラメータ
-        );
+        // return URL::temporarySignedRoute(
+        //     'verification.verify', // ルート名
+        //     Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)), // リンクの有効期限
+        //     ['id' => $notifiable->getKey(), 'hash' => sha1($notifiable->getEmailForVerification())] // パラメータ
+        // );
+
+        return 'http://localhost:3000/auth/emailVerify/' . $notifiable->getKey() . '/' . sha1($notifiable->getEmailForVerification());
     }
+
 
     /**
      * Get the array representation of the notification.

@@ -130,6 +130,10 @@ Route::middleware('api')->group(
                 ->name('verification.send');
 
             Route::prefix('/user')->group(function () {
+
+                Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+                    ->middleware(['auth', 'signed']);
+
                 //ログアウト処理 Gate,ALL
                 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
 

@@ -20,7 +20,8 @@ return new class extends Migration
             $table->string('password', 100)->nullable(false);
             $table->string('role', 50)->nullable(false);
             $table->boolean('isAttendance')->default(0)->nullable(false);
-            // $table->rememberToken();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->rememberToken();
             $table->timestamps();
         });
     }
