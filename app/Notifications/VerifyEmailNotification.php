@@ -58,7 +58,7 @@ class VerifyEmailNotification extends Notification
             ->line('ご登録ありがとうございます！Serori.Rです！')
             ->line('この度は、HairSalonApp にご登録いただき、誠にありがとうございます！')
             ->line('以下のボタンをクリックしてメールアドレスを確認してください。')
-            ->action('メールアドレスを確認する', $this->verificationUrl($notifiable))
+            ->action('メールアドレスを承認する', $this->verificationUrl($notifiable))
             ->line('もし心当たりがない場合は、このメールを無視してください。');
     }
 

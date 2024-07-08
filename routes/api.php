@@ -124,6 +124,14 @@ Route::middleware('api')->group(
                 }
             });
 
+            Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
+                ->middleware(['auth', 'signed', 'throttle:6,1'])
+                ->name('verification.verify');
+
+            Route::post('/email/verification-notification/{user_id}', [EmailVerificationNotificationController::class, 'store'])
+                ->middleware(['auth', 'throttle:6,1'])
+                ->name('verification.send');
+
             Route::prefix('/user')->group(function () {
                 //ログアウト処理 Gate,ALL
                 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
@@ -140,14 +148,6 @@ Route::middleware('api')->group(
                 //パスワードリセット　Gate,ALL
                 Route::post('/resetPassword', [ResetUserPassword::class, 'reset'])
                     ->name('password.store');
-
-                Route::get('/verify-email', VerifyEmailController::class)
-                    ->middleware(['auth', 'signed', 'throttle:6,1'])
-                    ->name('verification.verify');
-
-                Route::post('/email/verification-notification/{user_id}', [EmailVerificationNotificationController::class, 'store'])
-                    ->middleware(['auth', 'throttle:6,1'])
-                    ->name('verification.send');
             });
         });
 

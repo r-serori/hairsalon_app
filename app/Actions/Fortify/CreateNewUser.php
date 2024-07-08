@@ -54,11 +54,6 @@ class CreateNewUser implements CreatesNewUsers
             ]);
 
 
-            // ユーザーにロールを付与   
-
-
-
-
 
             return $user;
         } catch (\Exception $e) {
