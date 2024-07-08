@@ -20,6 +20,7 @@ use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class CustomersController extends Controller
 {
@@ -169,6 +170,7 @@ class CustomersController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -211,32 +213,11 @@ class CustomersController extends Controller
                 Cache::forget($customersCacheKey);
 
                 // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['course_id'];
+                $optionIds = $validatedData['option_id'];
+                $merchandiseIds = $validatedData['merchandise_id'];
+                $hairstyleIds = $validatedData['hairstyle_id'];
 
-                if ($request->course_id == null || empty($request->course_id)) {
-                    $courseIds = [1];
-                } else {
-                    $courseIds = $validatedData['course_id'];
-                }
-
-                if ($request->option_id == null || empty($request->option_id)) {
-                    $optionIds = [1];
-                } else {
-                    $optionIds = $validatedData['option_id'];
-                }
-
-
-                if ($request->merchandise_id == null || empty($request->merchandise_id)) {
-                    $merchandiseIds = [1];
-                } else {
-                    $merchandiseIds = $validatedData['merchandise_id'];
-                }
-
-                if ($request->hairstyle_id == null || empty($request->hairstyle_id)) {
-                    $hairstyleIds = [1];
-                } else {
-                    $hairstyleIds = $validatedData['
-                    hairstyle_id'];
-                }
                 $userIds = $validatedData['user_id'];
 
                 $pivotData = [];
@@ -311,6 +292,8 @@ class CustomersController extends Controller
 
                 $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
+                DB::commit();
+
                 return
                     response()->json(
                         [
@@ -331,6 +314,7 @@ class CustomersController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => $e->getMessage()
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -359,7 +343,7 @@ class CustomersController extends Controller
 
     public function update(Request $request)
     {
-
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -386,11 +370,10 @@ class CustomersController extends Controller
 
                 // 顧客データを更新
                 $customer->customer_name = $validatedData['customer_name'];
-                $customer->phone_number = $validatedData['phone_number'];
-                $customer->remarks = $validatedData['remarks'] ?? '無し';
+                $customer->phone_number = $validatedData['phone_number'] ?? "";
+                $customer->remarks = $validatedData['remarks'] ?? "";
 
                 $customer->save();
-
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -407,32 +390,10 @@ class CustomersController extends Controller
 
 
                 // 中間テーブルにデータを挿入
-
-                if ($request->course_id == null || empty($request->course_id)) {
-                    $courseIds = [1];
-                } else {
-                    $courseIds = $validatedData['course_id'];
-                }
-
-                if ($request->option_id == null || empty($request->option_id)) {
-                    $optionIds = [1];
-                } else {
-                    $optionIds = $validatedData['option_id'];
-                }
-
-
-                if ($request->merchandise_id == null || empty($request->merchandise_id)) {
-                    $merchandiseIds = [1];
-                } else {
-                    $merchandiseIds = $validatedData['merchandise_id'];
-                }
-
-                if ($request->hairstyle_id == null || empty($request->hairstyle_id)) {
-                    $hairstyleIds = [1];
-                } else {
-                    $hairstyleIds = $validatedData['
-                    hairstyle_id'];
-                }
+                $courseIds = $validatedData['course_id'];
+                $optionIds = $validatedData['option_id'];
+                $merchandiseIds = $validatedData['merchandise_id'];
+                $hairstyleIds = $validatedData['hairstyle_id'];
                 $userIds = $validatedData['user_id'];
 
 
@@ -508,6 +469,8 @@ class CustomersController extends Controller
 
                 $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
+                DB::commit();
+
 
                 return
                     response()->json([
@@ -525,6 +488,7 @@ class CustomersController extends Controller
             }
         } catch (\Exception $e) {
             Log::error($e->getMessage());
+            DB::rollBack();
             return response()->json([
                 "message" => '顧客情報更新時にエラーが発生しました！
                 もう一度お試しください！'
@@ -534,12 +498,26 @@ class CustomersController extends Controller
 
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
+
+                $customersCacheKey = 'owner_' . $ownerId . 'customers';
+
+                Cache::forget($customersCacheKey);
+
+
+
                 // 指定されたIDの顧客データを取得
                 $customer = Customer::find($request->id);
+
+
+
+
                 if (!$customer) {
+                    DB::rollBack();
                     return response()->json([
                         'message' =>
                         '顧客が見つかりません！'
@@ -548,11 +526,8 @@ class CustomersController extends Controller
                 // 顧客データを削除
                 $customer->delete();
 
-                $ownerId = Owner::find($user->id)->value('id');
 
-                $customersCacheKey = 'owner_' . $ownerId . 'customers';
-
-                Cache::forget($customersCacheKey);
+                DB::commit();
 
 
                 return response()->json([
@@ -560,10 +535,11 @@ class CustomersController extends Controller
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
-                    "message" => "あなたには権限が！！"
+                    "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "顧客情報削除時にエラーが発生しました！
                 もう一度お試しください！"

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class DailySalesController extends Controller
 {
@@ -21,6 +24,10 @@ class DailySalesController extends Controller
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
                 $ownerId = Owner::where('user_id', $user->id)->value('id');
+
+                $currentYear = Carbon::now()->year;
+
+
 
                 $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
@@ -63,6 +70,7 @@ class DailySalesController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -86,6 +94,8 @@ class DailySalesController extends Controller
 
                 Cache::forget($dailySalesCacheKey);
 
+                DB::commit();
+
 
                 return response()->json([
                     "dailySale" => $daily_sales
@@ -96,6 +106,8 @@ class DailySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            Log::error($e);
+            DB::rollBack();
             return response()->json([
                 "message" => "日次売上の作成に失敗しました！
                 もう一度お試しください！"
@@ -127,6 +139,7 @@ class DailySalesController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -146,6 +159,9 @@ class DailySalesController extends Controller
                 $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
                 Cache::forget($dailySalesCacheKey);
+
+                DB::commit();
+
                 return response()->json(
                     [
                         "dailySale" => $daily_sale
@@ -160,6 +176,7 @@ class DailySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "日次売上の更新に失敗しました！
                 もう一度お試しください！"
@@ -169,6 +186,7 @@ class DailySalesController extends Controller
 
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -182,11 +200,15 @@ class DailySalesController extends Controller
                 }
                 $daily_sale->delete();
 
+
+
                 $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
                 Cache::forget($dailySalesCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -196,6 +218,7 @@ class DailySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 '日次売上の削除に失敗しました！

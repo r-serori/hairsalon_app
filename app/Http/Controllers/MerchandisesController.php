@@ -12,6 +12,7 @@ use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
 
 class MerchandisesController extends Controller
 {
@@ -65,6 +66,7 @@ class MerchandisesController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -90,6 +92,8 @@ class MerchandisesController extends Controller
                 $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
                 Cache::forget($merchandisesCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "merchandise" => $merchandise
 
@@ -100,6 +104,7 @@ class MerchandisesController extends Controller
                 ], 500);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "物販商品の作成に失敗しました！
                 もう一度お試しください！"
@@ -127,6 +132,7 @@ class MerchandisesController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -156,6 +162,8 @@ class MerchandisesController extends Controller
 
                 Cache::forget($merchandisesCacheKey);
 
+                DB::commit();
+
                 return response()->json(
                     [
                         "merchandise" => $merchandise,
@@ -168,6 +176,7 @@ class MerchandisesController extends Controller
                 ], 500);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "物販商品の更新に失敗しました！
                 もう一度お試しください！"
@@ -177,6 +186,7 @@ class MerchandisesController extends Controller
 
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -196,6 +206,8 @@ class MerchandisesController extends Controller
                 $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
 
                 Cache::forget($merchandisesCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -205,6 +217,7 @@ class MerchandisesController extends Controller
                 ], 500);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 '物販商品の削除に失敗しました！

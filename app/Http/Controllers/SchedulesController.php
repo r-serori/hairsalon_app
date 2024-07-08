@@ -20,11 +20,12 @@ use App\Models\CustomerUser;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
-
 use Illuminate\Support\Facades\Auth;
 use App\Enums\Roles;
+use Illuminate\Log\Logger;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SchedulesController extends Controller
 {
@@ -98,7 +99,8 @@ class SchedulesController extends Controller
 
                 if ($staffs->isEmpty()) {
                     $owner = Owner::find($ownerId);
-                    $users = User::find($owner->user_id);
+                    $resUser = User::find($owner->user_id);
+                    $responseUsers = ['id' => $resUser->id, 'name' => $resUser->name];
                 } else {
                     $owner = Owner::find($ownerId);
                     // Log::info('owner', $owner->toArray());
@@ -108,11 +110,11 @@ class SchedulesController extends Controller
                     // Log::info('staff', $staff->toArray());
                     $users = User::whereIn('id', $staffs)->get();
                     // Log::info('users', $users->toArray());
+                    $responseUsers = $users->map(function ($user) {
+                        return ['id' => $user->id, 'name' => $user->name];
+                    });
                 }
 
-                $responseUsers = $users->map(function ($user) {
-                    return ['id' => $user->id, 'name' => $user->name];
-                });
 
                 $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
 
@@ -137,6 +139,7 @@ class SchedulesController extends Controller
                 $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
                     return  HairstyleCustomer::where('owner_id', $ownerId)->get();
                 });
+
                 $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
                 if ($selectSchedules->isEmpty()) {
@@ -181,10 +184,10 @@ class SchedulesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            Log::error($e);
             return response()->json([
                 'message' =>
-                'スケジュールが見つかりません！
-                もう一度お試しください！'
+                'スケジュールが見つかりません!もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
@@ -334,6 +337,7 @@ class SchedulesController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -364,6 +368,9 @@ class SchedulesController extends Controller
 
                 Cache::forget($schedulesCacheKey);
 
+
+                DB::commit();
+
                 return response()->json([
                     'schedule' => $schedule,
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -374,6 +381,7 @@ class SchedulesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 'スケジュールの作成に失敗しました！
@@ -408,6 +416,7 @@ class SchedulesController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -441,6 +450,8 @@ class SchedulesController extends Controller
 
                 Cache::forget($schedulesCacheKey);
 
+                DB::commit();
+
                 return response()->json(
                     [
                         "schedule" => $schedule
@@ -456,6 +467,7 @@ class SchedulesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 'スケジュールが見つかりません！
@@ -466,6 +478,7 @@ class SchedulesController extends Controller
 
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -492,6 +505,8 @@ class SchedulesController extends Controller
 
                 Cache::forget($schedulesCacheKey);
 
+                DB::commit();
+
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -502,6 +517,7 @@ class SchedulesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 'スケジュールの削除に失敗しました！
@@ -512,6 +528,7 @@ class SchedulesController extends Controller
 
     public function double(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -554,32 +571,11 @@ class SchedulesController extends Controller
 
 
                 // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['course_id'];
+                $optionIds = $validatedData['option_id'];
+                $merchandiseIds = $validatedData['merchandise_id'];
+                $hairstyleIds = $validatedData['hairstyle_id'];
 
-                if ($request->course_id == null || empty($request->course_id)) {
-                    $courseIds = [1];
-                } else {
-                    $courseIds = $validatedData['course_id'];
-                }
-
-                if ($request->option_id == null || empty($request->option_id)) {
-                    $optionIds = [1];
-                } else {
-                    $optionIds = $validatedData['option_id'];
-                }
-
-
-                if ($request->merchandise_id == null || empty($request->merchandise_id)) {
-                    $merchandiseIds = [1];
-                } else {
-                    $merchandiseIds = $validatedData['merchandise_id'];
-                }
-
-                if ($request->hairstyle_id == null || empty($request->hairstyle_id)) {
-                    $hairstyleIds = [1];
-                } else {
-                    $hairstyleIds = $validatedData['
-                    hairstyle_id'];
-                }
                 $userIds = $validatedData['user_id'];
 
 
@@ -666,6 +662,8 @@ class SchedulesController extends Controller
 
                 Cache::forget($schedulesCacheKey);
 
+                DB::commit();
+
                 return response()->json(
                     [
                         "customer" => $customer,
@@ -687,6 +685,7 @@ class SchedulesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 'スケジュールの作成に失敗しました！
@@ -699,6 +698,7 @@ class SchedulesController extends Controller
 
     public function doubleUpdate(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -733,8 +733,8 @@ class SchedulesController extends Controller
                 $customer = Customer::find($customerId);
 
                 $customer->customer_name = $validatedData['customer_name'];
-                $customer->phone_number = $validatedData['phone_number'] ?? '0000000000';
-                $customer->remarks = $validatedData['remarks'] ?? '無し';
+                $customer->phone_number = $validatedData['phone_number'];
+                $customer->remarks = $validatedData['remarks'];
 
                 $customer->save();
 
@@ -744,32 +744,10 @@ class SchedulesController extends Controller
 
 
                 // 中間テーブルにデータを挿入
-
-                if ($request->course_id == null || empty($request->course_id)) {
-                    $courseIds = [1];
-                } else {
-                    $courseIds = $validatedData['course_id'];
-                }
-
-                if ($request->option_id == null || empty($request->option_id)) {
-                    $optionIds = [1];
-                } else {
-                    $optionIds = $validatedData['option_id'];
-                }
-
-
-                if ($request->merchandise_id == null || empty($request->merchandise_id)) {
-                    $merchandiseIds = [1];
-                } else {
-                    $merchandiseIds = $validatedData['merchandise_id'];
-                }
-
-                if ($request->hairstyle_id == null || empty($request->hairstyle_id)) {
-                    $hairstyleIds = [1];
-                } else {
-                    $hairstyleIds = $validatedData['
-                    hairstyle_id'];
-                }
+                $courseIds = $validatedData['course_id'];
+                $optionIds = $validatedData['option_id'];
+                $merchandiseIds = $validatedData['merchandise_id'];
+                $hairstyleIds = $validatedData['hairstyle_id'];
                 $userIds = $validatedData['user_id'];
 
 
@@ -858,6 +836,8 @@ class SchedulesController extends Controller
 
                 Cache::forget($schedulesCacheKey);
 
+                DB::commit();
+
 
                 return response()->json(
                     [
@@ -880,6 +860,7 @@ class SchedulesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 'スケジュールの更新に失敗しました！
@@ -891,6 +872,7 @@ class SchedulesController extends Controller
 
     public function customerOnlyUpdate(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -924,8 +906,8 @@ class SchedulesController extends Controller
                 $customer = Customer::find($customerId);
 
                 $customer->customer_name = $validatedData['customer_name'];
-                $customer->phone_number = $validatedData['phone_number'] ?? '0000000000';
-                $customer->remarks = $validatedData['remarks'] ?? '無し';
+                $customer->phone_number = $validatedData['phone_number'];
+                $customer->remarks = $validatedData['remarks'];
 
 
                 $customer->save();
@@ -938,32 +920,11 @@ class SchedulesController extends Controller
 
 
                 // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['course_id'];
+                $optionIds = $validatedData['option_id'];
+                $merchandiseIds = $validatedData['merchandise_id'];
+                $hairstyleIds = $validatedData['hairstyle_id'];
 
-                if ($request->course_id == null || empty($request->course_id)) {
-                    $courseIds = [1];
-                } else {
-                    $courseIds = $validatedData['course_id'];
-                }
-
-                if ($request->option_id == null || empty($request->option_id)) {
-                    $optionIds = [1];
-                } else {
-                    $optionIds = $validatedData['option_id'];
-                }
-
-
-                if ($request->merchandise_id == null || empty($request->merchandise_id)) {
-                    $merchandiseIds = [1];
-                } else {
-                    $merchandiseIds = $validatedData['merchandise_id'];
-                }
-
-                if ($request->hairstyle_id == null || empty($request->hairstyle_id)) {
-                    $hairstyleIds = [1];
-                } else {
-                    $hairstyleIds = $validatedData['
-                    hairstyle_id'];
-                }
                 $userIds = $validatedData['user_id'];
 
                 $pivotData = [];
@@ -1052,6 +1013,8 @@ class SchedulesController extends Controller
 
                 Cache::forget($schedulesCacheKey);
 
+                DB::commit();
+
 
                 return response()->json(
                     [
@@ -1074,6 +1037,7 @@ class SchedulesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 'スケジュールの更新に失敗しました！

@@ -10,6 +10,7 @@ use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
 
 class YearlySalesController extends Controller
 {
@@ -56,6 +57,7 @@ class YearlySalesController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -74,6 +76,8 @@ class YearlySalesController extends Controller
 
                 Cache::forget($yearlySalesCacheKey);
 
+                DB::commit();
+
                 return response()->json([
                     "yearlySale" => $yearly_sale
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -83,6 +87,7 @@ class YearlySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "年次売上の作成に失敗しました！
                 もう一度お試しください！"
@@ -116,6 +121,7 @@ class YearlySalesController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -134,6 +140,8 @@ class YearlySalesController extends Controller
 
                 Cache::forget($yearlySalesCacheKey);
 
+                DB::commit();
+
                 return response()->json(
                     [
                         "yearlySale" => $yearly_sale
@@ -148,6 +156,7 @@ class YearlySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 '年次売上が見つかりません！
@@ -158,6 +167,7 @@ class YearlySalesController extends Controller
 
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -176,6 +186,8 @@ class YearlySalesController extends Controller
                 $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
                 Cache::forget($yearlySalesCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -186,10 +198,10 @@ class YearlySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
-                '年次売上が見つかりません！
-            もう一度お試しください！'
+                '年次売上が見つかりません！もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

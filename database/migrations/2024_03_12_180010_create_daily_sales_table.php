@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('daily_sales', function (Blueprint $table) {
-            $table->id()->unique();
+            $table->id();
             $table->string('date', 30)->nullable(false);
             $table->unsignedInteger('daily_sales')->nullable(false);
             $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);

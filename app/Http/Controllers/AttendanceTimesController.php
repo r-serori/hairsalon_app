@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
 
 class AttendanceTimesController extends Controller
 {
@@ -200,6 +201,7 @@ class AttendanceTimesController extends Controller
 
     public function startTimeShot(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
@@ -277,6 +279,8 @@ class AttendanceTimesController extends Controller
 
                     $user->save();
 
+                    DB::commit();
+
                     return
                         response()->json(
                             [
@@ -294,6 +298,7 @@ class AttendanceTimesController extends Controller
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => '出勤時間と写真の登録に失敗しました！
                 もう一度お試しください！'
@@ -303,6 +308,7 @@ class AttendanceTimesController extends Controller
 
     public function pleaseEditEndTime(Request $request)
     {
+        DB::beginTransaction();
 
         try {
             $user = User::find(Auth::id());
@@ -348,6 +354,7 @@ class AttendanceTimesController extends Controller
                     'isAttendance',
                 ]);
 
+                DB::commit();
 
                 return response()->json(
                     [
@@ -367,6 +374,7 @@ class AttendanceTimesController extends Controller
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => '退勤時間と写真の登録に失敗しました！
                 もう一度お試しください！'
@@ -377,7 +385,7 @@ class AttendanceTimesController extends Controller
 
     public function endTimeShot(Request $request)
     {
-
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
@@ -428,6 +436,10 @@ class AttendanceTimesController extends Controller
                     ]);
 
                     $user->save();
+
+                    DB::commit();
+
+
                     return
                         response()->json(
                             [
@@ -493,6 +505,7 @@ class AttendanceTimesController extends Controller
                         'isAttendance',
                     ]);
 
+                    DB::commit();
                     return
                         response()->json(
 
@@ -511,6 +524,7 @@ class AttendanceTimesController extends Controller
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => '退勤時間と写真の登録に失敗しました！  
                 もう一度お試しください！'
@@ -520,6 +534,7 @@ class AttendanceTimesController extends Controller
 
     public function updateStartTime(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -558,6 +573,7 @@ class AttendanceTimesController extends Controller
 
                 Cache::forget($attendanceTimesCacheKey);
 
+                DB::commit();
 
                 return
                     response()->json(
@@ -574,6 +590,7 @@ class AttendanceTimesController extends Controller
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => '出勤時間と写真の更新に失敗しました！
                 もう一度お試しください！    '
@@ -583,6 +600,7 @@ class AttendanceTimesController extends Controller
 
     public function updateEndTime(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -619,6 +637,8 @@ class AttendanceTimesController extends Controller
 
                 Cache::forget($attendanceTimesCacheKey);
 
+                DB::commit();
+
                 return
                     response()->json(
                         [
@@ -634,6 +654,7 @@ class AttendanceTimesController extends Controller
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => '退勤時間と写真の更新に失敗しました！
                 もう一度お試しください！'
@@ -644,7 +665,7 @@ class AttendanceTimesController extends Controller
 
     public function destroy(Request $request)
     {
-
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -674,7 +695,7 @@ class AttendanceTimesController extends Controller
 
                 Cache::forget($attendanceTimesCacheKey);
 
-                // 削除後に index 画面にリダイレクトする
+                DB::commit();
 
                 return
                     response()->json(
@@ -691,6 +712,7 @@ class AttendanceTimesController extends Controller
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::alert("error", ["error", $e]);
             return response()->json([
                 'message' => '勤怠時間の削除に失敗しました！

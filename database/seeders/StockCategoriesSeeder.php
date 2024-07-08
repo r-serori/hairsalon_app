@@ -16,33 +16,39 @@ class StockCategoriesSeeder extends Seeder
     public function run()
     {
         StockCategory::create([
-            'category' => '化粧品', 'owner_id' => 1,
+            'category' => '化粧品',
+            'owner_id' => 1,
             'created_at' => now(), // Add this line
             'updated_at' => now(),
 
         ]);
         StockCategory::create([
-            'category' => '頭髪系', 'owner_id' => 1,
+            'category' => '頭髪系',
+            'owner_id' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         StockCategory::create([
-            'category' => '整髪料', 'owner_id' => 1,
+            'category' => '整髪料',
+            'owner_id' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         StockCategory::create([
-            'category' => 'カラー材', 'owner_id' => 1,
+            'category' => 'カラー材',
+            'owner_id' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         StockCategory::create([
-            'category' => 'パーマ材', 'owner_id' => 1,
+            'category' => 'パーマ材',
+            'owner_id' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
         StockCategory::create([
-            'category' => '顧客飲料', 'owner_id' => 1,
+            'category' => '顧客飲料',
+            'owner_id' => 1,
             'created_at' => now(),
             'updated_at' => now(),
         ]);

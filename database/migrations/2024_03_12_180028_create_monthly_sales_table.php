@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('monthly_sales', function (Blueprint $table) {
-            $table->id()->unique();
+            $table->id();
             $table->string('year_month', 20)->nullable(false);
             $table->unsignedInteger('monthly_sales')->nullable(false);
             $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);

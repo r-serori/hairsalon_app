@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('attendance_times', function (Blueprint $table) {
-            $table->id()->unique();
+            $table->id();
             $table->string('start_time', 30)->nullable();
             $table->string('end_time', 30)->nullable();
             $table->string('start_photo_path', 255)->nullable();

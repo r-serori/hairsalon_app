@@ -14,6 +14,7 @@ use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
 
 class HairstylesController extends Controller
 {
@@ -66,6 +67,7 @@ class HairstylesController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -89,6 +91,8 @@ class HairstylesController extends Controller
                 $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
                 Cache::forget($hairstylesCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "hairstyle" => $hairstyle
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -98,6 +102,7 @@ class HairstylesController extends Controller
                 ], 500);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "ヘアスタイルの作成に失敗しました！
                 もう一度お試しください！"
@@ -130,6 +135,7 @@ class HairstylesController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -153,6 +159,8 @@ class HairstylesController extends Controller
                 $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
                 Cache::forget($hairstylesCacheKey);
+
+                DB::commit();
                 return response()->json(
                     [
                         "hairstyle" => $hairstyle
@@ -165,6 +173,7 @@ class HairstylesController extends Controller
                 ], 500);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "ヘアスタイルの更新に失敗しました！
                 もう一度お試しください！"
@@ -174,6 +183,7 @@ class HairstylesController extends Controller
 
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
@@ -191,6 +201,8 @@ class HairstylesController extends Controller
                 $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
 
                 Cache::forget($hairstylesCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -200,6 +212,7 @@ class HairstylesController extends Controller
                 ], 500);
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'ヘアスタイルの削除に失敗しました！
                 もう一度お試しください！'

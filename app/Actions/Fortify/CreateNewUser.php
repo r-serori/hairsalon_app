@@ -58,6 +58,8 @@ class CreateNewUser implements CreatesNewUsers
 
 
 
+
+
             return $user;
         } catch (\Exception $e) {
             Log::error('ユーザー登録処理中にエラーが発生しました。');

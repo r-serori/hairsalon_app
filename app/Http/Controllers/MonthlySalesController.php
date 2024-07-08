@@ -12,6 +12,7 @@ use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
 
 
 class MonthlySalesController extends Controller
@@ -61,6 +62,7 @@ class MonthlySalesController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -82,6 +84,8 @@ class MonthlySalesController extends Controller
                 $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
                 Cache::forget($monthlySalesCacheKey);
+
+                DB::commit();
                 // 成功したらリダイレクト
                 return response()->json([
                     "monthlySale" => $monthly_sales
@@ -92,6 +96,7 @@ class MonthlySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "月次売上の作成に失敗しました！
                 もう一度お試しください！"
@@ -128,6 +133,7 @@ class MonthlySalesController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -150,6 +156,8 @@ class MonthlySalesController extends Controller
                 $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
                 Cache::forget($monthlySalesCacheKey);
+
+                DB::commit();
                 // 成功したらリダイレクト
                 return response()->json(
                     [
@@ -165,6 +173,7 @@ class MonthlySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "月次売上の更新に失敗しました！
                 もう一度お試しください！"
@@ -174,6 +183,7 @@ class MonthlySalesController extends Controller
 
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -193,6 +203,8 @@ class MonthlySalesController extends Controller
                 $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
                 Cache::forget($monthlySalesCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "deleteId" => $request->id
 
@@ -203,6 +215,7 @@ class MonthlySalesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 '月次売上が見つかりません！

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
 
 class OptionsController extends Controller
 {
@@ -63,6 +64,7 @@ class OptionsController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -89,6 +91,8 @@ class OptionsController extends Controller
                 $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
                 Cache::forget($optionsCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "option" => $option
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -98,6 +102,7 @@ class OptionsController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "オプションの作成に失敗しました！
                 もう一度お試しください！"
@@ -123,6 +128,7 @@ class OptionsController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
 
         try {
             $user = User::find(Auth::id());
@@ -149,6 +155,8 @@ class OptionsController extends Controller
                 $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
                 Cache::forget($optionsCacheKey);
+
+                DB::commit();
                 return response()->json(
                     [
                         "option" => $option
@@ -163,6 +171,7 @@ class OptionsController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "オプションの更新に失敗しました！
                 もう一度お試しください！"
@@ -172,7 +181,7 @@ class OptionsController extends Controller
 
     public function destroy(Request $request)
     {
-
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -189,6 +198,8 @@ class OptionsController extends Controller
                 $optionsCacheKey = 'owner_' . $ownerId . 'options';
 
                 Cache::forget($optionsCacheKey);
+
+                DB::commit();
                 return response()->json([
                     'message' => 'オプションを削除しました！
                     もう一度お試しください！',
@@ -200,6 +211,7 @@ class OptionsController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' =>
                 'オプションが見つかりません！

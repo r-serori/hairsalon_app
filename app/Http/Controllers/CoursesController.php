@@ -12,6 +12,7 @@ use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\Log;
 use PgSql\Lob;
+use Illuminate\Support\Facades\DB;
 
 class CoursesController extends Controller
 {
@@ -72,6 +73,7 @@ class CoursesController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -98,15 +100,19 @@ class CoursesController extends Controller
 
                 Cache::forget($coursesCacheKey);
 
+                DB::commit();
+
                 return response()->json([
                     "course" => $course
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
+
                 return response()->json([
                     "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "コースの作成に失敗しました！
                 もう一度お試しください！"
@@ -137,6 +143,7 @@ class CoursesController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -164,6 +171,8 @@ class CoursesController extends Controller
 
                 Cache::forget($coursesCacheKey);
 
+                DB::commit();
+
                 return response()->json(
                     [
                         "course" => $course
@@ -176,6 +185,7 @@ class CoursesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "コースの更新に失敗しました！
                 もう一度お試しください！"
@@ -184,6 +194,7 @@ class CoursesController extends Controller
     }
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -203,6 +214,8 @@ class CoursesController extends Controller
 
                 Cache::forget($coursesCacheKey);
 
+                DB::commit();
+
 
                 return response()->json(
                     [
@@ -216,6 +229,7 @@ class CoursesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "コースの削除に失敗しました！
                 もう一度お試しください！"

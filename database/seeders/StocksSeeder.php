@@ -46,7 +46,7 @@ class StocksSeeder extends Seeder
             'remarks' => '無し',
             'supplier' => '株式会社B',
             "notice" => "10",
-            'stock_category_id' => 1,
+            'stock_category_id' => null,
             'owner_id' => 1,
             'created_at' => now(),
             "updated_at" => now(),

@@ -12,6 +12,7 @@ use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
+use Illuminate\Support\Facades\DB;
 
 class StockCategoriesController extends Controller
 {
@@ -63,6 +64,7 @@ class StockCategoriesController extends Controller
 
     public function store(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -89,6 +91,8 @@ class StockCategoriesController extends Controller
 
                 Cache::forget($stockCategoriesCacheKey);
 
+                DB::commit();
+
                 // 成功したらリダイレクト
                 return response()->json([
                     "stockCategory" => $stock_category
@@ -99,6 +103,7 @@ class StockCategoriesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "在庫カテゴリの作成に失敗しました！
                 もう一度お試しください！"
@@ -134,6 +139,7 @@ class StockCategoriesController extends Controller
 
     public function update(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -164,6 +170,8 @@ class StockCategoriesController extends Controller
 
                 Cache::forget($stockCategoriesCacheKey);
 
+                DB::commit();
+
                 // 成功したらリダイレクト
                 return response()->json([
                     "stockCategory" => $stock_category
@@ -174,6 +182,7 @@ class StockCategoriesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 "message" => "在庫カテゴリの更新に失敗しました！
                 もう一度お試しください！"
@@ -183,6 +192,7 @@ class StockCategoriesController extends Controller
 
     public function destroy(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
@@ -206,6 +216,8 @@ class StockCategoriesController extends Controller
                 $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
 
                 Cache::forget($stockCategoriesCacheKey);
+
+                DB::commit();
                 return response()->json([
                     "deleteId" => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -215,6 +227,7 @@ class StockCategoriesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             // エラーが発生した場合は500エラーを返す
             return response()->json([
                 'message' =>

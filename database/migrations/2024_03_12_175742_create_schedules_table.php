@@ -15,7 +15,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('schedules', function (Blueprint $table) {
-            $table->id()->unique();
+            $table->id();
             $table->string('title', 50)->nullable();
             $table->string('start_time', 30)->nullable();
             $table->string('end_time', 30)->nullable();
