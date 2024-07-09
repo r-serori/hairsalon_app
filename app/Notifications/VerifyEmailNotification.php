@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class VerifyEmailNotification extends Notification
 {
@@ -70,16 +71,20 @@ class VerifyEmailNotification extends Notification
      */
     protected function verificationUrl($notifiable)
     {
-        // return URL::temporarySignedRoute(
-        //     'verification.verify', // ルート名
-        //     Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)), // リンクの有効期限
-        //     ['id' => $notifiable->getKey(), 'hash' => sha1($notifiable->getEmailForVerification())] // パラメータ
-        // );
+        // 署名付きURLを生成する
+        $signedUrl = URL::temporarySignedRoute(
+            'verification.verify', // ルート名
+            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)), // リンクの有効期限
+            [
+                'id' => $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification()),
+            ] // パラメータ
+        );
+        Log::info('signedUrl: ' . $signedUrl);
 
-        return 'http://localhost:3000/auth/emailVerify/' . $notifiable->getKey() . '/' . sha1($notifiable->getEmailForVerification());
+        // 署名付きURLをそのまま返す
+        return  $signedUrl;
     }
-
-
     /**
      * Get the array representation of the notification.
      *

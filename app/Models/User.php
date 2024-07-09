@@ -53,6 +53,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
     // 型キャストの設定
     protected $casts = [
         'isAttendance' => 'boolean',
+        'email_verified_at' => 'datetime',
     ];
 
 
@@ -76,6 +77,17 @@ class User extends Authenticatable implements MustVerifyEmailContract
     public function teams()
     {
         return $this->belongsToMany(Team::class)->withPivot('role')->withTimestamps();
+    }
+
+
+    public function getKey()
+    {
+        return $this->id; // 例えば、プライマリーキーが 'id' の場合
+    }
+
+    public function getEmailForVerification()
+    {
+        return $this->email; // ユーザーのメールアドレスを返す例
     }
 
 

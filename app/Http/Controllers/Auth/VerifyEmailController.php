@@ -21,7 +21,7 @@ class VerifyEmailController extends Controller
             if ($request->user()->hasVerifiedEmail()) {
                 return response()->json([
                     'status' => 'success',
-                    'message' => 'メールアドレスの認に成功しました！',
+                    'message' => 'メールアドレスの認証に成功しました！',
                 ], 200);
             }
 

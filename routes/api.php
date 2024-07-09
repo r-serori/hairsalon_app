@@ -132,7 +132,7 @@ Route::middleware('api')->group(
             Route::prefix('/user')->group(function () {
 
                 Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
-                    ->middleware(['auth', 'signed']);
+                    ->middleware(['auth', 'signed'])->name('verification.verify');
 
                 //ログアウト処理 Gate,ALL
                 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
