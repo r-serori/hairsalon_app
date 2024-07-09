@@ -53,11 +53,6 @@ class SchedulesController extends Controller
                     return  Customer::where('owner_id', $ownerId)->get();
                 });
 
-                if ($customers->isEmpty()) {
-                    return response()->json([
-                        "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
 
                 $currentYear = Carbon::now()->year;
 
@@ -68,6 +63,39 @@ class SchedulesController extends Controller
                         ->where('owner_id', $ownerId)
                         ->get();
                 });
+
+                if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
+                    return response()->json([
+                        "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } elseif ($customers->isEmpty() && $selectSchedules->isNotEmpty()) {
+                    $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
+                    // Log::info('staff', $staff->toArray());
+
+                    if ($staffs->isEmpty()) {
+                        $owner = Owner::find($ownerId);
+                        $resUser = User::find($owner->user_id);
+                        $responseUsers = ['id' => $resUser->id, 'name' => $resUser->name];
+                    } else {
+                        $owner = Owner::find($ownerId);
+                        // Log::info('owner', $owner->toArray());
+                        $OwnersUser = User::find($owner->user_id);
+                        // Log::info('user', $user->toArray());
+                        $staffs->push($OwnersUser->id);
+                        // Log::info('staff', $staff->toArray());
+                        $users = User::whereIn('id', $staffs)->get();
+                        // Log::info('users', $users->toArray());
+                        $responseUsers = $users->map(function ($user) {
+                            return ['id' => $user->id, 'name' => $user->name];
+                        });
+                    }
+                    return response()->json([
+                        "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                        'schedules' => $selectSchedules,
+                        'responseUsers' => $responseUsers,
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
 
                 $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
@@ -216,12 +244,6 @@ class SchedulesController extends Controller
                     return  Customer::where('owner_id', $ownerId)->get();
                 });
 
-                if ($customers->isEmpty()) {
-                    return response()->json([
-                        "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-
                 $selectGetYear = $decodeYear;
 
 
@@ -232,6 +254,40 @@ class SchedulesController extends Controller
                         ->where('owner_id', $ownerId)
                         ->get();
                 });
+
+
+                if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
+                    return response()->json([
+                        "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } elseif ($customers->isEmpty() && $selectSchedules->isNotEmpty()) {
+                    $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
+                    // Log::info('staff', $staff->toArray());
+
+                    if ($staffs->isEmpty()) {
+                        $owner = Owner::find($ownerId);
+                        $resUser = User::find($owner->user_id);
+                        $responseUsers = ['id' => $resUser->id, 'name' => $resUser->name];
+                    } else {
+                        $owner = Owner::find($ownerId);
+                        // Log::info('owner', $owner->toArray());
+                        $OwnersUser = User::find($owner->user_id);
+                        // Log::info('user', $user->toArray());
+                        $staffs->push($OwnersUser->id);
+                        // Log::info('staff', $staff->toArray());
+                        $users = User::whereIn('id', $staffs)->get();
+                        // Log::info('users', $users->toArray());
+                        $responseUsers = $users->map(function ($user) {
+                            return ['id' => $user->id, 'name' => $user->name];
+                        });
+                    }
+                    return response()->json([
+                        "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                        'schedules' => $selectSchedules,
+                        'responseUsers' => $responseUsers,
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
 
                 $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
@@ -313,7 +369,8 @@ class SchedulesController extends Controller
                     'options' => $options,
                     'merchandises' => $merchandises,
                     'hairstyles' => $hairstyles,
-                    'users' => $responseUsers,
+                    'responseUsers'
+                    => $responseUsers,
                     'course_customers' => $courseCustomer,
                     'option_customers' => $optionCustomer,
                     'merchandise_customers' => $merchandiseCustomer,
@@ -550,10 +607,18 @@ class SchedulesController extends Controller
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'required|in:0,1',
-                    'owner_id' => 'required|integer|exists:$OWNERs,id',
+
                 ]);
 
-                $ownerId = $validatedData['owner_id'];
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
+
 
 
                 // 顧客を作成
@@ -561,7 +626,7 @@ class SchedulesController extends Controller
                     'customer_name' => $validatedData['customer_name'],
                     'phone_number' => $validatedData['phone_number'],
                     'remarks' => $validatedData['remarks'],
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId,
                 ]);
 
 
@@ -571,45 +636,53 @@ class SchedulesController extends Controller
 
 
                 // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'];
-                $optionIds = $validatedData['option_id'];
-                $merchandiseIds = $validatedData['merchandise_id'];
-                $hairstyleIds = $validatedData['hairstyle_id'];
-
+                // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['course_id'] ?? [];
+                $optionIds = $validatedData['option_id'] ?? [];
+                $merchandiseIds = $validatedData['merchandise_id'] ?? [];
+                $hairstyleIds = $validatedData['hairstyle_id'] ?? [];
                 $userIds = $validatedData['user_id'];
 
-
                 $pivotData = [];
-                foreach ($courseIds as $courseId) {
-                    $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($courseIds)) {
+                    foreach ($courseIds as $courseId) {
+                        $pivotData[$courseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
+                // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
                 $customer->courses()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($optionIds as $optionId) {
-                    $pivotData[$optionId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($optionIds)) {
+                    foreach ($optionIds as $optionId) {
+                        $pivotData[$optionId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->options()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($merchandiseIds as $merchandiseId) {
-                    $pivotData[$merchandiseId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($merchandiseIds)) {
+                    foreach ($merchandiseIds as $merchandiseId) {
+                        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->merchandises()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($hairstyleIds as $hairstyleId) {
-                    $pivotData[$hairstyleId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($hairstyleIds)) {
+                    foreach ($hairstyleIds as $hairstyleId) {
+                        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->hairstyles()->sync($pivotData);
 
                 $pivotData = [];
                 foreach ($userIds as $userId) {
-                    $pivotData[$userId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$userId] = ['owner_id' => $ownerId];
                 }
                 $customer->users()->sync($pivotData);
 
@@ -646,7 +719,7 @@ class SchedulesController extends Controller
                 $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
                     return  HairstyleCustomer::where('owner_id', $ownerId)->get();
                 });
-                $userCustomer = CustomerUser::where('owner_id', $validatedData['owner_id'])->get();
+                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
 
                 $schedule = Schedule::create([
@@ -655,7 +728,7 @@ class SchedulesController extends Controller
                     'end_time' => $validatedData['end_time'],
                     'allDay' => $validatedData['allDay'],
                     'customer_id' => $customer->id,
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId,
                 ]);
 
                 $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
@@ -685,6 +758,7 @@ class SchedulesController extends Controller
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
             return response()->json([
                 'message' =>
@@ -722,10 +796,16 @@ class SchedulesController extends Controller
                     'end_time' => 'nullable',
                     'allDay' => 'required|in:0,1',
                     'customer_id' => 'required',
-                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
 
-                $ownerId = $validatedData['owner_id'];
+
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
 
                 $customerId = $validatedData['customer_id'];
@@ -744,44 +824,54 @@ class SchedulesController extends Controller
 
 
                 // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'];
-                $optionIds = $validatedData['option_id'];
-                $merchandiseIds = $validatedData['merchandise_id'];
-                $hairstyleIds = $validatedData['hairstyle_id'];
+                // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['course_id'] ?? [];
+                $optionIds = $validatedData['option_id'] ?? [];
+                $merchandiseIds = $validatedData['merchandise_id'] ?? [];
+                $hairstyleIds = $validatedData['hairstyle_id'] ?? [];
                 $userIds = $validatedData['user_id'];
 
-
                 $pivotData = [];
-                foreach ($courseIds as $courseId) {
-                    $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($courseIds)) {
+                    foreach ($courseIds as $courseId) {
+                        $pivotData[$courseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
+                // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
                 $customer->courses()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($optionIds as $optionId) {
-                    $pivotData[$optionId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($optionIds)) {
+                    foreach ($optionIds as $optionId) {
+                        $pivotData[$optionId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->options()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($merchandiseIds as $merchandiseId) {
-                    $pivotData[$merchandiseId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($merchandiseIds)) {
+                    foreach ($merchandiseIds as $merchandiseId) {
+                        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->merchandises()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($hairstyleIds as $hairstyleId) {
-                    $pivotData[$hairstyleId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($hairstyleIds)) {
+                    foreach ($hairstyleIds as $hairstyleId) {
+                        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->hairstyles()->sync($pivotData);
 
+
                 $pivotData = [];
                 foreach ($userIds as $userId) {
-                    $pivotData[$userId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$userId] = ['owner_id' => $ownerId];
                 }
                 $customer->users()->sync($pivotData);
 
@@ -819,7 +909,7 @@ class SchedulesController extends Controller
                 $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
                     return  HairstyleCustomer::where('owner_id', $ownerId)->get();
                 });
-                $userCustomer = CustomerUser::where('owner_id', $validatedData['owner_id'])->get();
+                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
                 $schedule = Schedule::find($validatedData['Sid']);
 
@@ -895,11 +985,16 @@ class SchedulesController extends Controller
                     'end_time' => 'nullable',
                     'allDay' => 'required',
                     'customer_id' => 'required',
-                    'owner_id' => 'required|integer|exists:$OWNERs,id',
                 ]);
 
-                $ownerId = $validatedData['owner_id'];
 
+                $staff = Staff::where('user_id', $user->id)->first();
+
+                if (empty($staff)) {
+                    $ownerId = Owner::where('user_id', $user->id)->value('id');
+                } else {
+                    $ownerId = $staff->owner_id;
+                }
 
                 $customerId = $validatedData['customer_id'];
 
@@ -917,47 +1012,55 @@ class SchedulesController extends Controller
                 Cache::forget($customersCacheKey);
 
 
-
-
                 // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'];
-                $optionIds = $validatedData['option_id'];
-                $merchandiseIds = $validatedData['merchandise_id'];
-                $hairstyleIds = $validatedData['hairstyle_id'];
-
+                // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['course_id'] ?? [];
+                $optionIds = $validatedData['option_id'] ?? [];
+                $merchandiseIds = $validatedData['merchandise_id'] ?? [];
+                $hairstyleIds = $validatedData['hairstyle_id'] ?? [];
                 $userIds = $validatedData['user_id'];
 
                 $pivotData = [];
-                foreach ($courseIds as $courseId) {
-                    $pivotData[$courseId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($courseIds)) {
+                    foreach ($courseIds as $courseId) {
+                        $pivotData[$courseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
+                // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
                 $customer->courses()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($optionIds as $optionId) {
-                    $pivotData[$optionId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($optionIds)) {
+                    foreach ($optionIds as $optionId) {
+                        $pivotData[$optionId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->options()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($merchandiseIds as $merchandiseId) {
-                    $pivotData[$merchandiseId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($merchandiseIds)) {
+                    foreach ($merchandiseIds as $merchandiseId) {
+                        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->merchandises()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($hairstyleIds as $hairstyleId) {
-                    $pivotData[$hairstyleId] = ['owner_id' => $validatedData['owner_id']];
+                if (!empty($hairstyleIds)) {
+                    foreach ($hairstyleIds as $hairstyleId) {
+                        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->hairstyles()->sync($pivotData);
 
+
                 $pivotData = [];
                 foreach ($userIds as $userId) {
-                    $pivotData[$userId] = ['owner_id' => $validatedData['owner_id']];
+                    $pivotData[$userId] = ['owner_id' => $ownerId];
                 }
                 $customer->users()->sync($pivotData);
 
@@ -996,7 +1099,7 @@ class SchedulesController extends Controller
                 $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
                     return  HairstyleCustomer::where('owner_id', $ownerId)->get();
                 });
-                $userCustomer = CustomerUser::where('owner_id', $validatedData['owner_id'])->get();
+                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
 
                 $schedule = Schedule::create([
@@ -1005,7 +1108,7 @@ class SchedulesController extends Controller
                     'end_time' => $validatedData['end_time'],
                     'allDay' => $validatedData['allDay'],
                     'customer_id' => $customerId,
-                    'owner_id' => $validatedData['owner_id'],
+                    'owner_id' => $ownerId,
                 ]);
 
 

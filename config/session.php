@@ -31,8 +31,10 @@ return [
     |
     */
 
+    //セッションの有効期限を設定
     'lifetime' => env('SESSION_LIFETIME', 120),
 
+    //セッションの有効期限をブラウザを閉じた時に即座に無効にするかどうかを設定
     'expire_on_close' => false,
 
     /*
@@ -46,7 +48,8 @@ return [
     |
     */
 
-    'encrypt' => false,
+    //セッションのデータを暗号化するかどうかを設定
+    'encrypt' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -59,6 +62,7 @@ return [
     |
     */
 
+    //セッションファイルの保存場所を設定 driverがfileの場合に使用
     'files' => storage_path('framework/sessions'),
 
     /*
@@ -72,6 +76,7 @@ return [
     |
     */
 
+    //セッションデータを保存するデータベースの接続名を設定
     'connection' => env('SESSION_CONNECTION'),
 
     /*
@@ -85,6 +90,7 @@ return [
     |
     */
 
+    //セッションデータを保存するデータベースのテーブル名を設定
     'table' => 'sessions',
 
     /*
@@ -100,6 +106,7 @@ return [
     |
     */
 
+    //ブラウザを閉じた後にセッションデータを保持するためのキャッシュストアを設定
     'store' => env('SESSION_STORE'),
 
     /*
@@ -113,6 +120,7 @@ return [
     |
     */
 
+    //セッションの掃除を行う確率を設定 ガベージコレクションの確率
     'lottery' => [2, 100],
 
     /*
@@ -126,6 +134,7 @@ return [
     |
     */
 
+    //セッションIDを識別するためのクッキー名を設定
     'cookie' => env(
         'SESSION_COOKIE',
         Str::slug(env('APP_NAME', 'laravel'), '_') . '_session'
@@ -155,6 +164,7 @@ return [
     |
     */
 
+    //セッションを保存するドメインを設定
     'domain' => env('SESSION_DOMAIN', null),
 
     /*
@@ -168,6 +178,7 @@ return [
     |
     */
 
+    ///セキュアな通信のみでクッキーを送信するかどうかを設定
     'secure' => env('SESSION_SECURE_COOKIE', true),
 
     /*
@@ -181,6 +192,8 @@ return [
     |
     */
 
+    //HTTPプロトコルのみでクッキーにアクセスできるかどうかを設定
+    //javascriptからのアクセスを禁止する
     'http_only' => true,
 
     /*
@@ -196,6 +209,7 @@ return [
     |
     */
 
+    //クロスサイトリクエスト時のクッキーの挙動を設定
     'same_site' => 'lax',
 
 ];

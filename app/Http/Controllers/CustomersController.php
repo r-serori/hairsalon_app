@@ -96,9 +96,6 @@ class CustomersController extends Controller
                         });
                 }
 
-
-                Log::info(['responseUsers', $responseUsers]);
-
                 $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
 
                 $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
@@ -213,40 +210,50 @@ class CustomersController extends Controller
                 Cache::forget($customersCacheKey);
 
                 // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'];
-                $optionIds = $validatedData['option_id'];
-                $merchandiseIds = $validatedData['merchandise_id'];
-                $hairstyleIds = $validatedData['hairstyle_id'];
-
+                // 中間テーブルにデータを挿入
+                $courseIds = $validatedData['course_id'] ?? [];
+                $optionIds = $validatedData['option_id'] ?? [];
+                $merchandiseIds = $validatedData['merchandise_id'] ?? [];
+                $hairstyleIds = $validatedData['hairstyle_id'] ?? [];
                 $userIds = $validatedData['user_id'];
 
                 $pivotData = [];
-                foreach ($courseIds as $courseId) {
-                    $pivotData[$courseId] = ['owner_id' => $ownerId];
+                if (!empty($courseIds)) {
+                    foreach ($courseIds as $courseId) {
+                        $pivotData[$courseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
+                // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
                 $customer->courses()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($optionIds as $optionId) {
-                    $pivotData[$optionId] = ['owner_id' => $ownerId];
+                if (!empty($optionIds)) {
+                    foreach ($optionIds as $optionId) {
+                        $pivotData[$optionId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->options()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($merchandiseIds as $merchandiseId) {
-                    $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+                if (!empty($merchandiseIds)) {
+                    foreach ($merchandiseIds as $merchandiseId) {
+                        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->merchandises()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($hairstyleIds as $hairstyleId) {
-                    $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+                if (!empty($hairstyleIds)) {
+                    foreach ($hairstyleIds as $hairstyleId) {
+                        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->hairstyles()->sync($pivotData);
+
 
                 $pivotData = [];
                 foreach ($userIds as $userId) {
@@ -390,37 +397,45 @@ class CustomersController extends Controller
 
 
                 // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'];
-                $optionIds = $validatedData['option_id'];
-                $merchandiseIds = $validatedData['merchandise_id'];
-                $hairstyleIds = $validatedData['hairstyle_id'];
+                $courseIds = $validatedData['course_id'] ?? [];
+                $optionIds = $validatedData['option_id'] ?? [];
+                $merchandiseIds = $validatedData['merchandise_id'] ?? [];
+                $hairstyleIds = $validatedData['hairstyle_id'] ?? [];
                 $userIds = $validatedData['user_id'];
 
-
                 $pivotData = [];
-                foreach ($courseIds as $courseId) {
-                    $pivotData[$courseId] = ['owner_id' => $ownerId];
+                if (!empty($courseIds)) {
+                    foreach ($courseIds as $courseId) {
+                        $pivotData[$courseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
+                // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
                 $customer->courses()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($optionIds as $optionId) {
-                    $pivotData[$optionId] = ['owner_id' => $ownerId];
+                if (!empty($optionIds)) {
+                    foreach ($optionIds as $optionId) {
+                        $pivotData[$optionId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->options()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($merchandiseIds as $merchandiseId) {
-                    $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+                if (!empty($merchandiseIds)) {
+                    foreach ($merchandiseIds as $merchandiseId) {
+                        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->merchandises()->sync($pivotData);
 
                 $pivotData = [];
-                foreach ($hairstyleIds as $hairstyleId) {
-                    $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+                if (!empty($hairstyleIds)) {
+                    foreach ($hairstyleIds as $hairstyleId) {
+                        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+                    }
                 }
 
                 $customer->hairstyles()->sync($pivotData);

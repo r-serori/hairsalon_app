@@ -9,36 +9,39 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
 use App\Notifications\VerifyEmailNotification;
 use Illuminate\Http\JsonResponse;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class VerifyEmailController extends Controller
 {
     /**
      * Mark the authenticated user's email address as verified.
      */
-    public function __invoke(EmailVerificationRequest $request): JsonResponse
+    public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
         try {
-            if ($request->user()->hasVerifiedEmail()) {
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'メールアドレスの認証に成功しました！',
-                ], 200);
+            Log::info('EmailVerificationRequest: ', [$request]);
+
+            $user = User::find($request->route('id'));
+
+            if ($user->hasVerifiedEmail()) {
+                return redirect(env('FRONTEND_URL') . '/auth/owner')
+                    ->with('status', 'success')
+                    ->with('message', 'メールアドレスは既に認証済みです！');
             }
 
-            $user = $request->user();
-            if ($request->user()->markEmailAsVerified()) {
-                event(new Verified($request->user()));
+
+            if ($user->markEmailAsVerified()) {
+                event(new Verified($user));
             }
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'メールアドレスの認証に成功しました！',
-            ], 200);
+            return redirect(env('FRONTEND_URL') . '/auth/owner')
+                ->with('status', 'success')
+                ->with('message', 'メールアドレスは既に認証済みです！');
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'メールアドレスの認証に失敗しました！',
-            ], 500);
+            return redirect(env('FRONTEND_URL') . '/_error')
+                ->with('status', 'error')
+                ->with('message', 'メールアドレスの認証に失敗しました。');
         }
     }
 }
