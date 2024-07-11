@@ -16091,3 +16091,21 @@ Stack trace:
      'escapeWhenCastingToString' => false,
   )),
 )  
+[2024-07-11 10:32:58] local.INFO: user_id ["user_id","2"] 
+[2024-07-11 10:32:58] local.INFO: yearMonth ["yearMonth","000111"] 
+[2024-07-11 10:32:58] local.INFO: selectAttendanceTimes ["selectAttendanceTimes",{"Illuminate\\Database\\Eloquent\\Collection":[]}] 
+[2024-07-11 10:33:46] local.INFO: user_id ["user_id","2"] 
+[2024-07-11 10:33:46] local.INFO: yearMonth ["yearMonth","000111"] 
+[2024-07-11 10:33:46] local.INFO: selectAttendanceTimes ["selectAttendanceTimes",{"Illuminate\\Database\\Eloquent\\Collection":[]}] 
+[2024-07-11 10:34:01] local.INFO: user_id ["user_id","2"] 
+[2024-07-11 10:34:01] local.INFO: yearMonth ["yearMonth","2025-07"] 
+[2024-07-11 10:34:01] local.INFO: selectAttendanceTimes ["selectAttendanceTimes",{"Illuminate\\Database\\Eloquent\\Collection":[]}] 
+[2024-07-11 10:34:05] local.INFO: user_id ["user_id","2"] 
+[2024-07-11 10:34:05] local.INFO: yearMonth ["yearMonth","000111"] 
+[2024-07-11 10:34:05] local.INFO: selectAttendanceTimes ["selectAttendanceTimes",{"Illuminate\\Database\\Eloquent\\Collection":[]}] 
+[2024-07-11 10:34:14] local.INFO: user_id ["user_id","2"] 
+[2024-07-11 10:34:14] local.INFO: yearMonth ["yearMonth","2025-07"] 
+[2024-07-11 10:34:14] local.INFO: selectAttendanceTimes ["selectAttendanceTimes",{"Illuminate\\Database\\Eloquent\\Collection":[]}] 
+[2024-07-11 10:34:17] local.INFO: user_id ["user_id","2"] 
+[2024-07-11 10:34:17] local.INFO: yearMonth ["yearMonth","000111"] 
+[2024-07-11 10:34:17] local.INFO: selectAttendanceTimes ["selectAttendanceTimes",{"Illuminate\\Database\\Eloquent\\Collection":[]}] 

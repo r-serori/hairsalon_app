@@ -49,6 +49,7 @@ class MonthlySalesController extends Controller
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
+                        'message' => $currentYear . '年の月次売上データを取得しました！',
                         'monthlySales' => $monthly_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
@@ -80,10 +81,16 @@ class MonthlySalesController extends Controller
                 });
                 if ($monthly_sales->isEmpty()) {
                     return response()->json([
-                        "message" => "初めまして！予約表画面の月次売上更新ボタンから月次売上を作成しましょう！",
+                        "message" => "選択した売上データがありません！予約表画面の月次売上更新ボタンから月次売上を作成しましょう！",
+                        'monthlySales' => $monthly_sales
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else {
+                    return response()->json([
+                        'message' => $decodedYear . '年の月次売上データを取得しました！',
                         'monthlySales' => $monthly_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
+            } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');

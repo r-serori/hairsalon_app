@@ -43,6 +43,7 @@ class DailySalesController extends Controller
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
+                        'massage' => $currentYear . '年の日次売上データです！',
                         'dailySales' => $daily_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
@@ -83,11 +84,12 @@ class DailySalesController extends Controller
                 });
                 if ($daily_sales->isEmpty()) {
                     return response()->json([
-                        "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
+                        "message" => "選択した売上データがありません！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
                         'dailySales' => $daily_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
+                        'massage' => $decodedYear . '年の日次売上データです！',
                         'dailySales' => $daily_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
@@ -124,6 +126,14 @@ class DailySalesController extends Controller
                     ]);
 
                 $ownerId = Owner::where('user_id', $user->id)->value('id');
+
+                $existDailySale = DailySale::where('date', $validatedData['date'])->where('owner_id', $ownerId)->first();
+
+                if ($existDailySale) {
+                    return response()->json([
+                        "message" => "その日の日次売上は既に存在しています！"
+                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
 
                 $daily_sales =
                     DailySale::create([

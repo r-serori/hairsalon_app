@@ -41,7 +41,7 @@ class YearlySalesController extends Controller
                 } else {
                     return response()->json([
                         'yearlySales' => $yearly_sales,
-                        'message' => '年次売上を取得できました！'
+                        'message' => $currentYear . '年の年次売上データを取得しました！'
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
@@ -78,13 +78,13 @@ class YearlySalesController extends Controller
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
                         "message" =>
-                        "初めまして！予約表画面の年次売上作成ボタンから年次売上を作成しましょう！",
+                        "選択した売上データがありません！予約表画面の年次売上作成ボタンから年次売上を作成しましょう！",
                         'yearlySales' => $yearly_sales
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
                         'yearlySales' => $yearly_sales,
-                        'message' => '年次売上を取得できました！'
+                        'message' => $decodedYear . '年の年次売上データを取得しました！'
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
