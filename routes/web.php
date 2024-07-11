@@ -112,18 +112,21 @@ Route::middleware('web')->group(function () {
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   
         Route::get('/daily_sales/all', [DailySalesController::class, 'index']);
+        Route::get('/daily_sales/selected/{year}', [DailySalesController::class, 'selectedDailySales']);
         Route::post('/daily_sales/store', [DailySalesController::class, 'store']);
         Route::post('/daily_sales/update', [DailySalesController::class, 'update']);
         Route::post('/daily_sales/delete', [DailySalesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   
         Route::get('monthly_sales/all', [MonthlySalesController::class, 'index']);
+        Route::get('monthly_sales/selected/{year}', [MonthlySalesController::class, 'selectedMonthlySales']);
         Route::post('/monthly_sales/store', [MonthlySalesController::class, 'store']);
         Route::post('/monthly_sales/update', [MonthlySalesController::class, 'update']);
         Route::post('/monthly_sales/delete', [MonthlySalesController::class, 'destroy']);
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   
         Route::get('/yearly_sales/all', [YearlySalesController::class, 'index']);
+        Route::get('/yearly_sales/selected/{year}', [YearlySalesController::class, 'selectedYearlySales']);
         Route::post('/yearly_sales/store', [YearlySalesController::class, 'store']);
         Route::post('/yearly_sales/update', [YearlySalesController::class, 'update']);
         Route::post('/yearly_sales/delete', [YearlySalesController::class, 'destroy']);

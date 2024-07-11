@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 
 class MonthlySalesController extends Controller
@@ -26,13 +27,18 @@ class MonthlySalesController extends Controller
 
                 $ownerId = Owner::where('user_id', $user->id)->value('id');
 
+                $currentYear = Carbon::now()->year;
+
                 $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
                 // 月別売上一覧を取得
-                $monthly_sales = Cache::remember($monthlySalesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return MonthlySale::where('owner_id', $ownerId)->get();
+                $monthly_sales = Cache::remember($monthlySalesCacheKey, $expirationInSeconds, function () use (
+                    $ownerId,
+                    $currentYear
+                ) {
+                    return MonthlySale::whereYear('year_month', $currentYear)->where('owner_id', $ownerId)->get();
                 });
 
                 if ($monthly_sales->isEmpty()) {
@@ -59,6 +65,38 @@ class MonthlySalesController extends Controller
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
+
+    public function selectedMonthlySales($year)
+    {
+        try {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::$OWNER)) {
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
+                $decodedYear = urldecode($year);
+                $monthlySalesCacheKey = 'owner_' . $ownerId . 'monthlySales';
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+                $monthly_sales = Cache::remember($monthlySalesCacheKey, $expirationInSeconds, function () use ($ownerId, $decodedYear) {
+                    return MonthlySale::whereYear('year_month', $decodedYear)->where('owner_id', $ownerId)->get();
+                });
+                if ($monthly_sales->isEmpty()) {
+                    return response()->json([
+                        "message" => "初めまして！予約表画面の月次売上更新ボタンから月次売上を作成しましょう！",
+                        'monthlySales' => $monthly_sales
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+                return response()->json([
+                    "message" => "あなたには権限がありません！"
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' =>
+                '月次売上が見つかりません！
+                もう一度お試しください！'
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+        }
+    }
+
 
     public function store(Request $request)
     {

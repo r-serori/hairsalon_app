@@ -27,17 +27,60 @@ class DailySalesController extends Controller
 
                 $currentYear = Carbon::now()->year;
 
+                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
+                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+
+                $daily_sales = Cache::remember($dailySalesCacheKey, $expirationInSeconds, function () use ($ownerId, $currentYear) {
+                    return DailySale::whereYear('date', $currentYear)
+                        ->where('owner_id',  $ownerId)->get();
+                });
+
+                if ($daily_sales->isEmpty()) {
+                    return response()->json([
+                        "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
+                        'dailySales' => $daily_sales
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else {
+                    return response()->json([
+                        'dailySales' => $daily_sales
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+            } else {
+                return response()->json([
+                    "message" => "あなたには権限がありません！"
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
+        } catch (\Exception $e) {
+            return response()->json(
+                [
+                    'message' =>
+                    '日次売上が見つかりません！もう一度お試しください！'
+                ],
+                500,
+                [],
+                JSON_UNESCAPED_UNICODE
+            )->header('Content-Type', 'application/json; charset=UTF-8');
+        }
+    }
+
+    public function selectedDailySales($year)
+    {
+        try {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::$OWNER)) {
+
+                $decodedYear = urldecode($year);
+
+                $ownerId = Owner::where('user_id', $user->id)->value('id');
 
                 $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-
-                $daily_sales = Cache::remember($dailySalesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return DailySale::where('owner_id',  $ownerId)->get();
+                $daily_sales = Cache::remember($dailySalesCacheKey, $expirationInSeconds, function () use ($ownerId, $decodedYear) {
+                    return DailySale::whereYear('date', $decodedYear)->where('owner_id',  $ownerId)->get();
                 });
-
                 if ($daily_sales->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
