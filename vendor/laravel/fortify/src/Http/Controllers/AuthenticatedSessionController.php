@@ -18,6 +18,7 @@ use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use App\Models\Owner;
 use App\Enums\Roles;
+use Illuminate\Support\Facades\DB;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -58,6 +59,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): JsonResponse
     {
+        DB::beginTransaction();
         return $this->loginPipeline($request)->then(function ($request) {
             try {
 
@@ -74,9 +76,7 @@ class AuthenticatedSessionController extends Controller
                     ];
 
                 if (!empty($existOwner)) {
-
-
-
+                    DB::commit();
                     return response()->json([
                         'message' => 'オーナー用ユーザーとしてログインしました!',
                         'responseUser' => $responseUser,
@@ -85,19 +85,24 @@ class AuthenticatedSessionController extends Controller
 
 
                     if ($request->user()->role === Roles::$OWNER) {
+                        DB::rollBack();
                         return response()->json([
                             'status' => 299,
                             'message' => 'オーナー用ユーザーとしてログインしました!ただし、店舗登録が完了していません。店舗登録を行ってください。',
                             'responseUser' => $responseUser,
                         ], 299, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    }
+                    } else {
 
-                    return response()->json([
-                        'message' => 'スタッフ用ユーザーとしてログインしました!',
-                        'responseUser' => $responseUser
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                        DB::commit();
+
+                        return response()->json([
+                            'message' => 'スタッフ用ユーザーとしてログインしました!',
+                            'responseUser' => $responseUser
+                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    }
                 }
             } catch (\Exception $e) {
+                DB::rollBack();
                 // Log::error($e->getMessage());
                 return response()->json([
                     'message' =>

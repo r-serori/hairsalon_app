@@ -12,6 +12,7 @@ use App\Models\Owner;
 use App\Models\Staff;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 
 class UserPostController extends Controller
@@ -21,6 +22,7 @@ class UserPostController extends Controller
 
     public function ownerStore(Request $request): JsonResponse
     {
+        DB::beginTransaction();
         try {
             $request->validate([
                 'store_name' => ['required', 'string', 'max:100'],
@@ -47,19 +49,22 @@ class UserPostController extends Controller
                     'user_id' => $request->user_id,
                 ]);
 
+                DB::commit();
+
                 return response()->json(
                     [
                         'message' => 'オーナー用ユーザー登録に成功しました!',
-
                     ],
                     200,
                     [],
                     JSON_UNESCAPED_UNICODE
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
+
+                DB::rollBack();
                 return response()->json(
                     [
-                        "message" => "もう一度最初からやり直してください！",
+                        "message" => "オーナー用ユーザー登録に失敗しました！もう一度最初からやり直してください！",
                     ],
                     404,
                     [],
@@ -67,10 +72,12 @@ class UserPostController extends Controller
                 )->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+
+            DB::rollBack();
             Log::error($e->getMessage());
             return response()->json(
                 [
-                    "message" => "オーナー用ユーザー登録に失敗しました！",
+                    "message" => "オーナー用ユーザー登録に失敗しました！もう一度やり直してください！",
                 ],
                 500,
                 [],
@@ -81,6 +88,7 @@ class UserPostController extends Controller
 
     public function staffStore(Request $request): JsonResponse
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -103,10 +111,10 @@ class UserPostController extends Controller
                     'user_id' => ['required', 'integer', 'exists:users,id'],
                 ]);
 
-                $userID = User::where('email', $request->email)->first();
+                $userId = User::where('email', $request->email)->first();
 
 
-                if ($userID) {
+                if ($userId) {
                     return
                         response()->json([
                             'message' => 'メールアドレスが既に存在しています！
@@ -140,6 +148,8 @@ class UserPostController extends Controller
                         'role' => $user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
                         'isAttendance' => $user->isAttendance,
                     ];
+
+                    DB::commit();
                     return response()->json(
                         [
                             'message' => 'スタッフ用ユーザー登録に成功しました!',
@@ -151,11 +161,13 @@ class UserPostController extends Controller
                     )->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
+                DB::rollBack();
                 return response()->json([
                     'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             // Log::error('ユーザー登録処理中にエラーが発生しました。');
             // Log::error('エラー内容: ' . $e);
             return response()->json([
@@ -166,6 +178,7 @@ class UserPostController extends Controller
 
     public function updatePermission(Request $request)
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
@@ -194,21 +207,26 @@ class UserPostController extends Controller
                         'isAttendance' => $updateUser->isAttendance,
                     ];
 
+                    DB::commit();
+
                     return response()->json([
                         'message' => '権限の変更に成功しました！',
                         'responseUser' => $responseUser,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
+                    DB::rollBack();
                     return response()->json([
                         'message' => 'スタッフ情報が見つかりませんでした！',
                     ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
+                DB::rollBack();
                 return response()->json([
                     'message' => 'あなたには権限がありません！',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'message' => 'エラーが発生しました！もう一度やり直してください！',
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');

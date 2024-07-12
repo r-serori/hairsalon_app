@@ -10,6 +10,10 @@ use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\Roles;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
+use Illuminate\Support\Facades\DB;
 
 class UpdateUserPassword implements UpdatesUserPasswords
 {
@@ -19,41 +23,65 @@ class UpdateUserPassword implements UpdatesUserPasswords
      * Validate and update the user's password.
      *
      * @param  array<string, string>  $input
+     * @return void
+     */
+    public function update($user, array $input): void
+    {
+    }
+
+    /**
+     * Custom method to handle Request.
+     *
+     * @param  Request  $request
      * @return JsonResponse
      */
-    public function update($user, array $input): JsonResponse
+    public function updateFromRequest(Request $request): JsonResponse
     {
+        DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 // パスワードのバリデーション
-                Validator::make($input, [
+                Validator::make($request->all(), [
                     'current_password' => ['required', 'string', 'current_password:web'],
                     'password' => $this->passwordRules(),
+                    'password_confirmation' => 'required|same:password',
                 ], [
                     'current_password.current_password' => __('送信されたパスワードが既存のパスワードと一致しません！もう一度試してください！'),
+                    'password_confirmation.same' => __('パスワードと確認フィールドが一致していません！'), // エラーメッセージ追加
                 ])->validateWithBag('updatePassword');
 
                 // パスワードの更新
                 $user->forceFill([
-                    'password' => Hash::make($input['password']),
+                    'password' => Hash::make($request->input('password')),
                 ])->save();
 
-                return response()->json(['status' => 'success', 'message' => 'Password updated successfully.']);
-            } else {
-                return response()->json([
+                // ユーザーをログアウトさせる
+                Auth::guard('web')->logout();
+                if ($request->hasSession()) {
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
+                };
 
+                DB::commit();
+
+                return response()->json(['message' => 'パスワードが正常に更新されました！ログインし直してください！']);
+            } else {
+                DB::rollBack();
+                return response()->json([
                     'message' => 'あなたは権限がありません。',
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (ValidationException $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
             if ($e->validator->errors()->has('current_password')) {
                 // パスワードが間違っている場合のエラーメッセージ
                 return response()->json(['message' => __('送信されたパスワードが既存のパスワードと一致しません！もう一度試してください！')], 422);
             } else {
-                return response()->json([
 
+                return response()->json([
                     'message' => $e->validator->errors()->first(),
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }

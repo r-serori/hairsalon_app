@@ -13,11 +13,17 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
+    public function update($user, array $input): void
+    {
+    }
 
-    public function update(Request $request): JsonResponse
+
+
+    public function updateUser(Request $request): JsonResponse
     {
         try {
             $user = User::find(Auth::id());
@@ -33,7 +39,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                     isset($request['email']) && $user->email !== $request['email'] &&
                     $user instanceof MustVerifyEmail
                 ) {
-                    $this->updateVerifiedUser($user, $request);
+                    $this->updateVerifiedUserInfo($user, $request);
 
                     return response()->json(
                         [
@@ -81,6 +87,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 );
             }
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             return response()->json(
                 [
                     'message' => 'プロフィール情報の更新に失敗しました!',
@@ -96,14 +103,12 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
         }
     }
 
-    /**
-     * Update the given verified user's email address.
-     *
-     * @param  mixed  $user
-     * @param  array  $request
-     * @return mixed 
-     */
+
     protected function updateVerifiedUser($user, Request $request)
+    {
+    }
+
+    protected function updateVerifiedUserInfo($user, Request $request)
     {
         try {
             $user->forceFill([

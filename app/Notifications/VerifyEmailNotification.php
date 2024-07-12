@@ -63,6 +63,7 @@ class VerifyEmailNotification extends Notification
             ->line('もし心当たりがない場合は、このメールを無視してください。');
     }
 
+
     /**
      * Get the verification URL for the given notifiable.
      *

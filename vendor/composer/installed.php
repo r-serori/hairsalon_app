@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '994b8c6c2aefcfe412048d98433fb71c76d33e05',
+        'reference' => 'c20c1e479412c8f49f8883b53e17b8782cc35039',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -427,15 +427,6 @@
                 0 => '*',
             ),
         ),
-        'laravel/breeze' => array(
-            'pretty_version' => 'v1.19.2',
-            'version' => '1.19.2.0',
-            'reference' => '725e0c4fb1f630afdd90b5fba2a7f6d8d547ac29',
-            'type' => 'library',
-            'install_path' => __DIR__ . '/../laravel/breeze',
-            'aliases' => array(),
-            'dev_requirement' => true,
-        ),
         'laravel/fortify' => array(
             'pretty_version' => 'v1.19.1',
             'version' => '1.19.1.0',
@@ -466,7 +457,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '994b8c6c2aefcfe412048d98433fb71c76d33e05',
+            'reference' => 'c20c1e479412c8f49f8883b53e17b8782cc35039',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -868,8 +859,8 @@
         'psr/log-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0|2.0|3.0',
-                1 => '1.0.0 || 2.0.0 || 3.0.0',
+                0 => '1.0.0 || 2.0.0 || 3.0.0',
+                1 => '1.0|2.0|3.0',
             ),
         ),
         'psr/simple-cache' => array(
@@ -1119,9 +1110,9 @@
             'dev_requirement' => false,
         ),
         'symfony/console' => array(
-            'pretty_version' => 'v6.4.8',
-            'version' => '6.4.8.0',
-            'reference' => 'be5854cee0e8c7b110f00d695d11debdfa1a2a91',
+            'pretty_version' => 'v6.4.9',
+            'version' => '6.4.9.0',
+            'reference' => '6edb5363ec0c78ad4d48c5128ebf4d083d89d3a9',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/console',
             'aliases' => array(),
@@ -1332,9 +1323,9 @@
             'dev_requirement' => false,
         ),
         'symfony/string' => array(
-            'pretty_version' => 'v7.1.1',
-            'version' => '7.1.1.0',
-            'reference' => '60bc311c74e0af215101235aa6f471bcbc032df2',
+            'pretty_version' => 'v7.1.2',
+            'version' => '7.1.2.0',
+            'reference' => '14221089ac66cf82e3cf3d1c1da65de305587ff8',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/string',
             'aliases' => array(),

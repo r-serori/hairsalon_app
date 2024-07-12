@@ -24,18 +24,17 @@ class CoursesController extends Controller
 
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                Log::info(['user', $user->id]);
+
 
                 $staff = Staff::where('user_id', $user->id)->first();
-                Log::info(['isStaff', $staff]);
+
 
                 if (empty($staff)) {
                     $ownerId = Owner::where('user_id', $user->id)->value('id');
-                    Log::info(['ownerでっせ', $ownerId]);
                 } else {
                     $ownerId = $staff->owner_id;
                 }
-                Log::info(['ownerId', $ownerId]);
+
 
                 $coursesCacheKey = 'owner_' . $ownerId . 'courses';
 
@@ -45,7 +44,6 @@ class CoursesController extends Controller
                     return  Course::where('owner_id', $ownerId)->get();
                 });
 
-                Log::info(['courses', $courses]);
 
                 if ($courses->isEmpty()) {
                     return response()->json([

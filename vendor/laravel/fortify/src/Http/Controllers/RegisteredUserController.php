@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Laravel\Fortify\Contracts\RegisterViewResponse;
 use Laravel\Fortify\Fortify;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class RegisteredUserController extends Controller
 {
@@ -55,6 +56,7 @@ class RegisteredUserController extends Controller
         Request $request,
         CreatesNewUsers $creator
     ): JsonResponse {
+        DB::beginTransaction();
         try {
 
             if (config('fortify.lowercase_usernames')) {
@@ -79,6 +81,7 @@ class RegisteredUserController extends Controller
                     'isAttendance' => $user->isAttendance,
                 ];
 
+            DB::commit();
 
             return response()->json([
 
@@ -86,6 +89,7 @@ class RegisteredUserController extends Controller
                 'responseUser' => $responseUser
             ], 200);
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error($e->getMessage());
             if (strpos($e->getMessage(), 'メールアドレスの値は既に存在') !== false) {
                 return response()->json([

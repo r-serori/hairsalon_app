@@ -8,6 +8,7 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
 use Illuminate\Http\Request; // Add this line to import the Request class
 use App\Http\Controllers\Auth\UserGetController; // Add this line to import the UserGetController class
 use App\Http\Controllers\Auth\UserPostController; // Add this line to import the UserPostController class
@@ -40,14 +41,27 @@ Route::middleware('api')->group(
 
             return response()->json($response->json());
         });
+        Route::middleware('guest')->group(
+            function () {
+                //購入者ownerがuser登録するときの処理
+                Route::post('/register', [RegisteredUserController::class, 'store']);
 
-        //購入者ownerがuser登録するときの処理
-        Route::post('/register', [RegisteredUserController::class, 'store'])
-            ->middleware('guest');
 
-        //ログイン処理
-        Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-            ->middleware('guest');
+                //ログイン処理
+                Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+
+
+
+                Route::post('/forgotPassword', [PasswordResetLinkController::class, 'store'])
+                    ->name('password.email');
+
+
+                //パスワードリセット　Gate,ALL
+                Route::post('/resetPassword', [ResetUserPassword::class, 'resetPassword'])
+                    ->name('password.reset');
+            }
+        );
+
 
 
         Route::middleware('auth:sanctum')->group(function () {
@@ -139,14 +153,10 @@ Route::middleware('api')->group(
                 Route::get('/showUser', [UserGetController::class, 'show']);
 
                 //ユーザーが自分の個人情報を変更 Gate,ALL
-                Route::post('/updateUser', [UpdateUserProfileInformation::class, 'update']);
+                Route::post('/updateUser', [UpdateUserProfileInformation::class, 'updateUser']);
 
                 //ユーザーが自分のパスワードを変更 Gate,ALL
-                Route::post('/updateUserPassword', [UpdateUserPassword::class, 'update']);
-
-                //パスワードリセット　Gate,ALL
-                Route::post('/resetPassword', [ResetUserPassword::class, 'reset'])
-                    ->name('password.store');
+                Route::post('/updateUserPassword', [UpdateUserPassword::class, 'updateFromRequest']);
             });
         });
 

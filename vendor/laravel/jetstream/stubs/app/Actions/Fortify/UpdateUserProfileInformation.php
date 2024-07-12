@@ -2,56 +2,127 @@
 
 namespace App\Actions\Fortify;
 
-use App\Models\User;
+use Illuminate\Support\Facades\Gate;
+use App\Enums\Permissions;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use App\Models\User;
+use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UpdateUserProfileInformation implements UpdatesUserProfileInformation
 {
-    /**
-     * Validate and update the given user's profile information.
-     *
-     * @param  array<string, string>  $input
-     */
-    public function update(User $user, array $input): void
+    public function update($user, array $input): void
     {
-        Log::info('UpdateUserProfileInformation called', ['input' => $input]);
-        Validator::make($input, [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-
-        ])->validateWithBag('updateProfileInformation');
+    }
 
 
-        if (
-            $input['email'] !== $user->email &&
-            $user instanceof MustVerifyEmail
-        ) {
-            $this->updateVerifiedUser($user, $input);
-        } else {
-            $user->forceFill([
-                'name' => $input['name'],
-                'email' => $input['email'],
-            ])->save();
+
+    public function updateUser(Request $request): JsonResponse
+    {
+        try {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+
+                Validator::make($request->all(), [
+                    'name' => ['required', 'string', 'max:255'],
+                    'email' => ['required', 'email', 'max:255'],
+                    'phone_number' => ['required', 'string', 'max:20'],
+                ])->validateWithBag('updateProfileInformation');
+
+                if (
+                    isset($request['email']) && $user->email !== $request['email'] &&
+                    $user instanceof MustVerifyEmail
+                ) {
+                    $this->updateVerifiedUserInfo($user, $request);
+
+                    return response()->json(
+                        [
+
+                            'message' => 'プロフィール情報の更新に成功しました!確認メールを送信しました!',
+
+                        ],
+                        200,
+                        [],
+                        JSON_UNESCAPED_UNICODE
+                    )->header(
+                        'Content-Type',
+                        'application/json; charset=UTF-8'
+                    );
+                } else {
+                    $user->forceFill([
+                        'name' => $request['name'],
+                        'email' => $request['email'],
+                        'phone_number' => $request['phone_number'],
+                    ])->save();
+
+                    return response()->json(
+                        [
+                            'message' => 'プロフィール情報の更新に成功しました!',
+                        ],
+                        200,
+                        [],
+                        JSON_UNESCAPED_UNICODE
+                    )->header(
+                        'Content-Type',
+                        'application/json; charset=UTF-8'
+                    );
+                }
+            } else {
+                return response()->json(
+                    [
+                        'message' => 'あなたは権限がありません!',
+                    ],
+                    403,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header(
+                    'Content-Type',
+                    'application/json; charset=UTF-8'
+                );
+            }
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json(
+                [
+                    'message' => 'プロフィール情報の更新に失敗しました!',
+
+                ],
+                500,
+                [],
+                JSON_UNESCAPED_UNICODE
+            )->header(
+                'Content-Type',
+                'application/json; charset=UTF-8'
+            );
         }
     }
 
-    /**
-     * Update the given verified user's profile information.
-     *
-     * @param  array<string, string>  $input
-     */
-    protected function updateVerifiedUser(User $user, array $input): void
-    {
-        $user->forceFill([
-            'name' => $input['name'],
-            'email' => $input['email'],
-            'email_verified_at' => null,
-        ])->save();
 
-        $user->sendEmailVerificationNotification();
+    protected function updateVerifiedUser($user, Request $request)
+    {
+    }
+
+    protected function updateVerifiedUserInfo($user, Request $request)
+    {
+        try {
+            $user->forceFill([
+                'name' => $request['name'],
+                'email' => $request['email'],
+                'phone_number' => $request['phone_number'],
+                'email_verified_at' => null,
+            ])->save();
+
+            $user->sendEmailVerificationNotification();
+
+            return $user;
+        } catch (\Exception $e) {
+            return throw new \Exception($e->getMessage());
+        }
     }
 }
