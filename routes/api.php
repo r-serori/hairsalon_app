@@ -8,8 +8,6 @@ use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Laravel\Fortify\Http\Controllers\RegisteredUserController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\VerifyEmailController;
-use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
 use Illuminate\Http\Request; // Add this line to import the Request class
 use App\Http\Controllers\Auth\UserGetController; // Add this line to import the UserGetController class
 use App\Http\Controllers\Auth\UserPostController; // Add this line to import the UserPostController class

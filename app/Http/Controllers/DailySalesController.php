@@ -131,7 +131,7 @@ class DailySalesController extends Controller
 
                 if ($existDailySale) {
                     return response()->json([
-                        "message" => "その日の日次売上は既に存在しています！"
+                        "message" => "その日の日次売上は既に存在しています！日次売上画面から編集をして数値を変更するか、削除してもう一度この画面から更新してください！"
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
@@ -151,10 +151,12 @@ class DailySalesController extends Controller
 
 
                 return response()->json([
-                    "dailySale" => $daily_sales
+                    "dailySale" => $daily_sales,
+                    "message" => "日次売上を作成しました！",
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
+
                     "message" => "あなたには権限がありません！"
                 ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
@@ -217,7 +219,8 @@ class DailySalesController extends Controller
 
                 return response()->json(
                     [
-                        "dailySale" => $daily_sale
+                        "dailySale" => $daily_sale,
+                        "message" => "日次売上を更新しました！",
                     ],
                     200,
                     [],
@@ -247,8 +250,7 @@ class DailySalesController extends Controller
                 if (!$daily_sale) {
                     return response()->json([
                         'message' =>
-                        '日次売上が見つかりません！
-                        もう一度お試しください！'
+                        '日次売上が見つかりません！もう一度お試しください！'
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
                 $daily_sale->delete();

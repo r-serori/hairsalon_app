@@ -112,6 +112,15 @@ class YearlySalesController extends Controller
                 ]);
 
                 $ownerId = Owner::where('user_id', $user->id)->value('id');
+
+                $existYearlySale = YearlySale::where('year', $validatedData['year'])->where('owner_id', $ownerId)->first();
+
+                if ($existYearlySale) {
+                    return response()->json([
+                        "message" => "その年次売上は既に存在しています！年次売上画面から編集をして数値を変更するか、削除してもう一度この画面から更新してください！"
+                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
                 $yearly_sale = YearlySale::create([
                     'year' => $validatedData['year'],
                     'yearly_sales' => $validatedData['yearly_sales'],
@@ -125,7 +134,8 @@ class YearlySalesController extends Controller
 
                 return response()->json([
                     "yearlySale" => $yearly_sale,
-                    "message" => "年次売上を作成しました！"
+                    "message" => "年次売上を作成しました！",
+                    "status" => "success"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
@@ -190,7 +200,8 @@ class YearlySalesController extends Controller
                 return response()->json(
                     [
                         "yearlySale" => $yearly_sale,
-                        'message' => '年次売上を更新しました！'
+                        'message' => '年次売上を更新しました！',
+                        'status' => 'success'
                     ],
                     200,
                     [],

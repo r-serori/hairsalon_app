@@ -119,6 +119,14 @@ class MonthlySalesController extends Controller
 
                 $ownerId = Owner::where('user_id', $user->id)->value('id');
 
+                $existMonthlySale = MonthlySale::where('year_month', $validatedData['year_month'])->where('owner_id', $ownerId)->first();
+
+                if ($existMonthlySale) {
+                    return response()->json([
+                        "message" => "その月次売上は既に存在しています！月次売上画面から編集をして数値を変更するか、削除してもう一度この画面から更新してください！"
+                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
                 // 月別売上モデルを作成して保存する
                 $monthly_sales = MonthlySale::create([
                     'year_month' => $validatedData['year_month'],
@@ -133,7 +141,9 @@ class MonthlySalesController extends Controller
                 DB::commit();
                 // 成功したらリダイレクト
                 return response()->json([
-                    "monthlySale" => $monthly_sales
+                    "monthlySale" => $monthly_sales,
+                    "message" => "月次売上を作成しました！",
+                    "status" => "success"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
@@ -206,7 +216,9 @@ class MonthlySalesController extends Controller
                 // 成功したらリダイレクト
                 return response()->json(
                     [
-                        "monthlySale" => $monthly_sale
+                        "monthlySale" => $monthly_sale,
+                        "message" => "月次売上を更新しました！",
+                        "status" => "success"
                     ],
                     200,
                     [],
