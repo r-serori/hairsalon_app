@@ -17,8 +17,8 @@ return new class extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->string('title', 50)->nullable();
-            $table->string('start_time', 30)->nullable();
-            $table->string('end_time', 30)->nullable();
+            $table->string('start_time', 30)->nullable(false);
+            $table->string('end_time', 30)->nullable(false);
             $table->boolean('allDay')->default(0)->nullable(false);
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('cascade');
             $table->foreignId('owner_id')->constrained()->onDelete('cascade')->nullable(false);

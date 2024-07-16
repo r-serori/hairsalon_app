@@ -39,14 +39,13 @@ class UserGetController extends Controller
 
                     $users = User::whereIn('id', $userIds)->get();
 
-                    $responseUsers = $users->map(function ($usera) {
+                    $responseUsers = $users->map(function ($resUser) {
                         return [
-                            'id' => $usera->id,
-                            'name' => $usera->name,
-                            'email' => $usera->email,
-                            'phone_number' => $usera->phone_number,
-                            'role' => $usera->role === Roles::$OWNER ? 'オーナー' : ($usera->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
-                            'isAttendance' => $usera->isAttendance,
+                            'id' => $resUser->id,
+                            'name' => $resUser->name,
+                            'phone_number' => $resUser->phone_number,
+                            'role' => $resUser->role === Roles::$OWNER ? 'オーナー' : ($resUser->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
+                            'isAttendance' => $resUser->isAttendance,
                         ];
                     });
 
@@ -117,7 +116,6 @@ class UserGetController extends Controller
                         return [
                             'id' => $user->id,
                             'name' => $user->name,
-                            'email' => $user->email,
                             'phone_number' => $user->phone_number,
                             'role' => $user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
                             'isAttendance' => $user->isAttendance,

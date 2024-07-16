@@ -208,6 +208,7 @@ class AttendanceTimesController extends Controller
                 $startTime = Carbon::parse($request->start_time);
 
                 $existAttendanceStart = AttendanceTime::where('user_id', $request->user_id)->whereDate('start_time', $startTime->format('Y-m-d'))->latest()->first();
+
                 $existAttendanceEnd = AttendanceTime::where('user_id', $request->user_id)->whereDate('end_time', $startTime->format('Y-m-d'))->latest()->first();
 
                 if (!empty($existAttendanceStart) && !empty($existAttendanceEnd)) {
@@ -269,9 +270,7 @@ class AttendanceTimesController extends Controller
 
                     $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
 
-
                     Cache::forget($attendanceTimesCacheKey);
-
 
                     $user = User::find($request->user_id);
 
@@ -298,6 +297,7 @@ class AttendanceTimesController extends Controller
                 ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
             return response()->json([
                 'message' => '出勤時間と写真の登録に失敗しました！

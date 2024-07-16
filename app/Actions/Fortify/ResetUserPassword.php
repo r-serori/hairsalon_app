@@ -3,19 +3,15 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Models\PasswordReset;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
-use Illuminate\Support\Facades\Auth;
-use App\Enums\Roles;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+
 
 
 
@@ -42,34 +38,20 @@ class ResetUserPassword implements ResetsUserPasswords
                 'password_confirmation.same' => __('パスワードと確認フィールドが一致していません！'), // エラーメッセージ追加
             ]);
 
-            Log::info('パスワードリセットのリクエストを受け付けました！', $request->all());
-            Log::info('パスワードリセットのリクエストを受け付けました！', $request->only('email', 'password', 'password_confirmation', 'token'));
+            $passwordReset = PasswordReset::where('email', $request->email)->where('token', $request->token)->first();
 
-
-
-            $status = Password::reset(
-                $request->only('email', 'password', 'password_confirmation', 'token'),
-                function ($user, $password) {
-                    $user->forceFill([
-                        'password' => Hash::make($password),
-                    ])->save();
-                }
-            );
-
-
-
-            if ($status === Password::PASSWORD_RESET) {
-                return response()->json([
-                    'message' => 'パスワードのリセットに成功しました!',
-                ], 200);
-            } elseif ($status === Password::INVALID_TOKEN) {
+            if (empty($passwordReset)) {
                 return response()->json([
                     'message' => 'パスワードのリセットに失敗しました。リンクが無効な可能性があります。もう一度お試しください。',
                 ], 400);
             } else {
+                $user = User::where('email', $request->email)->first();
+                $user->password = Hash::make($request->password);
+                $user->save();
+                $passwordReset->delete();
                 return response()->json([
-                    'message' => 'パスワードのリセットに失敗しました。もう一度お試しください。',
-                ], 500);
+                    'message' => 'パスワードのリセットに成功しました！',
+                ]);
             }
         } catch (ValidationException $e) {
             Log::error($e->getMessage());

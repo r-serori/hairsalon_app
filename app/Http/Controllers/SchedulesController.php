@@ -61,31 +61,34 @@ class SchedulesController extends Controller
                         ->get();
                 });
 
+                $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
+                // Log::info('staff', $staff->toArray());
+
+                if ($staffs->isEmpty()) {
+                    $owner = Owner::find($ownerId);
+                    $resUser = User::find($owner->user_id);
+                    $responseUsers = ['id' => $resUser->id, 'name' => $resUser->name];
+                } else {
+                    $owner = Owner::find($ownerId);
+                    // Log::info('owner', $owner->toArray());
+                    $OwnersUser = User::find($owner->user_id);
+                    // Log::info('user', $user->toArray());
+                    $staffs->push($OwnersUser->id);
+                    // Log::info('staff', $staff->toArray());
+                    $users = User::whereIn('id', $staffs)->get();
+                    // Log::info('users', $users->toArray());
+                    $responseUsers = $users->map(function ($user) {
+                        return ['id' => $user->id, 'name' => $user->name];
+                    });
+                }
+
                 if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
                     return response()->json([
                         "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                        'responseUsers' => $responseUsers,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } elseif ($customers->isEmpty() && $selectSchedules->isNotEmpty()) {
-                    $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
-                    // Log::info('staff', $staff->toArray());
 
-                    if ($staffs->isEmpty()) {
-                        $owner = Owner::find($ownerId);
-                        $resUser = User::find($owner->user_id);
-                        $responseUsers = ['id' => $resUser->id, 'name' => $resUser->name];
-                    } else {
-                        $owner = Owner::find($ownerId);
-                        // Log::info('owner', $owner->toArray());
-                        $OwnersUser = User::find($owner->user_id);
-                        // Log::info('user', $user->toArray());
-                        $staffs->push($OwnersUser->id);
-                        // Log::info('staff', $staff->toArray());
-                        $users = User::whereIn('id', $staffs)->get();
-                        // Log::info('users', $users->toArray());
-                        $responseUsers = $users->map(function ($user) {
-                            return ['id' => $user->id, 'name' => $user->name];
-                        });
-                    }
                     return response()->json([
                         "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
                         'schedules' => $selectSchedules,

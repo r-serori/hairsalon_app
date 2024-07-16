@@ -160,9 +160,7 @@ Route::middleware('api')->group(
             });
         });
 
-
         Route::prefix('/user')->group(function () {
-
             //オーナーがスタッフの情報を取得 Gate,OWNER
             Route::get('/getUsers', [UserGetController::class, 'getUsers']);
 

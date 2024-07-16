@@ -84,7 +84,6 @@ class RegisteredUserController extends Controller
             DB::commit();
 
             return response()->json([
-
                 'message' => 'ユーザー登録に成功しました！オーナー登録をしてください！',
                 'responseUser' => $responseUser
             ], 200);
@@ -94,6 +93,10 @@ class RegisteredUserController extends Controller
             if (strpos($e->getMessage(), 'メールアドレスの値は既に存在') !== false) {
                 return response()->json([
                     'message' => 'メールアドレスが既に存在しています！他のメールアドレスを入力してください！'
+                ], 400);
+            } elseif (strpos($e->getMessage(), 'users_phone_number_unique') !== false) {
+                return response()->json([
+                    'message' => '電話番号が既に存在しています！他の電話番号を入力してください！'
                 ], 400);
             } else {
                 // その他のエラー処理
