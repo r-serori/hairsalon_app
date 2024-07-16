@@ -359,7 +359,8 @@ class AttendanceTimesController extends Controller
                 return response()->json(
                     [
                         "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、その後出勤ボタンを押してください！",
-                        "attendanceTime" => $existYesterdayStartTime, "responseUser" => $responseUser
+                        "attendanceTime" => $existYesterdayStartTime,
+                        "responseUser" => $responseUser
                     ],
                     200,
                     [],

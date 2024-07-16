@@ -24,35 +24,53 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'email' => ['required', 'email'],
-        ]);
-
-        // ユーザーを取得して存在するか確認する
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            throw ValidationException::withMessages([
-                'email' => ['指定されたメールアドレスのユーザーは見つかりませんでした。'],
+        DB::beginTransaction();
+        try {
+            $request->validate([
+                'email' => ['required', 'email'],
             ]);
+
+            // ユーザーを取得して存在するか確認する
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user) {
+                throw ValidationException::withMessages([
+                    'email' => ['指定されたメールアドレスのユーザーは見つかりませんでした。'],
+                ]);
+            }
+
+            // パスワードリセットトークンを生成
+            $token = Password::createToken($user);
+
+            // パスワードリセットテーブルにトークンを保存
+            DB::table('password_resets')->updateOrInsert(
+                ['email' => $request->email],
+                [
+                    'email' => $request->email,
+                    'token' => $token,
+                    'created_at' => Carbon::now()
+                ]
+            );
+
+            // パスワードリセット通知を送信する
+            $user->notify(new ResetPasswordNotification($token));
+
+            DB::commit();
+
+            return response()->json(
+                ['message' => 'パスワードリセットのメールを送信しました。'],
+                200,
+                [],
+                JSON_UNESCAPED_UNICODE
+            )->header('Content-Type', 'application/json; charset=UTF-8');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(
+                ['message' => 'エラーが発生しました。もう一度お試しください。'],
+                500,
+                [],
+                JSON_UNESCAPED_UNICODE
+            )->header('Content-Type', 'application/json; charset=UTF-8');
         }
-
-        // パスワードリセットトークンを生成
-        $token = Password::createToken($user);
-
-        // パスワードリセットテーブルにトークンを保存
-        DB::table('password_resets')->updateOrInsert(
-            ['email' => $request->email],
-            [
-                'email' => $request->email,
-                'token' => $token,
-                'created_at' => Carbon::now()
-            ]
-        );
-
-        // パスワードリセット通知を送信する
-        $user->notify(new ResetPasswordNotification($token));
-
-        return response()->json(['status' => 'パスワードリセットのメールを送信しました。']);
     }
 }

@@ -38,7 +38,7 @@ class UserPostController extends Controller
             $user = User::where('id', $request->user_id)->first();
 
             if (!empty($user)) {
-                Owner::create([
+                $owner = Owner::create([
                     'store_name' => $request->store_name,
                     'postal_code' => $request->postal_code,
                     'prefecture' => $request->prefecture,
@@ -54,6 +54,7 @@ class UserPostController extends Controller
                 return response()->json(
                     [
                         'message' => 'オーナー用ユーザー登録に成功しました!',
+                        'owner' => $owner
                     ],
                     200,
                     [],

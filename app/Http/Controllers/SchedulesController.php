@@ -478,14 +478,14 @@ class SchedulesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
-                    'Sid' => 'required|integer|exists:schedules,id',
+                    'id' => 'required|integer|exists:schedules,id',
                     'title' => 'required|string',
                     'start_time' => 'nullable',
                     'end_time' => 'nullable',
                     'allDay' => 'required',
                 ]);
 
-                $schedule = Schedule::find($validatedData['Sid']);
+                $schedule = Schedule::find($validatedData['id']);
                 // $schedule = Schedule::find($id);
 
                 $schedule->title = $validatedData['title'];
@@ -777,7 +777,7 @@ class SchedulesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validatedData = $request->validate([
-                    'Sid' => 'required|integer|exists:schedules,id',
+                    'id' => 'required|integer|exists:schedules,id',
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
                     'remarks' => 'nullable',
@@ -911,7 +911,7 @@ class SchedulesController extends Controller
                 });
                 $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
-                $schedule = Schedule::find($validatedData['Sid']);
+                $schedule = Schedule::find($validatedData['id']);
 
                 $schedule->title = $validatedData['title'];
                 $schedule->start_time = $validatedData['start_time'];

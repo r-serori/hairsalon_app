@@ -43,7 +43,7 @@ class ResetUserPassword implements ResetsUserPasswords
 
             $passwordReset = PasswordReset::where('email', $request->email)->where('token', $request->token)->first();
 
-            Log::info('パスワードリセットのリクエストを受け付けましたaaaaa！', $passwordReset);
+            // Log::info('パスワードリセットのリクエストを受け付けました！', $passwordReset);
 
             if (empty($passwordReset)) {
                 return response()->json([
