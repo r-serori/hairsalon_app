@@ -13,6 +13,8 @@ use Laravel\Fortify\Contracts\RegisterViewResponse;
 use Laravel\Fortify\Fortify;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use App\Enums\Roles;
+use App\Notifications\VerifyEmailNotification;
 
 class RegisteredUserController extends Controller
 {
@@ -65,9 +67,9 @@ class RegisteredUserController extends Controller
                 ]);
             }
 
-            event(new Registered($user = $creator->create($request->all())));
+            event(($user = $creator->create($request->all())));
 
-            $user->notify(new \App\Notifications\VerifyEmailNotification($user));
+            $user->notify(new VerifyEmailNotification($user));
 
             $this->guard->login($user);
 
@@ -77,14 +79,14 @@ class RegisteredUserController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'phone_number' => $user->phone_number,
-                    'role' => 'オーナー',
+                    'role' => Roles::$OWNER,
                     'isAttendance' => $user->isAttendance,
                 ];
 
             DB::commit();
 
             return response()->json([
-                'message' => 'ユーザー登録に成功しました！オーナー登録をしてください！',
+                'message' => 'ユーザー仮登録に成功しました！オーナー登録をしてください！',
                 'responseUser' => $responseUser
             ], 200);
         } catch (\Exception $e) {

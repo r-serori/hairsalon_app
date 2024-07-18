@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Owner;
 use App\Models\Staff;
 use App\Enums\Roles;
+use Illuminate\Http\JsonResponse as HttpJsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -44,7 +45,7 @@ class UserPostController extends Controller
                     'prefecture' => $request->prefecture,
                     'city' => $request->city,
                     'addressLine1' => $request->addressLine1,
-                    'addressLine2' => $request->addressLine2 ? $request->addressLine2 : '無し', // 三項演算子で'無し'を代入
+                    'addressLine2' => $request->addressLine2 ? $request->addressLine2 : '',
                     'phone_number' => $request->phone_number,
                     'user_id' => $request->user_id,
                 ]);
@@ -54,7 +55,7 @@ class UserPostController extends Controller
                 return response()->json(
                     [
                         'message' => 'オーナー用ユーザー登録に成功しました!',
-                        'owner' => $owner
+                        'owner' => $owner,
                     ],
                     200,
                     [],
@@ -94,7 +95,7 @@ class UserPostController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $owner = Owner::find(Auth::id());
+                $owner = Owner::where('user_id', $user->id)->first();
 
                 if (empty($owner)) {
                     throw new \Exception('オーナー情報が見つかりませんでした！');
@@ -174,6 +175,58 @@ class UserPostController extends Controller
             return response()->json([
                 'message' => 'ユーザー登録に失敗しました！もう一度最初からやり直してください！',
             ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+        }
+    }
+
+    public function ownerUpdate(Request $request): JsonResponse
+    {
+        DB::beginTransaction();
+        try {
+            $user = User::find(Auth::id());
+            if ($user && $user->hasRole(Roles::$OWNER)) {
+
+                $owner = Owner::where('user_id', $user->id)->first();
+
+                if (empty($owner)) {
+                    throw new \Exception('オーナー情報が見つかりませんでした！');
+                }
+
+                $request->validate([
+                    'store_name' => ['required', 'string', 'max:100'],
+                    'postal_code' => ['required', 'integer'],
+                    'prefecture' => ['required', 'string', 'max:100'],
+                    'city' => ['required', 'string', 'max:100'],
+                    'addressLine1' => ['required', 'string', 'max:200'],
+                    'addressLine2' => ['nullable', 'string', 'max:200'],
+                    'phone_number' => ['required', 'string', 'max:20'],
+                ]);
+
+                $owner->store_name = $request->store_name;
+                $owner->postal_code = $request->postal_code;
+                $owner->prefecture = $request->prefecture;
+                $owner->city = $request->city;
+                $owner->addressLine1 = $request->addressLine1;
+                $owner->addressLine2 = $request->addressLine2 ? $request->addressLine2 : '';
+                $owner->phone_number = $request->phone_number;
+                $owner->save();
+
+                DB::commit();
+
+                return response()->json([
+                    'message' => 'オーナー情報の更新に成功しました！',
+                    'owner' => $owner,
+                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            } else {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'あなたには権限がありません！',
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'エラーが発生しました！もう一度やり直してください！',
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 

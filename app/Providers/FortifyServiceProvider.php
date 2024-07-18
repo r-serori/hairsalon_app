@@ -38,6 +38,7 @@ class FortifyServiceProvider extends ServiceProvider
         // 認証の処理
         //class AuthenticatedSessionControllerの AttemptToAuthenticate::classを上書き
         Fortify::authenticateUsing(function (LoginRequest $request) {
+
             $user = User::where('email', $request->email)->first();
 
             if ($user && Hash::check($request->password, $user->password)) {

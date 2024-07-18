@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Actions\Jetstream\DeleteUser;
+use App\Actions\Jetstream\DeleteUserMain;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Jetstream\Jetstream;
 use App\Enums\Roles;
@@ -27,7 +27,7 @@ class JetstreamServiceProvider extends ServiceProvider
 
         $this->configurePermissions();
 
-        Jetstream::deleteUsersUsing(DeleteUser::class);
+        Jetstream::deleteUsersUsing(DeleteUserMain::class);
     }
 
     /**

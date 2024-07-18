@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use App\Notifications\VerifyEmailNotification;
 use Illuminate\Http\JsonResponse;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class VerifyEmailController extends Controller
@@ -19,6 +20,7 @@ class VerifyEmailController extends Controller
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
+        DB::beginTransaction();
         try {
             Log::info('EmailVerificationRequest: ', [$request]);
 
@@ -35,11 +37,13 @@ class VerifyEmailController extends Controller
                 event(new Verified($user));
             }
 
+            DB::commit();
             return redirect(env('FRONTEND_URL') . '/auth/owner')
                 ->with('status', 'success')
                 ->with('message', 'メールアドレスは既に認証済みです！');
         } catch (\Exception $e) {
-            return redirect(env('FRONTEND_URL') . '/_error')
+            DB::rollBack();
+            return redirect(env('FRONTEND_URL') . '/error?code=500')
                 ->with('status', 'error')
                 ->with('message', 'メールアドレスの認証に失敗しました。');
         }

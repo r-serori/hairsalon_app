@@ -246,7 +246,8 @@ class StocksController extends Controller
 
                 DB::commit();
                 return response()->json([
-                    "deleteId"  => $request->id
+                    "deleteId"  => $request->id,
+                    "message" => "在庫を削除しました！"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([

@@ -19,6 +19,8 @@ use Illuminate\Http\JsonResponse;
 use App\Models\Owner;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -65,6 +67,18 @@ class AuthenticatedSessionController extends Controller
 
                 $existOwner = Owner::where('user_id', $request->user()->id)->first();
 
+                $user = User::find(Auth::id());
+
+                if ($user->email_verified_at === null) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'メール認証が完了していません。メール認証を行ってください。',
+                    ], 433, [], JSON_UNESCAPED_UNICODE)->header(
+                        'Content-Type',
+                        'application/json; charset=UTF-8'
+                    );
+                }
+
                 $responseUser =
                     [
                         'id' => $request->user()->id,
@@ -75,9 +89,11 @@ class AuthenticatedSessionController extends Controller
                         'isAttendance' => $request->user()->isAttendance,
                     ];
 
+
                 if (!empty($existOwner)) {
                     DB::commit();
                     return response()->json([
+                        'ownerRender' => false,
                         'message' => 'オーナー用ユーザーとしてログインしました!',
                         'responseUser' => $responseUser,
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
@@ -87,15 +103,16 @@ class AuthenticatedSessionController extends Controller
                     if ($request->user()->role === Roles::$OWNER) {
                         DB::rollBack();
                         return response()->json([
-                            'status' => 299,
+                            'ownerRender' => true,
                             'message' => 'オーナー用ユーザーとしてログインしました!ただし、店舗登録が完了していません。店舗登録を行ってください。',
                             'responseUser' => $responseUser,
-                        ], 299, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                     } else {
 
                         DB::commit();
 
                         return response()->json([
+                            'ownerRender' => false,
                             'message' => 'スタッフ用ユーザーとしてログインしました!',
                             'responseUser' => $responseUser
                         ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');

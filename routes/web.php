@@ -38,16 +38,6 @@ Route::middleware('web')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
 
-        //購入者ownerが店の情報を登録
-        Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
-
-        // Route::post('ownerRegister', [UserPostController::class, 'ownerStore']);
-
-        // Route::get('/attendances', AttendancesController::class);
-        // Route::post('/attendances/update', [AttendancesController::class, 'update']);
-        // Route::post('/attendances/delete', [AttendancesController::class, 'destroy']);
-
-
         //userの勤怠時間のコントローラー
         //勤怠時間の取得userのidと年月を受け取る。yearMonthが"無し"の場合は当月の勤怠時間を取得　Gate,OWNER
         Route::get('/attendance_times/selectedAttendanceTimes/{yearMonth}/{user_id}', [AttendanceTimesController::class, 'selectedAttendanceTime']);
@@ -142,13 +132,6 @@ Route::middleware('web')->group(function () {
         Route::post('/stock_categories/store', [StockCategoriesController::class, 'store']);
         Route::post('/stock_categories/update', [StockCategoriesController::class, 'update']);
         Route::post('/stock_categories/delete', [StockCategoriesController::class, 'destroy']);
-
-
-        // Route::get('/course_customers', CourseCustomersController::class);
-        // Route::get('/customer_attendances', CustomerAttendancesController::class);
-        // Route::get('/hairstyle_customers', HairstyleCustomersController::class);
-        // Route::get('/merchandise_customers', MerchandiseCustomersController::class);
-        // Route::get('/option_customers', OptionCustomersController::class);
     });
 });
 

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\Roles;
+use App\Http\Controllers\Auth\UpdateUserInfoController;
 use Illuminate\Support\Facades\Http;
 
 Route::middleware('api')->group(
@@ -29,7 +30,6 @@ Route::middleware('api')->group(
                 'message' => 'CSRF token has been set successfully.',
             ]);
         });
-
 
         Route::get('/search/{zipCode}', function ($code) {
 
@@ -46,19 +46,21 @@ Route::middleware('api')->group(
                 //購入者ownerがuser登録するときの処理
                 Route::post('/register', [RegisteredUserController::class, 'store']);
 
-
                 //ログイン処理
                 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-
-
 
                 Route::post('/forgotPassword', [PasswordResetLinkController::class, 'store'])
                     ->name('password.email');
 
-
                 //パスワードリセット　Gate,ALL
                 Route::post('/resetPassword', [ResetUserPassword::class, 'resetPassword'])
                     ->name('password.reset');
+
+                Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+                    ->middleware('signed')->name('verification.verify');
+
+                Route::get('/updateInfo/{id}/{hash}', [UpdateUserInfoController::class, 'updateInfoVerifyEmail'])
+                    ->middleware('signed')->name('verification.updateInfo');
             }
         );
 
@@ -101,8 +103,6 @@ Route::middleware('api')->group(
                 try {
                     $user = User::find(Auth::id());
                     if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
-
-
                         return response()->json(['roleKey' => env('REACT_APP_ENCRYPTION_KEY')], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                     } else {
                         return response()->json([
@@ -143,37 +143,39 @@ Route::middleware('api')->group(
 
             Route::prefix('/user')->group(function () {
 
-                Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
-                    ->middleware(['auth', 'signed'])->name('verification.verify');
+                //購入者ownerが店の情報を登録
+                Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
+
+                //購入者ownerが店の情報を更新
+                Route::post('/updateOwner', [UserPostController::class, 'ownerUpdate']);
 
                 //ログアウト処理 Gate,ALL
                 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
-
-                //各スタッフが自分の情報を取得 Gate,ALL
-                Route::get('/showUser', [UserGetController::class, 'show']);
 
                 //ユーザーが自分の個人情報を変更 Gate,ALL
                 Route::post('/updateUser', [UpdateUserProfileInformation::class, 'updateUser']);
 
                 //ユーザーが自分のパスワードを変更 Gate,ALL
                 Route::post('/updateUserPassword', [UpdateUserPassword::class, 'updateFromRequest']);
+
+                //各スタッフが自分の情報を取得 Gate,ALL
+                Route::get('/getOwner', [UserGetController::class, 'getOwner']);
+
+                //各スタッフが自分の情報を取得 Gate,ALL
+                Route::get('/showUser', [UserGetController::class, 'show']);
+
+                //オーナーがスタッフの情報を取得 Gate,OWNER
+                Route::get('/getUsers', [UserGetController::class, 'getUsers']);
+
+                //オーナーがスタッフの権限を変更 Gate,OWNER
+                Route::post('/updatePermission', [UserPostController::class, 'updatePermission']);
+
+                //オーナーがスタッフを登録 Gate,OWNER
+                Route::post('/staffRegister', [UserPostController::class, 'staffStore']);
+
+                //オーナーがスタッフの情報を削除 Gate,OWNER
+                Route::post('/deleteUser', [DeleteUserMain::class, 'deleteUser']);
             });
-        });
-
-        Route::prefix('/user')->group(function () {
-            //オーナーがスタッフの情報を取得 Gate,OWNER
-            Route::get('/getUsers', [UserGetController::class, 'getUsers']);
-
-            Route::get('/getAttendanceUsers', [UserGetController::class, 'getAttendanceUsers']);
-
-            //オーナーがスタッフの権限を変更 Gate,OWNER
-            Route::post('/updatePermission', [UserPostController::class, 'updatePermission']);
-
-            //オーナーがスタッフを登録 Gate,OWNER
-            Route::post('/staffRegister', [UserPostController::class, 'staffStore']);
-
-            //オーナーがスタッフの情報を削除 Gate,OWNER
-            Route::post('/deleteUser', [DeleteUserMain::class, 'deleteUser']);
         });
     }
 );

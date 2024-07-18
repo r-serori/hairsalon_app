@@ -6,16 +6,16 @@ use Illuminate\Support\Facades\Gate;
 use App\Enums\Permissions;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
-use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\UpdateProfileNotification;
+use Illuminate\Support\Facades\DB;
 
-class UpdateUserProfileInformation implements UpdatesUserProfileInformation
+class UpdateUserProfileInformation
 {
     public function update($user, array $input): void
     {
@@ -26,6 +26,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     public function updateUser(Request $request): JsonResponse
     {
         try {
+            DB::beginTransaction();
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
@@ -36,16 +37,22 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 ])->validateWithBag('updateProfileInformation');
 
                 if (
-                    isset($request['email']) && $user->email !== $request['email'] &&
-                    $user instanceof MustVerifyEmail
+                    isset($request['email']) && $user->email !== $request['email']
                 ) {
                     $this->updateVerifiedUserInfo($user, $request);
 
+                    Auth::guard('web')->logout();
+                    if ($request->hasSession()) {
+                        $request->session()->invalidate();
+                        $request->session()->regenerateToken();
+                    };
+
+                    DB::commit();
+
+
                     return response()->json(
                         [
-
-                            'message' => 'プロフィール情報の更新に成功しました!確認メールを送信しました!',
-
+                            'message' => 'プロフィール情報の更新に成功しました!もう一度ログインしてください！',
                         ],
                         200,
                         [],
@@ -60,6 +67,14 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                         'email' => $request['email'],
                         'phone_number' => $request['phone_number'],
                     ])->save();
+
+                    Auth::guard('web')->logout();
+                    if ($request->hasSession()) {
+                        $request->session()->invalidate();
+                        $request->session()->regenerateToken();
+                    };
+
+                    DB::commit();
 
                     return response()->json(
                         [
@@ -111,18 +126,22 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
     protected function updateVerifiedUserInfo($user, Request $request)
     {
         try {
+            // ユーザーのプロフィール情報を更新し、確認メールの送信を行う
             $user->forceFill([
                 'name' => $request['name'],
                 'email' => $request['email'],
                 'phone_number' => $request['phone_number'],
-                'email_verified_at' => null,
+                'email_verified_at' => null, // 確認メールがクリックされるまでは null をセット
             ])->save();
 
-            $user->sendEmailVerificationNotification();
+            // メールの送信などの処理を実行する
+            $user->notify(new UpdateProfileNotification($user));
 
             return $user;
         } catch (\Exception $e) {
-            return throw new \Exception($e->getMessage());
+            // エラー処理
+            Log::error($e->getMessage());
+            throw new \Exception('プロフィール情報の更新に失敗しました。');
         }
     }
 }

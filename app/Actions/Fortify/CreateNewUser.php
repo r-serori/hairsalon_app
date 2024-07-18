@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Nette\Utils\Json;
 use Laravel\Jetstream\Jetstream;
 use App\Enums\Roles;
+use Illuminate\Support\Facades\DB;
 
 class CreateNewUser implements CreatesNewUsers
 {
@@ -27,7 +28,7 @@ class CreateNewUser implements CreatesNewUsers
     public function create(array $input): User
     {
         Log::info('ユーザー登録処理を開始します。', $input);
-
+        DB::beginTransaction();
         try {
             $validator = Validator::make($input, [
                 'name' => ['required', 'string', 'max:100'],
@@ -51,10 +52,13 @@ class CreateNewUser implements CreatesNewUsers
                 'password' => Hash::make($input['password']),
                 'role' =>  Roles::$OWNER,
                 'isAttendance' => $input['isAttendance'] ? 1 : 0,
+                'email_verified_at' => null,
             ]);
 
+            DB::commit();
             return $user;
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('ユーザー登録処理中にエラーが発生しました。');
             Log::error('エラー内容: ' . $e);
             return throw new \Exception($e->getMessage());
