@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class HairstylesController extends Controller
 {
@@ -48,19 +49,20 @@ class HairstylesController extends Controller
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        'hairstyles' => $hairstyles
+                        'hairstyles' => $hairstyles,
+                        'message' => "ヘアスタイルの取得に成功しました！"
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500);
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "ヘアスタイルが見つかりませんでした！
                 もう一度お試しください！"
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
@@ -71,9 +73,18 @@ class HairstylesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
+
                     'hairstyle_name' => 'required|string',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '入力内容をご確認ください！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -94,42 +105,23 @@ class HairstylesController extends Controller
 
                 DB::commit();
                 return response()->json([
-                    "hairstyle" => $hairstyle
+                    "hairstyle" => $hairstyle,
+                    "message" => "ヘアスタイルの作成に成功しました！"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500);
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 "message" => "ヘアスタイルの作成に失敗しました！
                 もう一度お試しください！"
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
-    // public function show($id)
-    // {
-    //     try {
-
-    //         $hairstyle = Hairstyle::find($id);
-    //         if (!$hairstyle) {
-    //             return response()->json([
-    //                 'message' => 'ヘアスタイルが見つかりません！'
-    //             ], 404);
-    //         }
-
-    //         return response()->json([
-    //             'hairstyle' => $hairstyle
-    //         ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'ヘアスタイルが見つかりません！'
-    //         ], 500);
-    //     }
-    // }
 
 
 
@@ -139,13 +131,21 @@ class HairstylesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
+
                     'hairstyle_name' => 'required|string',
                 ]);
 
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '入力内容をご確認ください！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
+
                 $hairstyle = Hairstyle::find($request->id);
                 $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
-
 
                 $hairstyle->save();
 
@@ -163,21 +163,22 @@ class HairstylesController extends Controller
                 DB::commit();
                 return response()->json(
                     [
-                        "hairstyle" => $hairstyle
+                        "hairstyle" => $hairstyle,
+                        "message" => "ヘアスタイルの更新に成功しました！"
                     ],
                     200
                 );
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500);
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 "message" => "ヘアスタイルの更新に失敗しました！
                 もう一度お試しください！"
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
@@ -190,9 +191,8 @@ class HairstylesController extends Controller
                 $hairstyle = Hairstyle::find($request->id);
                 if (!$hairstyle) {
                     return response()->json([
-                        'message' => 'ヘアスタイルが見つかりません！
-                        もう一度お試しください！'
-                    ], 500);
+                        'message' => 'ヘアスタイルが見つかりません！もう一度お試しください！'
+                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
                 $hairstyle->delete();
 
@@ -204,19 +204,20 @@ class HairstylesController extends Controller
 
                 DB::commit();
                 return response()->json([
-                    "deleteId" => $request->id
+                    "deleteId" => $request->id,
+                    "message" => "ヘアスタイルの削除に成功しました！"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500);
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'message' => 'ヘアスタイルの削除に失敗しました！
                 もう一度お試しください！'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 }

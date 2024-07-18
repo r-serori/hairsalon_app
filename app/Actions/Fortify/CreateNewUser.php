@@ -31,12 +31,12 @@ class CreateNewUser implements CreatesNewUsers
         DB::beginTransaction();
         try {
             $validator = Validator::make($input, [
-                'name' => ['required', 'string', 'max:100'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-                'phone_number' => ['required', 'string', 'max:255'],
+                'name' => 'required | string | max:100',
+                'email' => 'required | string | email |max:255 | unique:users',
+                'phone_number' => 'required | string | max:255',
                 'password' => $this->passwordRules(),
-                'role' => ['required', 'string', 'max:30'],
-                'isAttendance' => ['required', 'boolean'],
+                'role' => 'required | string | max:30',
+                'isAttendance' => 'required |boolean'
             ]);
 
             if ($validator->fails()) {
@@ -51,7 +51,7 @@ class CreateNewUser implements CreatesNewUsers
                 'phone_number' => $input['phone_number'],
                 'password' => Hash::make($input['password']),
                 'role' =>  Roles::$OWNER,
-                'isAttendance' => $input['isAttendance'] ? 1 : 0,
+                'isAttendance' => $input['isAttendance'],
                 'email_verified_at' => null,
             ]);
 

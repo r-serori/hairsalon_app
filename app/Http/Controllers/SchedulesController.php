@@ -23,6 +23,7 @@ use App\Enums\Roles;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class SchedulesController extends Controller
 {
@@ -50,14 +51,17 @@ class SchedulesController extends Controller
                     return  Customer::where('owner_id', $ownerId)->get();
                 });
 
-
                 $currentYear = Carbon::now()->year;
 
                 $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
 
                 $selectSchedules = Cache::remember($schedulesCacheKey, $expirationInSeconds, function () use ($ownerId, $currentYear) {
-                    return Schedule::whereYear('start_time', $currentYear)
-                        ->where('owner_id', $ownerId)
+
+                    $currentYearStart = Carbon::create($currentYear, 1, 1);
+                    $nextYearEnd = Carbon::create($currentYear + 1, 12, 31); // 次の年の最終日
+
+                    return Schedule::where('owner_id', $ownerId)
+                        ->whereBetween('start_time', [$currentYearStart, $nextYearEnd])
                         ->get();
                 });
 
@@ -209,7 +213,7 @@ class SchedulesController extends Controller
                 return response()->json([
                     'message' =>
                     'あなたには権限がありません！'
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             Log::error($e);
@@ -246,15 +250,10 @@ class SchedulesController extends Controller
 
                 $selectGetYear = $decodeYear;
 
-
-                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
-
-                $selectSchedules = Cache::remember($schedulesCacheKey, $expirationInSeconds, function () use ($ownerId, $selectGetYear) {
-                    return Schedule::whereYear('start_time', $selectGetYear)
-                        ->where('owner_id', $ownerId)
-                        ->get();
-                });
-
+                $selectSchedules
+                    = Schedule::whereDate('start_time', $selectGetYear)
+                    ->where('owner_id', $ownerId)
+                    ->get();
 
                 if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
                     return response()->json([
@@ -381,7 +380,7 @@ class SchedulesController extends Controller
                 return response()->json([
                     'message' =>
                     'あなたには権限がありません！'
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -398,12 +397,22 @@ class SchedulesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'title' => 'required|string',
-                    'start_time' => 'nullable',
-                    'end_time' => 'nullable',
-                    'allDay' => 'in:0,1',
+                    'start_time' => 'required|date_format:Y-m-d H:i:s',
+                    'end_time' => 'required|date_format:Y-m-d H:i:s',
+                    'allDay' => 'required|boolean',
                 ]);
+
+                if ($validator->fails()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'スケジュールの作成に失敗しました！入力ミスがあります！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
+
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -435,7 +444,7 @@ class SchedulesController extends Controller
                 return response()->json([
                     'message' =>
                     'あなたには権限がありません！'
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -447,28 +456,6 @@ class SchedulesController extends Controller
         }
     }
 
-    // public function show($id)
-    // {
-    //     try {
-    //         if (Gate::allows(Permissions::$OWNER_PERMISSION)) {
-    //             $schedule = Schedule::find($id);
-
-    //             return response()->json([
-    //                 'schedule' => $schedule
-    //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         } else {
-    //             return response()->json([
-    //                 'message' =>
-    //                 'あなたには権限がありません！'
-    //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         }
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' =>
-    //             'スケジュールが見つかりません！'
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
 
 
     public function update(Request $request)
@@ -477,13 +464,22 @@ class SchedulesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'id' => 'required|integer|exists:schedules,id',
                     'title' => 'required|string',
-                    'start_time' => 'nullable',
-                    'end_time' => 'nullable',
-                    'allDay' => 'required',
+                    'start_time' => 'required|date_format:Y-m-d H:i:s',
+                    'end_time' => 'required|date_format:Y-m-d H:i:s',
+                    'allDay' => 'required|boolean',
                 ]);
+
+                if ($validator->fails()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'スケジュールの更新に失敗しました！入力ミスがあります！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
 
                 $schedule = Schedule::find($validatedData['id']);
                 // $schedule = Schedule::find($id);
@@ -511,7 +507,8 @@ class SchedulesController extends Controller
 
                 return response()->json(
                     [
-                        "schedule" => $schedule
+                        "schedule" => $schedule,
+                        'message' => 'スケジュールの更新に成功しました！'
                     ],
                     200,
                     [],
@@ -521,7 +518,7 @@ class SchedulesController extends Controller
                 return response()->json([
                     'message' =>
                     'あなたには権限がありません！'
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -545,7 +542,7 @@ class SchedulesController extends Controller
                         'message' =>
                         'スケジュールが見つかりません！
                         もう一度お試しください！'
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $schedule->delete();
@@ -571,7 +568,7 @@ class SchedulesController extends Controller
                 return response()->json([
                     'message' =>
                     'あなたには権限がありません！'
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -589,7 +586,7 @@ class SchedulesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
                     'remarks' => 'nullable',
@@ -604,12 +601,19 @@ class SchedulesController extends Controller
                     'user_id' => 'required|array',
                     'user_id.*' => 'required|integer|exists:users,id',
                     'title' => 'nullable',
-                    'start_time' => 'nullable',
-                    'end_time' => 'nullable',
-                    'allDay' => 'required|in:0,1',
-
+                    'start_time' => 'required|date_format:Y-m-d H:i:s',
+                    'end_time' => 'required|date_format:Y-m-d H:i:s',
+                    'allDay' => 'required|boolean',
                 ]);
 
+                if ($validator->fails()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => '顧客とスケジュールの作成に失敗しました！入力ミスがあります！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -755,7 +759,7 @@ class SchedulesController extends Controller
                 return response()->json([
                     'message' =>
                     'あなたには権限がありません！'
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -776,7 +780,7 @@ class SchedulesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'id' => 'required|integer|exists:schedules,id',
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
@@ -792,11 +796,20 @@ class SchedulesController extends Controller
                     'user_id' => 'required|array',
                     'user_id.*' => 'required|integer|exists:users,id',
                     'title' => 'nullable',
-                    'start_time' => 'nullable',
-                    'end_time' => 'nullable',
-                    'allDay' => 'required|in:0,1',
+                    'start_time' => 'required|date_format:Y-m-d H:i:s',
+                    'end_time' => 'required|date_format:Y-m-d H:i:s',
+                    'allDay' => 'required|boolean',
                     'customer_id' => 'required',
                 ]);
+
+                if ($validator->fails()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => '顧客とスケジュールの更新に失敗しました！入力ミスがあります！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
 
 
                 $staff = Staff::where('user_id', $user->id)->first();
@@ -947,7 +960,7 @@ class SchedulesController extends Controller
                 return response()->json([
                     'message' =>
                     'あなたには権限がありません！'
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -966,7 +979,7 @@ class SchedulesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
                     'remarks' => 'nullable',
@@ -981,12 +994,21 @@ class SchedulesController extends Controller
                     'user_id' => 'nullable|array',
                     'user_id.*' => 'required|integer|exists:users,id',
                     'title' => 'required',
-                    'start_time' => 'nullable',
-                    'end_time' => 'nullable',
-                    'allDay' => 'required',
+                    'start_time' => 'required|date_format:Y-m-d H:i:s',
+                    'end_time' => 'required|date_format:Y-m-d H:i:s',
+                    'allDay' => 'required|boolean',
                     'customer_id' => 'required',
                 ]);
 
+
+                if ($validator->fails()) {
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => '顧客の更新ととスケジュールの作成に失敗しました！入力ミスがあります！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -1137,7 +1159,7 @@ class SchedulesController extends Controller
                 return response()->json([
                     'message' =>
                     'あなたには権限がありません！'
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();

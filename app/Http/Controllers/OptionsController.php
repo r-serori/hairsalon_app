@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class OptionsController extends Controller
 {
@@ -51,7 +52,7 @@ class OptionsController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -68,10 +69,18 @@ class OptionsController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'option_name' => 'required|string',
                     'price' => 'required|integer',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '入力内容をご確認ください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validate();
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -99,7 +108,7 @@ class OptionsController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -110,22 +119,6 @@ class OptionsController extends Controller
         }
     }
 
-    // public function show($id)
-    // {
-    //     try {
-    //         $option = Option::find($id);
-
-    //         return response()->json([
-    //             'option' => $option
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' =>
-    //             'オプションが見つかりません！'
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
-
     public function update(Request $request)
     {
         DB::beginTransaction();
@@ -133,10 +126,18 @@ class OptionsController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'option_name' => 'required|string',
                     'price' => 'required|integer',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '入力内容をご確認ください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validate();
 
                 $option = Option::find($request->id);
 
@@ -159,7 +160,8 @@ class OptionsController extends Controller
                 DB::commit();
                 return response()->json(
                     [
-                        "option" => $option
+                        "option" => $option,
+                        'message' => 'オプションを更新しました！'
                     ],
                     200,
                     [],
@@ -168,7 +170,7 @@ class OptionsController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -190,7 +192,7 @@ class OptionsController extends Controller
                     return response()->json([
                         'message' =>
                         'オプションが見つかりません！'
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $option->delete();
@@ -201,21 +203,19 @@ class OptionsController extends Controller
 
                 DB::commit();
                 return response()->json([
-                    'message' => 'オプションを削除しました！
-                    もう一度お試しください！',
+                    'message' => 'オプションを削除しました！',
                     'deleteId' => $request->id
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'message' =>
-                'オプションが見つかりません！
-                もう一度お試しください！'
+                'オプションが見つかりません！もう一度お試しください！'
             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }

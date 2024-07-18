@@ -12,6 +12,7 @@ use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 
 class YearlySalesController extends Controller
 {
@@ -23,14 +24,12 @@ class YearlySalesController extends Controller
 
                 $ownerId = Owner::where('user_id', $user->id)->value('id');
 
-                $currentYear = Carbon::now()->year;
-
                 $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
 
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
-                $yearly_sales = Cache::remember($yearlySalesCacheKey, $expirationInSeconds, function () use ($ownerId, $currentYear) {
-                    return YearlySale::whereYear('year', $currentYear)->where('owner_id', $ownerId)->get();
+                $yearly_sales = Cache::remember($yearlySalesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                    return YearlySale::where('owner_id', $ownerId)->get();
                 });
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([
@@ -41,56 +40,13 @@ class YearlySalesController extends Controller
                 } else {
                     return response()->json([
                         'yearlySales' => $yearly_sales,
-                        'message' => $currentYear . '年の年次売上データを取得しました！'
+                        'message' => '年次売上データを取得しました！'
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' =>
-                '年次売上が見つかりません！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-        }
-    }
-
-    public function selectedYearlySales($year)
-    {
-        try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
-
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
-
-                $decodedYear = urldecode($year);
-
-                $yearlySalesCacheKey = 'owner_' . $ownerId . 'yearlySales';
-
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-
-                $yearly_sales = Cache::remember($yearlySalesCacheKey, $expirationInSeconds, function () use ($ownerId, $decodedYear) {
-                    return YearlySale::whereYear('year', $decodedYear)->where('owner_id', $ownerId)->get();
-                });
-                if ($yearly_sales->isEmpty()) {
-                    return response()->json([
-                        "message" =>
-                        "選択した売上データがありません！予約表画面の年次売上作成ボタンから年次売上を作成しましょう！",
-                        'yearlySales' => $yearly_sales
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-                    return response()->json([
-                        'yearlySales' => $yearly_sales,
-                        'message' => $decodedYear . '年の年次売上データを取得しました！'
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -106,10 +62,18 @@ class YearlySalesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'year' => 'required|string',
                     'yearly_sales' => 'required|integer',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        "message" => "入力内容をご確認ください！"
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validate();
 
                 $ownerId = Owner::where('user_id', $user->id)->value('id');
 
@@ -118,7 +82,7 @@ class YearlySalesController extends Controller
                 if ($existYearlySale) {
                     return response()->json([
                         "message" => "その年次売上は既に存在しています！年次売上画面から編集をして数値を変更するか、削除してもう一度この画面から更新してください！"
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $yearly_sale = YearlySale::create([
@@ -135,12 +99,11 @@ class YearlySalesController extends Controller
                 return response()->json([
                     "yearlySale" => $yearly_sale,
                     "message" => "年次売上を作成しました！",
-                    "status" => "success"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -150,40 +113,25 @@ class YearlySalesController extends Controller
         }
     }
 
-    // public function show($id)
-    // {
-    //     try {
-    //         if (Gate::allows(Permissions::$OWNER_PERMISSION)) {
-    //             $yearly_sale = YearlySale::find($id);
-
-    //             return response()->json([
-    //                 'yearlySale' => $yearly_sale
-    //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         } else {
-    //             return response()->json([
-    //                 "message" => "あなたには権限がありません！"
-    //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         }
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' =>
-    //             '年次売上が見つかりません！'
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
-
-
-
     public function update(Request $request)
     {
         DB::beginTransaction();
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
+
                     'year' => 'required|string',
                     'yearly_sales' => 'required|integer',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        "message" => "入力内容をご確認ください！"
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validate();
 
                 $yearly_sale = YearlySale::find($request->id);
 
@@ -201,7 +149,6 @@ class YearlySalesController extends Controller
                     [
                         "yearlySale" => $yearly_sale,
                         'message' => '年次売上を更新しました！',
-                        'status' => 'success'
                     ],
                     200,
                     [],
@@ -210,7 +157,7 @@ class YearlySalesController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -231,9 +178,8 @@ class YearlySalesController extends Controller
                 $yearly_sale = YearlySale::find($request->id);
                 if (!$yearly_sale) {
                     return response()->json([
-                        'message' =>
-                        '年次売上が見つかりません！'
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                        'message' => '年次売上が見つかりません！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $yearly_sale->delete();
@@ -252,7 +198,7 @@ class YearlySalesController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();

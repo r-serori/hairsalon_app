@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class AttendanceTimesController extends Controller
 {
@@ -52,9 +53,11 @@ class AttendanceTimesController extends Controller
 
                 //user_isdでデータを絞ってから、created_atで年月を絞る
                 $selectAttendanceTimes = Cache::remember($attendanceTimesCacheKey, $expirationInSeconds, function () use ($user_id, $currentYearAndMonth) {
-                    return AttendanceTime::where('user_id', $user_id)->whereYear('created_at', $currentYearAndMonth)->latest('created_at')->get();
+                    return AttendanceTime::where('user_id', $user_id)
+                        ->where('created_at', 'like', $currentYearAndMonth . '%')
+                        ->latest('created_at')
+                        ->get();
                 });
-
 
                 //送信されるphoto_pathを確認
                 Log::info("selectAttendanceTimes", ["selectAttendanceTimes", $selectAttendanceTimes]);
@@ -101,104 +104,6 @@ class AttendanceTimesController extends Controller
         }
     }
 
-    // public function firstAttendanceTime($user_id)
-    // {
-
-    //     try {
-    //         $user = User::find(Auth::id());
-    //         if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
-    //             $decodedUser_id = urldecode($user_id);
-    //             $firstAttendanceTime = AttendanceTime::where('user_id',  $decodedUser_id)->latest('created_at')->first();
-
-    //             return response()->json([
-    //                 'attendanceTime' => $firstAttendanceTime,
-    //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         } else {
-    //             return response()->json([
-    //                 'message' => 'あなたには権限がありません！',
-    //             ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         }
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => '勤怠時間の取得に失敗しました！
-    //             もう一度やり直してください！'
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
-
-
-    // public function startPhotos($fileName)
-    // {
-
-    //     try {
-    //         // URLエンコードされたファイル名をデコード
-    //         $decoFileName = urldecode($fileName);
-
-    //         $imagePath = storage_path('app/public/' . $decoFileName);
-    //         Log::info("imagePath", ["decodeFileName", $decoFileName]);
-
-    //         Log::info("imagePath", ["imagePath", $imagePath]);
-
-    //         // 画像ファイルが存在するか確認
-    //         if (!file_exists($imagePath)) {
-    //             abort(404);
-    //         }
-
-    //         // 画像のMIMEタイプを取得
-    //         // $mimeType = Storage::mimeType('app/public/' . $decoFileName);
-
-    //         // レスポンスを生成して返す
-    //         $headers = [
-    //             'Content-Type' => 'image/jpeg',
-    //         ];
-
-    //         return response(file_get_contents($imagePath), 200, $headers);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => '画像の取得に失敗しました！もう一度お試しください！'
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
-
-
-    // public function endPhotos($fileName)
-    // {
-    //     try {
-
-    //         // URLエンコードされたファイル名をデコード
-    //         $decoFileName = urldecode($fileName);
-
-    //         $imagePath = storage_path('app/public/' . $decoFileName);
-
-    //         Log::info("endimagePath", ["imagePath", $imagePath]);
-
-
-    //         // 画像ファイルが存在するか確認
-    //         if (!file_exists($imagePath)) {
-    //             Log::error("enderrorimagePath", ["imagePath", $imagePath]);
-    //             abort(404);
-    //         }
-
-    //         // 画像のMIMEタイプを取得
-    //         // $mimeType = Storage::mimeType('app/public/' . $decoFileName);
-
-    //         // レスポンスを生成して返す
-    //         $headers = [
-    //             'Content-Type' => 'image/jpeg',
-    //         ];
-
-    //         return response(file_get_contents($imagePath), 200, $headers);
-    //         // return response()->file($imagePath);
-    //     } catch (\Exception $e) {
-    //         // Log::error("enderrorimagePath", ["imagePath", $imagePath]);
-    //         // Log::error("error", ["error", $e]);
-    //         return response()->json([
-    //             'message' => $e->getMessage()
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
-
-
     public function startTimeShot(Request $request)
     {
         DB::beginTransaction();
@@ -216,20 +121,30 @@ class AttendanceTimesController extends Controller
                         [
                             "message" => "既にに出勤時間が登録されています！"
                         ],
-                        500,
+                        400,
                         [],
                         JSON_UNESCAPED_UNICODE
                     )->header('Content-Type', 'application/json; charset=UTF-8');
                 } else if (empty($existAttendanceStart) && empty($existAttendanceEnd)) {
 
                     // リクエストからデータを検証
-                    $request->validate([
-                        'start_time' => 'required',
+                    $validator = Validator::make($request->all(), [
+                        'start_time' => 'required| date_format:Y-m-d H:i',
                         'start_photo_path' => 'required',
                         'user_id' => 'required|exists:users,id',
                     ]);
+
+                    if ($validator->fails()) {
+                        return response()->json([
+                            'message' => '出勤時間登録に失敗しました！もう一度お試しください！'
+                        ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    }
+
+                    $validateData = (object)$validator->validated();
+
+
                     // Base64データの取得
-                    $base64Image = $request->input('start_photo_path');
+                    $base64Image = $validateData->input('start_photo_path');
 
                     // Base64データからヘッダーを除去し、$typeと$dataに分割します
                     list($type, $data) = explode(';', $base64Image);
@@ -246,13 +161,13 @@ class AttendanceTimesController extends Controller
 
                     $staff = Staff::where(
                         'user_id',
-                        $request->user_id
+                        $validateData->user_id
                     )->first();
 
                     if (empty($staff)) {
                         $ownerId = Owner::where(
                             'user_id',
-                            $request->user_id
+                            $validateData->user_id
                         )->value('id');
                     } else {
                         $ownerId = $staff->owner_id;
@@ -261,18 +176,18 @@ class AttendanceTimesController extends Controller
 
                     // リクエストから受け取ったデータを使用してレコードを作成
                     $attendanceTime = AttendanceTime::create([
-                        'start_time' => $request->start_time,
+                        'start_time' => $validateData->start_time,
                         'start_photo_path' =>  $fileName,
-                        'user_id' => $request->user_id,
+                        'user_id' => $validateData->user_id,
                         'owner_id' => $ownerId,
                     ]);
 
 
-                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
+                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $validateData->user_id . 'attendanceTimes';
 
                     Cache::forget($attendanceTimesCacheKey);
 
-                    $user = User::find($request->user_id);
+                    $user = User::find($validateData->user_id);
 
                     $user->isAttendance = 1;
 
@@ -313,36 +228,44 @@ class AttendanceTimesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
-                $request->validate([
-                    'end_time' => 'required',
+                $validator = Validator::make($request->all(), [
+                    'end_time' => 'required| date_format:Y-m-d H:i',
                     'end_photo_path' => 'required',
                     'user_id' => 'required|exists:users,id',
                 ]);
 
-                $endTime = Carbon::parse($request->end_time);
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '退勤時間登録に失敗しました！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validateData = (object)$validator->validated();
+
+                $endTime = Carbon::parse($validateData->end_time);
 
                 $yesterday = $endTime->subDay()->format('Y-m-d');
 
-                $existYesterdayStartTime = AttendanceTime::where('user_id', $request->user_id)->whereDate('start_time', $yesterday)->latest()->first();
+                $existYesterdayStartTime = AttendanceTime::where('user_id', $validateData->user_id)->whereDate('start_time', $yesterday)->latest()->first();
 
-                $existYesterdayStartTime->end_time = $request->end_time;
+                $existYesterdayStartTime->end_time = $validateData->end_time;
 
-                $existYesterdayStartTime->end_photo_path = $request->end_photo_path;
+                $existYesterdayStartTime->end_photo_path = $validateData->end_photo_path;
 
                 $existYesterdayStartTime->save();
 
-                $staff = Staff::where('user_id', $request->user_id)->first();
+                $staff = Staff::where('user_id', $validateData->user_id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $request->user_id)->value('id');
+                    $ownerId = Owner::where('user_id', $validateData->user_id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
 
-                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
+                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $validateData->user_id . 'attendanceTimes';
 
                 Cache::forget($attendanceTimesCacheKey);
-                $EditUser = User::find($request->user_id);
+                $EditUser = User::find($validateData->user_id);
 
                 $EditUser->isAttendance = 0;
 
@@ -390,18 +313,25 @@ class AttendanceTimesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
-                $request->validate([
-                    'end_time' => 'required',
+                $validator = Validator::make($request->all(), [
+                    'end_time' => 'required| date_format:Y-m-d H:i',
                     'end_photo_path' => 'required',
                     'user_id' => 'required|exists:users,id',
                 ]);
-                $endTime = Carbon::parse($request->end_time);
 
-                $yesterday = $endTime->subDay()->format('Y-m-d');
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '退勤時間登録に失敗しました！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
 
-                $existYesterdayStartTime = AttendanceTime::where('user_id', $request->user_id)->whereDate('start_time', $yesterday)->latest()->first();
+                $validateData = (object)$validator->validated();
 
-                $existYesterdayEndTime = AttendanceTime::where('user_id', $request->user_id)->whereDate('end_time', $yesterday)->latest()->first();
+                $yesterday = Carbon::parse($validateData->end_time)->subDay()->format('Y-m-d');
+
+                $existYesterdayStartTime = AttendanceTime::where('user_id', $validateData->user_id)->whereDate('start_time', $yesterday)->latest()->first();
+
+                $existYesterdayEndTime = AttendanceTime::where('user_id', $validateData->user_id)->whereDate('end_time', $yesterday)->latest()->first();
 
                 if (!empty($existYesterdayEndTime) && empty($existYesterdayStartTime)) {
 
@@ -412,19 +342,19 @@ class AttendanceTimesController extends Controller
 
                     $existYesterdayStartTime->save();
 
-                    $staff = Staff::where('user_id', $request->user_id)->first();
+                    $staff = Staff::where('user_id', $validateData->user_id)->first();
 
                     if (empty($staff)) {
-                        $ownerId = Owner::where('user_id', $request->user_id)->value('id');
+                        $ownerId = Owner::where('user_id', $validateData->user_id)->value('id');
                     } else {
                         $ownerId = $staff->owner_id;
                     }
 
-                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
+                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $validateData->user_id . 'attendanceTimes';
 
                     Cache::forget($attendanceTimesCacheKey);
 
-                    $EditUser = User::find($request->user_id);
+                    $EditUser = User::find($validateData->user_id);
 
                     $EditUser->isAttendance = 0;
 
@@ -455,7 +385,7 @@ class AttendanceTimesController extends Controller
                 } else if (empty($existYesterdayEndTime) && empty($existYesterdayStartTime) || !empty($existYesterdayEndTime) && !empty($existYesterdayStartTime)) {
 
                     // Base64データの取得
-                    $base64Image = $request->input('end_photo_path');
+                    $base64Image = $validateData->input('end_photo_path');
 
                     // Base64データからヘッダーを除去し、$typeと$dataに分割します
                     list($type, $data) = explode(';', $base64Image);
@@ -472,29 +402,29 @@ class AttendanceTimesController extends Controller
 
                     $today = Carbon::now()->format('Y-m-d');
 
-                    $attendanceTime = AttendanceTime::where('user_id', $request->user_id)
+                    $attendanceTime = AttendanceTime::where('user_id', $validateData->user_id)
                         ->whereDate('start_time', $today)
                         ->latest()
                         ->first();
 
-                    $attendanceTime->end_time = $request->end_time;
+                    $attendanceTime->end_time = $validateData->end_time;
                     $attendanceTime->end_photo_path = $fileName;
 
                     $attendanceTime->save();
 
-                    $staff = Staff::where('user_id', $request->user_id)->first();
+                    $staff = Staff::where('user_id', $validateData->user_id)->first();
 
                     if (empty($staff)) {
-                        $ownerId = Owner::where('user_id', $request->user_id)->value('id');
+                        $ownerId = Owner::where('user_id', $validateData->user_id)->value('id');
                     } else {
                         $ownerId = $staff->owner_id;
                     }
 
-                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
+                    $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $validateData->user_id . 'attendanceTimes';
 
                     Cache::forget($attendanceTimesCacheKey);
 
-                    $EditUser = User::find($request->user_id);
+                    $EditUser = User::find($validateData->user_id);
 
                     $EditUser->isAttendance = 0;
 
@@ -547,29 +477,37 @@ class AttendanceTimesController extends Controller
                 }
 
                 // リクエストからデータを検証
-                $request->validate([
-                    'start_time' => 'required',
+                $validator = Validator::make($request->all(), [
+                    'start_time' => 'required| date_format:Y-m-d H:i',
                     'start_photo_path' => 'required',
                     'user_id' => 'required|exists:users,id',
                 ]);
 
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '出勤時間登録に失敗しました！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
 
-                $attendanceTime->start_time = $request->start_time;
+                $validateData = (object)$validator->validated();
+
+
+                $attendanceTime->start_time = $validateData->start_time;
                 $attendanceTime->start_photo_path =
                     "111222";
 
                 $attendanceTime->save();
 
-                $staff = Staff::where('user_id', $request->user_id)->first();
+                $staff = Staff::where('user_id', $validateData->user_id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $request->user_id)->value('id');
+                    $ownerId = Owner::where('user_id', $validateData->user_id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
 
 
-                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
+                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $validateData->user_id . 'attendanceTimes';
 
 
                 Cache::forget($attendanceTimesCacheKey);
@@ -613,27 +551,34 @@ class AttendanceTimesController extends Controller
                 }
 
                 // リクエストからデータを検証
-                $request->validate([
-                    'end_time' => 'required',
+                $validator = Validator::make($request->all(), [
+                    'end_time' => 'required|date_format:Y-m-d H:i',
                     'end_photo_path' => 'required',
                     'user_id' => 'required|exists:users,id',
                 ]);
 
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '退勤時間登録に失敗しました！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
 
-                $attendanceTime->end_time = $request->end_time;
+                $validateData = (object)$validator->validated();
+
+                $attendanceTime->end_time = $validateData->end_time;
                 $attendanceTime->end_photo_path = "111222";
 
                 $attendanceTime->save();
 
-                $staff = Staff::where('user_id', $request->user_id)->first();
+                $staff = Staff::where('user_id', $validateData->user_id)->first();
 
                 if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $request->user_id)->value('id');
+                    $ownerId = Owner::where('user_id', $validateData->user_id)->value('id');
                 } else {
                     $ownerId = $staff->owner_id;
                 }
 
-                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $request->user_id . 'attendanceTimes';
+                $attendanceTimesCacheKey = 'owner_' . $ownerId . 'staff_' . $validateData->user_id . 'attendanceTimes';
 
 
                 Cache::forget($attendanceTimesCacheKey);

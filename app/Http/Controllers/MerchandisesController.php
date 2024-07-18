@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class MerchandisesController extends Controller
 {
@@ -46,20 +47,20 @@ class MerchandisesController extends Controller
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 } else {
                     return response()->json([
-                        'merchandises' => $merchandises
+                        'merchandises' => $merchandises,
+                        'message' => "物販商品の取得に成功しました！"
                     ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500);
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
                 'message' =>
-                '物販商品が見つかりません！
-                もう一度お試しください！'
-            ], 500);
+                '物販商品が見つかりません！もう一度お試しください！'
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
@@ -70,10 +71,18 @@ class MerchandisesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'merchandise_name' => 'required|string|max:255',
                     'price' => 'required|integer',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '入力内容が正しくありません！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -101,34 +110,16 @@ class MerchandisesController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500);
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 "message" => "物販商品の作成に失敗しました！
                 もう一度お試しください！"
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
-
-    // public function show($id)
-    // {
-    //     try {
-    //         $merchandise = Merchandise::find($id);
-
-    //         return response()->json([
-    //             'merchandise' => $merchandise
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' =>
-    //             '物販商品が見つかりません！'
-    //         ], 500);
-    //     }
-    // }
-
-
 
     public function update(Request $request)
     {
@@ -137,10 +128,19 @@ class MerchandisesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
 
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
+
                     'merchandise_name' => 'required',
                     'price' => 'required',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '入力内容が正しくありません！'
+                    ], 400);
+                }
+
+                $validatedData = $validator->validate();
 
                 $merchandise = Merchandise::find($request->id);
 
@@ -167,20 +167,21 @@ class MerchandisesController extends Controller
                 return response()->json(
                     [
                         "merchandise" => $merchandise,
+                        "message" => "物販商品の更新に成功しました！"
                     ],
                     200
                 );
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500);
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 "message" => "物販商品の更新に失敗しました！
                 もう一度お試しください！"
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 
@@ -194,9 +195,8 @@ class MerchandisesController extends Controller
                 if (!$merchandise) {
                     return response()->json([
                         'message' =>
-                        '物販商品が見つかりません！
-                        もう一度お試しください！'
-                    ], 500);
+                        '物販商品が見つかりません！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $merchandise->delete();
@@ -214,7 +214,7 @@ class MerchandisesController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500);
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -222,7 +222,7 @@ class MerchandisesController extends Controller
                 'message' =>
                 '物販商品の削除に失敗しました！
                 もう一度お試しください！'
-            ], 500);
+            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
         }
     }
 }

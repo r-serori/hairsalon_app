@@ -13,6 +13,7 @@ use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class StocksController extends Controller
 {
@@ -56,7 +57,7 @@ class StocksController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたに権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -75,7 +76,7 @@ class StocksController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // バリデーションルールを定義する
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'product_name' => 'required',
                     'quantity' => 'required|integer',
                     'product_price' => 'required|integer',
@@ -85,6 +86,14 @@ class StocksController extends Controller
                     'stock_category_id' => 'nullable|exists:stock_categories,id',
                 ]);
 
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '在庫の登録に失敗しました！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validate();
+
                 $staff = Staff::where('user_id', $user->id)->first();
 
                 if (empty($staff)) {
@@ -92,7 +101,6 @@ class StocksController extends Controller
                 } else {
                     $ownerId = $staff->owner_id;
                 }
-
 
                 // 在庫モデルを作成して保存する
                 $stocks =  Stock::create([
@@ -118,7 +126,7 @@ class StocksController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたに権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -130,33 +138,6 @@ class StocksController extends Controller
         }
     }
 
-
-    // public function show($id)
-    // {
-    //     try {
-    //         if (Gate::allows(Permissions::$MANAGER_PERMISSION)) {
-    //             // 指定されたIDの在庫を取得
-    //             $stock = Stock::find($id);
-
-    //             // 在庫を表示
-    //             return response()->json([
-    //                 "error" => "success",
-    //                 'stock' => $stock
-    //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         } else {
-    //             return response()->json([
-    //                 "message" => "あなたに権限がありません！"
-    //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         }
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => '在庫が見つかりませんでした！'
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
-
-
-
     public function update(Request $request)
     {
         DB::beginTransaction();
@@ -164,7 +145,7 @@ class StocksController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // バリデーションルールを定義する
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'product_name' => 'required',
                     'quantity' => 'required|integer',
                     'product_price' => 'required|integer',
@@ -173,6 +154,14 @@ class StocksController extends Controller
                     "notice" => "required|integer",
                     'stock_category_id' => 'nullable|exists:stock_categories,id',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '在庫の更新に失敗しました！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validate();
 
                 // 在庫を取得する
                 $stock = Stock::find($request->id);
@@ -204,12 +193,13 @@ class StocksController extends Controller
                 DB::commit();
                 // 成功したらリダイレクト
                 return response()->json([
-                    "stock" => $stock
+                    "stock" => $stock,
+                    "message" => "在庫を更新しました！"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
                     "message" => "あなたに権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             Log::error($e);
@@ -231,9 +221,8 @@ class StocksController extends Controller
                 $stock = Stock::find($request->id);
                 if (!$stock) {
                     return response()->json([
-                        'message' => '在庫が見つかりませんでした！
-                        もう一度お試しください！'
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                        'message' => '在庫が見つかりませんでした！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 $stock->delete();
@@ -252,7 +241,7 @@ class StocksController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたに権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();

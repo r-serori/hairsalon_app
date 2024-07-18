@@ -11,8 +11,7 @@ use App\Models\User; // 追加：Userモデルを使用するためにインポ�
 use App\Notifications\ResetPasswordNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 
 
 class PasswordResetLinkController extends Controller
@@ -26,12 +25,23 @@ class PasswordResetLinkController extends Controller
     {
         DB::beginTransaction();
         try {
-            $request->validate([
-                'email' => ['required', 'email'],
+            $validator = Validator::make($request->all(), [
+                'email' => 'required | email | max:255'
             ]);
 
+            if ($validator->fails()) {
+                return response()->json(
+                    ['message' => '入力内容が正しくありません。'],
+                    400,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
+            }
+
+            $validateData = (object)$validator->validate();
+
             // ユーザーを取得して存在するか確認する
-            $user = User::where('email', $request->email)->first();
+            $user = User::where('email', $validateData->email)->first();
 
             if (!$user) {
                 throw ValidationException::withMessages([
@@ -44,9 +54,9 @@ class PasswordResetLinkController extends Controller
 
             // パスワードリセットテーブルにトークンを保存
             DB::table('password_resets')->updateOrInsert(
-                ['email' => $request->email],
+                ['email' => $validateData->email],
                 [
-                    'email' => $request->email,
+                    'email' => $validateData->email,
                     'token' => $token,
                     'created_at' => Carbon::now()
                 ]

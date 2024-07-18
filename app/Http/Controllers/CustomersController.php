@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CustomersController extends Controller
 {
@@ -156,7 +157,7 @@ class CustomersController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -171,7 +172,7 @@ class CustomersController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
                     'remarks' => 'nullable',
@@ -186,6 +187,14 @@ class CustomersController extends Controller
                     'user_id' => 'required|array',
                     'user_id.*' => 'required|integer|exists:users,id',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        "message" => $validator->errors()
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validated();
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -318,7 +327,7 @@ class CustomersController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -328,26 +337,6 @@ class CustomersController extends Controller
         }
     }
 
-
-    // public function show($id)
-    // {
-    //     try {
-    //         // 指定されたIDの顧客データを取得
-    //         $customer = Customer::findOrFail($id);
-
-    //         // showビューにデータを渡して表示
-    //         return
-    //             response()->json([
-    //                 'customer' => $customer
-    //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             "message" => "顧客情報取得時にエラーが発生しました！"
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
-
-
     public function update(Request $request)
     {
         DB::beginTransaction();
@@ -355,7 +344,7 @@ class CustomersController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
 
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'customer_name' => 'required|string',
                     'phone_number' => 'nullable',
                     'remarks' => 'nullable',
@@ -370,6 +359,14 @@ class CustomersController extends Controller
                     'user_id' => 'required|array',
                     'user_id.*' => 'required|integer|exists:users,id',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        "message" => $validator->errors()
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validated();
 
 
                 // 指定されたIDの顧客データを取得
@@ -499,7 +496,7 @@ class CustomersController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             Log::error($e->getMessage());
@@ -523,35 +520,28 @@ class CustomersController extends Controller
 
                 Cache::forget($customersCacheKey);
 
-
-
                 // 指定されたIDの顧客データを取得
                 $customer = Customer::find($request->id);
-
-
-
 
                 if (!$customer) {
                     DB::rollBack();
                     return response()->json([
                         'message' =>
                         '顧客が見つかりません！'
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
                 // 顧客データを削除
                 $customer->delete();
 
-
                 DB::commit();
 
-
                 return response()->json([
-                    "deleteId"  => $request->id
+                    "deleteId"  => $request->id, "message" => "顧客を削除しました！ "
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();

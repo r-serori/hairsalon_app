@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class StockCategoriesController extends Controller
 {
@@ -52,7 +53,7 @@ class StockCategoriesController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -69,9 +70,18 @@ class StockCategoriesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // バリデーションルールを定義する
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'category' => 'required|string',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '在庫カテゴリの作成に失敗しました！入力内容を確認してください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+
+                $validatedData = $validator->validate();
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -95,12 +105,13 @@ class StockCategoriesController extends Controller
 
                 // 成功したらリダイレクト
                 return response()->json([
-                    "stockCategory" => $stock_category
+                    "stockCategory" => $stock_category,
+                    "message" => "在庫カテゴリを作成しました！"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -112,31 +123,6 @@ class StockCategoriesController extends Controller
     }
 
 
-    // public function show($id)
-    // {
-    //     try {
-    //         if (Gate::allows(Permissions::$MANAGER_PERMISSION)) {
-    //             // 指定されたIDの在庫カテゴリを取得
-    //             $stock_category = StockCategory::find($id);
-
-    //             // 在庫カテゴリを表示
-    //             return response()->json([
-    //                 'stockCategory' => $stock_category
-    //             ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         } else {
-    //             return response()->json([
-    //                 "message" => "あなたには権限がありません！""
-    //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         }
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => '在庫カテゴリが見つかりません！'
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
-
-
-
     public function update(Request $request)
     {
         DB::beginTransaction();
@@ -144,9 +130,18 @@ class StockCategoriesController extends Controller
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 // バリデーションルールを定義する
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'category' => 'required|string',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        'message' => '在庫カテゴリの更新に失敗しました！入力内容を確認してください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+
+                $validatedData = $validator->validate();
 
                 // 在庫を取得する
                 $stock_category = StockCategory::find($request->id);
@@ -179,7 +174,7 @@ class StockCategoriesController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -203,9 +198,8 @@ class StockCategoriesController extends Controller
                 if (!$stock_category) {
                     return response()->json([
                         'message' =>
-                        '在庫カテゴリが見つかりません！
-                        もう一度お試しください！'
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                        '在庫カテゴリが見つかりません！もう一度お試しください！'
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
 
                 // 在庫カテゴリを削除する
@@ -219,12 +213,13 @@ class StockCategoriesController extends Controller
 
                 DB::commit();
                 return response()->json([
-                    "deleteId" => $request->id
+                    "deleteId" => $request->id,
+                    "message" => "在庫カテゴリを削除しました！"
                 ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();

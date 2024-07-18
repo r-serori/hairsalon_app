@@ -116,7 +116,6 @@ Route::middleware('web')->group(function () {
 
         //コース情報のコントローラー post,update,destroy = Gate,OWNER,MANAGER   
         Route::get('/yearly_sales/all', [YearlySalesController::class, 'index']);
-        Route::get('/yearly_sales/selected/{year}', [YearlySalesController::class, 'selectedYearlySales']);
         Route::post('/yearly_sales/store', [YearlySalesController::class, 'store']);
         Route::post('/yearly_sales/update', [YearlySalesController::class, 'update']);
         Route::post('/yearly_sales/delete', [YearlySalesController::class, 'destroy']);

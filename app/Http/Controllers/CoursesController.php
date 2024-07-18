@@ -13,6 +13,7 @@ use App\Models\Staff;
 use Illuminate\Support\Facades\Log;
 use PgSql\Lob;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CoursesController extends Controller
 {
@@ -58,7 +59,7 @@ class CoursesController extends Controller
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -75,10 +76,18 @@ class CoursesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'course_name' => 'required|string',
                     'price' => 'required|integer',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        "message" => "入力内容を確認してください！"
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validate();
 
                 $staff = Staff::where('user_id', $user->id)->first();
 
@@ -107,7 +116,7 @@ class CoursesController extends Controller
 
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -118,26 +127,6 @@ class CoursesController extends Controller
         }
     }
 
-    // public function show($id)
-    // {
-    //     try {
-
-    //         $course = Course::find($id);
-    //         if (!$course) {
-    //             return response()->json([
-    //                 'message' =>
-    //                 'コースが見つかりません！'
-    //             ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //         }
-    //         return response()->json([
-    //             'course' => $course
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             "message" => "コースの取得に失敗しました！"
-    //         ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-    //     }
-    // }
 
     public function update(Request $request)
     {
@@ -145,10 +134,18 @@ class CoursesController extends Controller
         try {
             $user = User::find(Auth::id());
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validatedData = $request->validate([
+                $validator = Validator::make($request->all(), [
                     'course_name' => 'required|string',
                     'price' => 'required|integer',
                 ]);
+
+                if ($validator->fails()) {
+                    return response()->json([
+                        "message" => "入力内容を確認してください！"
+                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+
+                $validatedData = $validator->validate();
 
                 $course = Course::find($request->id);
 
@@ -173,14 +170,15 @@ class CoursesController extends Controller
 
                 return response()->json(
                     [
-                        "course" => $course
+                        "course" => $course,
+                        "message" => "コースを更新しました！"
                     ],
                     200
                 );
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -217,14 +215,15 @@ class CoursesController extends Controller
 
                 return response()->json(
                     [
-                        "deleteId"  => $request->id
+                        "deleteId"  => $request->id,
+                        "message" => "コースを削除しました！"
                     ],
                     200
                 );
             } else {
                 return response()->json([
                     "message" => "あなたには権限がありません！"
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
             }
         } catch (\Exception $e) {
             DB::rollBack();
