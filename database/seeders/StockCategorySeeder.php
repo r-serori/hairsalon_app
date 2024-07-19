@@ -16,7 +16,7 @@ class StockCategorySeeder extends Seeder
     public function run()
     {
         StockCategory::factory()
-            ->count(100)
+            ->count(10)
             ->create();
     }
 }

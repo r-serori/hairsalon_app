@@ -38,8 +38,7 @@ class DailySalesController extends Controller
                     $currentYearEnd = Carbon::create($currentYear, 12, 31); // 次の年の最終日
 
                     return DailySale::where('owner_id', $ownerId)
-                        ->whereBetween('date', [$currentYearStart, $currentYearEnd])
-                        ->get();
+                        ->whereBetween('date', [$currentYearStart, $currentYearEnd])->oldest('date')->get();
                 });
 
                 if ($daily_sales->isEmpty()) {
@@ -85,7 +84,7 @@ class DailySalesController extends Controller
                 $decodeYearEnd = Carbon::create($decodedYear, 12, 31); // 次の年の最終日
 
                 $daily_sales = DailySale::where('owner_id', $ownerId)
-                    ->whereBetween('date', [$decodeYearStart, $decodeYearEnd])
+                    ->whereBetween('date', [$decodeYearStart, $decodeYearEnd])->oldest('date')
                     ->get();
 
                 if ($daily_sales->isEmpty()) {

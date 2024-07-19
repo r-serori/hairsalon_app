@@ -17,7 +17,7 @@ class CourseCustomerSeeder extends Seeder
   public function run()
   {
     CourseCustomer::factory()
-      ->count(1000)
+      ->count(20)
       ->create();
   }
 }

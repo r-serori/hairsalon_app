@@ -588,8 +588,8 @@ class SchedulesController extends Controller
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
                 $validator = Validator::make($request->all(), [
                     'customer_name' => 'required|string',
-                    'phone_number' => 'nullable',
-                    'remarks' => 'nullable',
+                    'phone_number' => 'nullable|string',
+                    'remarks' => 'nullable|string',
                     'course_id' => 'nullable|array',
                     'course_id.*' => 'nullable|integer|exists:courses,id',
                     'option_id' => 'nullable|array',
@@ -607,6 +607,7 @@ class SchedulesController extends Controller
                 ]);
 
                 if ($validator->fails()) {
+                    Log::info($validator->errors());
                     DB::rollBack();
                     return response()->json([
                         'message' => '顧客とスケジュールの作成に失敗しました！入力ミスがあります！'
@@ -993,7 +994,7 @@ class SchedulesController extends Controller
                     'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
                     'user_id' => 'nullable|array',
                     'user_id.*' => 'required|integer|exists:users,id',
-                    'title' => 'required',
+                    'title' => 'nullable',
                     'start_time' => 'required|date_format:Y-m-d H:i:s',
                     'end_time' => 'required|date_format:Y-m-d H:i:s',
                     'allDay' => 'required|boolean',
@@ -1002,6 +1003,7 @@ class SchedulesController extends Controller
 
 
                 if ($validator->fails()) {
+                    Log::info($validator->errors());
                     DB::rollBack();
                     return response()->json([
                         'message' => '顧客の更新ととスケジュールの作成に失敗しました！入力ミスがあります！'

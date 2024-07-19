@@ -4,68 +4,52 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Course;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Enums\Roles;
-use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
-use App\Models\Staff;
 use Illuminate\Support\Facades\Log;
-use PgSql\Lob;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Services\HasRole;
+use App\Services\GetImportantIdService;
+use App\Services\CourseService;
+use Illuminate\Http\JsonResponse;
 
-class CoursesController extends Controller
+class CoursesController extends BaseController
 {
+    protected $getImportantIdService;
+    protected $courseService;
+    protected $hasRole;
+
+    public function __construct(GetImportantIdService $getImportantIdService, CourseService $courseService, HasRole $hasRole)
+    {
+        $this->getImportantIdService = $getImportantIdService;
+        $this->courseService = $courseService;
+        $this->hasRole = $hasRole;
+    }
 
     public function index()
     {
         try {
-            $user = User::find(Auth::id());
 
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+            $user =  $this->hasRole->AllAllow();
 
+            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
 
+            $courses = $this->courseService->rememberCache($ownerId);
 
-                $staff = Staff::where('user_id', $user->id)->first();
-
-
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-
-
-                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
-
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-
-                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Course::where('owner_id', $ownerId)->get();
-                });
-
-
-                if ($courses->isEmpty()) {
-                    return response()->json([
-                        "message" => "初めまして！新規作成ボタンからコースを作成しましょう！",
-                        'courses' => $courses
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-                    return response()->json([
-                        'courses' => $courses
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            if ($courses->isEmpty()) {
+                return $this->responseMan([
+                    "message" => "初めまして！新規作成ボタンからコースを作成しましょう！",
+                    'courses' => []
+                ]);
             } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                return $this->responseMan([
+                    'courses' => $courses
+                ]);
             }
         } catch (\Exception $e) {
-            return response()->json([
-                "message" => "コースの取得に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            // Log::error($e->getMessage());
+            return $this->responseMan([
+                "message" => "コースの取得に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -74,56 +58,31 @@ class CoursesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'course_name' => 'required|string',
-                    'price' => 'required|integer',
-                ]);
+            $user = $this->hasRole->ManagerAllow();
 
-                if ($validator->fails()) {
-                    return response()->json([
-                        "message" => "入力内容を確認してください！"
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $validatedData = $this->courseService->CourseValidate($request->all());
 
-                $validatedData = $validator->validate();
+            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $course = Course::create([
+                'course_name' => $validatedData['course_name'],
+                'price' => $validatedData['price'],
+                'owner_id' => $ownerId
+            ]);
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $this->courseService->forgetCache($ownerId);
 
-                $course = Course::create([
-                    'course_name' => $validatedData['course_name'],
-                    'price' => $validatedData['price'],
-                    'owner_id' => $ownerId
-                ]);
+            DB::commit();
 
-                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
-
-                Cache::forget($coursesCacheKey);
-
-                DB::commit();
-
-                return response()->json([
-                    "course" => $course
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                'course' => $course
+            ]);
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                "message" => "コースの作成に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "コースの作成に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -132,105 +91,58 @@ class CoursesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'course_name' => 'required|string',
-                    'price' => 'required|integer',
-                ]);
+            $user = $this->hasRole->ManagerAllow();
 
-                if ($validator->fails()) {
-                    return response()->json([
-                        "message" => "入力内容を確認してください！"
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $validatedData = $this->courseService->CourseValidate($request->all());
 
-                $validatedData = $validator->validate();
+            $course = Course::find($request->id);
 
-                $course = Course::find($request->id);
+            $course->course_name = $validatedData['course_name'];
+            $course->price = $validatedData['price'];
 
-                $course->course_name = $validatedData['course_name'];
-                $course->price = $validatedData['price'];
+            $course->save();
 
-                $course->save();
+            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $this->courseService->forgetCache($ownerId);
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            DB::commit();
 
-                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
-
-                Cache::forget($coursesCacheKey);
-
-                DB::commit();
-
-                return response()->json(
-                    [
-                        "course" => $course,
-                        "message" => "コースを更新しました！"
-                    ],
-                    200
-                );
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                'course' => $course,
+            ]);
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                "message" => "コースの更新に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "コースの更新に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
+
     public function destroy(Request $request)
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
-                $course = Course::find($request->id);
-                if (!$course) {
-                    return response()->json([
-                        'message' =>
-                        'コースが見つかりません！'
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $user = $this->hasRole->OwnerAllow();
 
-                $course->delete();
+            $this->courseService->CourseDelete($request->id);
 
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
+            $ownerId = Owner::where('user_id', $user->id)->value('id');
 
-                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
+            $this->courseService->forgetCache($ownerId);
 
-                Cache::forget($coursesCacheKey);
+            DB::commit();
 
-                DB::commit();
-
-
-                return response()->json(
-                    [
-                        "deleteId"  => $request->id,
-                        "message" => "コースを削除しました！"
-                    ],
-                    200
-                );
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                'deleteId' => $request->id,
+            ]);
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                "message" => "コースの削除に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "コースの削除に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 }

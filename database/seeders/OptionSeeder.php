@@ -15,7 +15,7 @@ class OptionSeeder extends Seeder
     public function run()
     {
         Option::factory()
-            ->count(200)
+            ->count(30)
             ->create();
     }
 }

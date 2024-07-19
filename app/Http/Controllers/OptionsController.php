@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Permissions;
 use Illuminate\Http\Request;
 use App\Models\Option;
 use App\Models\User;
@@ -13,53 +12,49 @@ use App\Models\Owner;
 use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\HasRole;
+use App\Services\GetImportantIdService;
+use App\Services\OptionService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
-class OptionsController extends Controller
+class OptionsController extends BaseController
 {
+    protected $getImportantIdService;
+    protected $optionService;
+    protected $hasRole;
+
+    public function __construct(GetImportantIdService $getImportantIdService, OptionService $optionService, HasRole $hasRole)
+    {
+        $this->getImportantIdService = $getImportantIdService;
+        $this->optionService = $optionService;
+        $this->hasRole = $hasRole;
+    }
 
     public function index()
     {
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+            $user =  $this->hasRole->AllAllow();
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $options = $this->optionService->rememberCache($ownerId);
 
-                $optionsCacheKey = 'owner_' . $ownerId . 'options';
-
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-
-                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return Option::where('owner_id', $ownerId)->get();
-                });
-
-                if ($options->isEmpty()) {
-                    return response()->json([
-                        "message" => "初めまして！新規作成ボタンからオプションを作成しましょう！",
-                        'options' => $options
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-                    return response()->json([
-                        'options' => $options
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            if ($options->isEmpty()) {
+                return  $this->responseMan([
+                    "message" => "初めまして！新規作成ボタンからオプションを作成しましょう！",
+                    'options' => []
+                ]);
             } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                return  $this->responseMan([
+                    'options' => $options
+                ]);
             }
         } catch (\Exception $e) {
-            return response()->json([
-                'message' =>
-                'オプションが見つかりません！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            Log::error($e->getMessage());
+            return  $this->responseMan([
+                "message" => "オプションの取得に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -67,55 +62,30 @@ class OptionsController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'option_name' => 'required|string',
-                    'price' => 'required|integer',
+            $user = $this->hasRole->ManagerAllow();
+
+            $validatedData = $this->optionService->OptionValidate($request->all());
+
+            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
+
+            $option =
+                Option::create([
+                    'option_name' => $validatedData['option_name'],
+                    'price' => $validatedData['price'],
+                    'owner_id' => $ownerId
                 ]);
 
-                if ($validator->fails()) {
-                    return response()->json([
-                        'message' => '入力内容をご確認ください！'
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $this->optionService->forgetCache($ownerId);
 
-                $validatedData = $validator->validate();
-
-                $staff = Staff::where('user_id', $user->id)->first();
-
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-
-                $option =
-                    Option::create([
-                        'option_name' => $validatedData['option_name'],
-                        'price' => $validatedData['price'],
-                        'owner_id' => $ownerId
-                    ]);
-
-                $optionsCacheKey = 'owner_' . $ownerId . 'options';
-
-                Cache::forget($optionsCacheKey);
-
-                DB::commit();
-                return response()->json([
-                    "option" => $option
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            DB::commit();
+            return  $this->responseMan([
+                "option" => $option,
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                "message" => "オプションの作成に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return  $this->responseMan([
+                "message" => "オプションの作成に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -124,60 +94,29 @@ class OptionsController extends Controller
         DB::beginTransaction();
 
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'option_name' => 'required|string',
-                    'price' => 'required|integer',
-                ]);
+            $user = $this->hasRole->ManagerAllow();
 
-                if ($validator->fails()) {
-                    return response()->json([
-                        'message' => '入力内容をご確認ください！'
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $validatedData = $this->optionService->OptionValidate($request->all());
 
-                $validatedData = $validator->validate();
+            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
 
-                $option = Option::find($request->id);
+            $option = Option::find($request->id);
+            $option->option_name = $validatedData['option_name'];
+            $option->price = $validatedData['price'];
+            $option->save();
 
-                $option->option_name = $validatedData['option_name'];
-                $option->price = $validatedData['price'];
+            $this->optionService->forgetCache($ownerId);
 
-                $option->save();
-
-                $staff = Staff::where('user_id', $user->id)->first();
-
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-                $optionsCacheKey = 'owner_' . $ownerId . 'options';
-
-                Cache::forget($optionsCacheKey);
-
-                DB::commit();
-                return response()->json(
-                    [
-                        "option" => $option,
-                        'message' => 'オプションを更新しました！'
-                    ],
-                    200,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            DB::commit();
+            return $this->responseMan([
+                "option" => $option,
+            ]);
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                "message" => "オプションの更新に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "オプションの更新に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -185,38 +124,24 @@ class OptionsController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
-                $option = Option::find($request->id);
-                if (!$option) {
-                    return response()->json([
-                        'message' =>
-                        'オプションが見つかりません！'
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $user = $this->hasRole->OwnerAllow();
 
-                $option->delete();
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
-                $optionsCacheKey = 'owner_' . $ownerId . 'options';
+            $this->optionService->OptionDelete($request->id);
 
-                Cache::forget($optionsCacheKey);
+            $ownerId = Owner::where('user_id', $user->id)->value('id');
 
-                DB::commit();
-                return response()->json([
-                    'message' => 'オプションを削除しました！',
-                    'deleteId' => $request->id
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            $this->optionService->forgetCache($ownerId);
+
+            DB::commit();
+            return $this->responseMan([
+                "deleteId" => $request->id,
+            ]);
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                'message' =>
-                'オプションが見つかりません！もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "オプションの削除に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 }

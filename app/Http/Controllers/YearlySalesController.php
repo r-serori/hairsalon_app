@@ -29,7 +29,7 @@ class YearlySalesController extends Controller
                 $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
                 $yearly_sales = Cache::remember($yearlySalesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return YearlySale::where('owner_id', $ownerId)->get();
+                    return YearlySale::where('owner_id', $ownerId)->oldest('year')->get();
                 });
                 if ($yearly_sales->isEmpty()) {
                     return response()->json([

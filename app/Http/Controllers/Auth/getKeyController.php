@@ -24,11 +24,7 @@ class getKeyController extends Controller
       $user = User::find(Auth::id());
       if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-        Log::info('REACT_APP_ENCRYPTION_KEY: ', [
-          env('REACT_APP_ENCRYPTION_KEY'),
-          env('REACT_APP_OWNER_ROLE'),
-          env('REACT_APP_MANAGER_ROLE'),
-        ]);
+
         return response()->json(['roleKey' => env('REACT_APP_ENCRYPTION_KEY')], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
       } else {
         return response()->json([

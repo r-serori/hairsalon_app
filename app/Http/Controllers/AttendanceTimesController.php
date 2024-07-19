@@ -181,7 +181,6 @@ class AttendanceTimesController extends Controller
                         'start_time' => $validateData->start_time,
                         'start_photo_path' =>  $fileName,
                         'user_id' => $validateData->user_id,
-                        'owner_id' => $ownerId,
                     ]);
 
 
@@ -189,19 +188,11 @@ class AttendanceTimesController extends Controller
 
                     Cache::forget($attendanceTimesCacheKey);
 
-                    $user = User::find($validateData->user_id);
+                    $EditUser = User::find($validateData->user_id);
 
-                    $user->isAttendance = true;
+                    $EditUser->isAttendance = true;
 
-                    $user->save();
-
-                    $responseUser = $user->only([
-                        'id',
-                        'name',
-                        'phone_number',
-                        'role' => $user->role === Roles::$OWNER ? 'オーナー' : ($user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
-                        'isAttendance'
-                    ]);
+                    $EditUser->save();
 
 
                     DB::commit();
@@ -209,7 +200,6 @@ class AttendanceTimesController extends Controller
                     return
                         response()->json(
                             [
-                                "responseUser" => $responseUser,
                                 "attendanceTime" => $attendanceTime,
                             ],
                             200,
@@ -282,20 +272,13 @@ class AttendanceTimesController extends Controller
 
                 $EditUser->save();
 
-                $responseUser = $EditUser->only([
-                    'id',
-                    'name',
-                    'phone_number',
-                    'role' => $EditUser->role === Roles::$OWNER ? 'オーナー' : ($user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
-                    'isAttendance'
-                ]);
+
                 DB::commit();
 
                 return response()->json(
                     [
                         "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、その後出勤ボタンを押してください！",
                         "attendanceTime" => $existYesterdayStartTime,
-                        "responseUser" => $responseUser
                     ],
                     200,
                     [],
@@ -372,15 +355,6 @@ class AttendanceTimesController extends Controller
 
                     $EditUser->save();
 
-                    $responseUser = $EditUser->only([
-                        'id',
-                        'name',
-                        'phone_number',
-                        'role' => $EditUser->role === Roles::$OWNER ? 'オーナー' : ($user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
-                        'isAttendance'
-                    ]);
-
-                    $user->save();
 
                     DB::commit();
 
@@ -390,7 +364,6 @@ class AttendanceTimesController extends Controller
                             [
                                 "message" => "昨日の退勤時間が登録されていませんので、オーナーまたは、マネージャーに報告してください！、今は編集依頼を押した後に出勤ボタンを押してください！",
                                 "attendanceTime" => $existYesterdayStartTime,
-                                "responseUser" => $responseUser
                             ],
                             200,
                             [],

@@ -38,7 +38,7 @@ class MonthlySalesController extends Controller
                 $monthly_sales = Cache::remember($monthlySalesCacheKey, $expirationInSeconds, function () use ($ownerId, $currentYear) {
                     $currentYearStart = Carbon::create($currentYear, 1, 1)->format('Y-m');
                     $currentYearEnd = Carbon::create($currentYear, 12, 31)->format('Y-m');
-                    return MonthlySale::where('owner_id', $ownerId)->whereBetween('year_month', [$currentYearStart, $currentYearEnd])->get();
+                    return MonthlySale::where('owner_id', $ownerId)->whereBetween('year_month', [$currentYearStart, $currentYearEnd])->oldest('year_month')->get();
                 });
 
                 if ($monthly_sales->isEmpty()) {
@@ -77,7 +77,7 @@ class MonthlySalesController extends Controller
 
                 $decodedYearStart = Carbon::create($decodedYear, 1, 1)->format('Y-m');
                 $decodedYearEnd = Carbon::create($decodedYear, 12, 31)->format('Y-m');
-                $monthly_sales = MonthlySale::where('owner_id', $ownerId)->whereBetween('year_month', [$decodedYearStart, $decodedYearEnd])->get();
+                $monthly_sales = MonthlySale::where('owner_id', $ownerId)->whereBetween('year_month', [$decodedYearStart, $decodedYearEnd])->oldest('year_month')->get();
 
                 if ($monthly_sales->isEmpty()) {
                     return response()->json([

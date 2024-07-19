@@ -16,8 +16,8 @@ class AttendanceTimeSeeder extends Seeder
      */
     public function run()
     {
-        AttendanceTime::factory()
-            ->count(2000)
-            ->create();
+        // AttendanceTime::factory()
+        //     ->count(10)
+        //     ->create();
     }
 }

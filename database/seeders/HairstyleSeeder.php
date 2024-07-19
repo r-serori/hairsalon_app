@@ -17,7 +17,7 @@ class HairstyleSeeder extends Seeder
     public function run()
     {
         Hairstyle::factory()
-            ->count(200)
+            ->count(10)
             ->create();
     }
 }

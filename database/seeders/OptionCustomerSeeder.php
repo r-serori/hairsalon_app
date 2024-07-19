@@ -15,7 +15,7 @@ class OptionCustomerSeeder extends Seeder
   public function run()
   {
     OptionCustomer::factory()
-      ->count(1000)
+      ->count(200)
       ->create();
   }
 }

@@ -21,7 +21,7 @@ class ScheduleSeeder extends Seeder
     public function run()
     {
         Schedule::factory()
-            ->count(600)
+            ->count(30)
             ->create();
     }
 }
