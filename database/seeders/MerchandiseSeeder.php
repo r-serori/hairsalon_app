@@ -16,26 +16,8 @@ class MerchandiseSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('merchandises')->insert([
-            'merchandise_name' => 'ワックス',
-            'price' => 1200,
-            'owner_id' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        DB::table('merchandises')->insert([
-            'merchandise_name' => 'ジェル',
-            'price' => 1000,
-            'owner_id' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-        DB::table('merchandises')->insert([
-            'merchandise_name' => 'ムース',
-            'price' => 1500,
-            'owner_id' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        Merchandise::factory()
+            ->count(200)
+            ->create();
     }
 }

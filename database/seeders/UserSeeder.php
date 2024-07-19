@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Enums\Roles;
+use App\Models\User;
 
 class UserSeeder extends Seeder
 {
@@ -50,5 +51,9 @@ class UserSeeder extends Seeder
             'updated_at' => now(),
             'email_verified_at' => now(), // Optional: if you want to mark the user as verified
         ]);
+
+        // User::factory()
+        //     ->count(37)
+        //     ->create();
     }
 }

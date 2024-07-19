@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Enums\Roles;
 use App\Http\Controllers\Auth\UpdateUserInfoController;
 use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\Auth\getKeyController;
 
 Route::middleware('api')->group(
     function () {
@@ -49,15 +50,15 @@ Route::middleware('api')->group(
                 //ログイン処理
                 Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
-                Route::post('/forgotPassword', [PasswordResetLinkController::class, 'store'])
-                    ->name('password.email');
+                Route::post('/forgotPassword', [PasswordResetLinkController::class, 'store']);
+
 
                 //パスワードリセット　Gate,ALL
                 Route::post('/resetPassword', [ResetUserPassword::class, 'resetPassword'])
                     ->name('password.reset');
 
                 Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
-                    ->middleware('signed')->name('verification.verify');
+                    ->middleware('signed')->name('verification.verifyEmail');
 
                 Route::get('/updateInfo/{id}/{hash}', [UpdateUserInfoController::class, 'updateInfoVerifyEmail'])
                     ->middleware('signed')->name('verification.updateInfo');
@@ -99,23 +100,9 @@ Route::middleware('api')->group(
                 }
             });
 
-            Route::get('/getKey', function () {
-                try {
-                    $user = User::find(Auth::id());
-                    if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
-                        return response()->json(['roleKey' => env('REACT_APP_ENCRYPTION_KEY')], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    } else {
-                        return response()->json([
-                            'message' => '権限がありません。',
-                        ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    }
-                } catch (\Exception $e) {
-                    Log::error($e->getMessage());
-                    return response()->json([
-                        'message' => 'エラーが発生しました。もう一度やり直してください！',
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-            });
+            Route::get('/getKey', [getKeyController::class, 'getKey']);
+
+
 
             Route::get('/check-session', function () {
                 try {
@@ -137,9 +124,6 @@ Route::middleware('api')->group(
             });
 
 
-            Route::post('/email/verification-notification/{user_id}', [EmailVerificationNotificationController::class, 'store'])
-                ->middleware(['auth', 'throttle:6,1'])
-                ->name('verification.send');
 
             Route::prefix('/user')->group(function () {
 

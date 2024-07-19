@@ -74,7 +74,7 @@ class VerifyEmailNotification extends Notification
     {
         // 署名付きURLを生成する
         $signedUrl = URL::temporarySignedRoute(
-            'verification.verify', // ルート名
+            'verification.verifyEmail', // ルート名
             Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)), // リンクの有効期限
             [
                 'id' => $notifiable->getKey(),
