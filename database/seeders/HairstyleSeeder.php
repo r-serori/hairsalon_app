@@ -16,8 +16,23 @@ class HairstyleSeeder extends Seeder
      */
     public function run()
     {
-        Hairstyle::factory()
-            ->count(10)
-            ->create();
+        DB::table('hairstyles')->insert([
+            'hairstyle_name' => 'ショートカット',
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+        DB::table('hairstyles')->insert([
+            'hairstyle_name' => 'ボブカット',
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+        DB::table('hairstyles')->insert([
+            'hairstyle_name' => 'ロングカット',
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
     }
 }

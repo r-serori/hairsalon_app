@@ -17,8 +17,29 @@ class CourseSeeder extends Seeder
      */
     public function run()
     {
-        Course::factory()
-            ->count(5)
-            ->create();
+        DB::table('courses')->insert([
+            'owner_id' => 1,
+            'course_name' => 'カットA',
+            'price' => 7000,
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+        DB::table('courses')->insert([
+            'owner_id' => 1,
+            'course_name' => 'カットB',
+            'price' => 6000,
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+        DB::table('courses')->insert([
+            'owner_id' => 1,
+            'course_name' => 'カットC',
+            'price' => 5000,
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
     }
 }

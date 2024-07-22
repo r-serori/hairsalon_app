@@ -42,14 +42,14 @@ class DatabaseSeeder extends Seeder
             StockSeeder::class,
             ScheduleSeeder::class,
             AttendanceTimeSeeder::class,
-            CourseCustomerSeeder::class,
-            OptionCustomerSeeder::class,
-            MerchandiseCustomerSeeder::class,
-            HairstyleCustomerSeeder::class,
-            CustomerUserSeeder::class,
-            DailySaleSeeder::class,
-            MonthlySaleSeeder::class,
-            YearlySaleSeeder::class,
+            // CourseCustomerSeeder::class,
+            // OptionCustomerSeeder::class,
+            // MerchandiseCustomerSeeder::class,
+            // HairstyleCustomerSeeder::class,
+            // CustomerUserSeeder::class,
+            // DailySaleSeeder::class,
+            // MonthlySaleSeeder::class,
+            // YearlySaleSeeder::class,
         ]);
     }
 }

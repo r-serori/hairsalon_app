@@ -20,8 +20,35 @@ class ScheduleSeeder extends Seeder
      */
     public function run()
     {
-        Schedule::factory()
-            ->count(30)
-            ->create();
+        DB::table('schedules')->insert([
+            'customer_id' => 1,
+            'title' => null,
+            'start_time' => '10:00:00',
+            'end_time' => '11:00:00',
+            'allDay' => false,
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+        DB::table('schedules')->insert([
+            'customer_id' => 2,
+            'title' => null,
+            'start_time' => '11:00:00',
+            'end_time' => '12:00:00',
+            'allDay' => false,
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+        DB::table('schedules')->insert([
+            'customer_id' => 3,
+            'title' => null,
+            'start_time' => '13:00:00',
+            'end_time' => '14:00:00',
+            'allDay' => false,
+            'owner_id' => 1,
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
     }
 }
