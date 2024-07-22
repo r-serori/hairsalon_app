@@ -6,6 +6,7 @@ use App\Models\Stock;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class StockService
 {
@@ -27,7 +28,7 @@ class StockService
       $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
       $stocks = Cache::remember($stocksCacheKey, $expirationInSeconds, function () use ($ownerId) {
-        return Stock::where('owner_id', $ownerId)->get();
+        return Stock::where('owner_id', $ownerId)->orderBy('product_name', 'asc')->get();
       });
 
       return $stocks;
@@ -103,7 +104,7 @@ class StockService
       ]);
 
       if ($validator->fails()) {
-        abort(400, '入力内容を確認してください！');
+        throw new HttpException(403, '入力内容が正しくありません');
       }
       $validatedData = $validator->validate();
 
@@ -123,10 +124,6 @@ class StockService
   {
     try {
       $stock = Stock::find($stockId);
-
-      if (empty($stock)) {
-        abort(404, '在庫データが見つかりません');
-      }
 
       $stock->delete();
     } catch (\Exception $e) {

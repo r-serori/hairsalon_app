@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
 use Carbon\Carbon;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MonthlySaleService
 {
@@ -108,7 +109,7 @@ class MonthlySaleService
       ]);
 
       if ($validator->fails()) {
-        abort(400, '入力内容を確認してください！');
+        throw new HttpException(403, '入力内容が正しくありません');
       }
       $validatedDate = $validator->validate();
 
@@ -128,10 +129,6 @@ class MonthlySaleService
   {
     try {
       $monthlySale = MonthlySale::find($monthlySaleId);
-
-      if (empty($monthlySale)) {
-        abort(404, '月次売上が見つかりません');
-      }
 
       $monthlySale->delete();
     } catch (\Exception $e) {

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\StockService;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class StocksController extends BaseController
 {
@@ -43,11 +44,14 @@ class StocksController extends BaseController
                     'stocks' => $stocks
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "在庫の取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -68,14 +72,17 @@ class StocksController extends BaseController
             return $this->responseMan([
                 "stock" => $stock,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "在庫の登録に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function update(Request $request)
     {
@@ -96,14 +103,17 @@ class StocksController extends BaseController
             return $this->responseMan([
                 "stock" => $stock,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "在庫の更新に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
 
     public function destroy(Request $request)
@@ -121,11 +131,14 @@ class StocksController extends BaseController
             return $this->responseMan([
                 "deleteId"  => $request->id,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                'message' => '在庫の削除に失敗しました！もう一度お試しください！'
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 }

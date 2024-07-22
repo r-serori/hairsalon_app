@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class StockCategoryService
 {
@@ -28,7 +29,7 @@ class StockCategoryService
       $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
       $stockCategories = Cache::remember($stockCategoriesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-        return StockCategory::where('owner_id', $ownerId)->get();
+        return StockCategory::where('owner_id', $ownerId)->orderBy('category', 'asc')->get();
       });
 
       return $stockCategories;
@@ -58,7 +59,7 @@ class StockCategoryService
 
       return $stockCategory;
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
+      // Log::error($e->getMessage());
 
       abort(500, 'エラーが発生しました');
     }
@@ -88,7 +89,7 @@ class StockCategoryService
       ]);
 
       if ($validator->fails()) {
-        abort(400, '入力内容を確認してください！');
+        throw new HttpException(403, '入力内容が正しくありません');
       }
       $validatedData = $validator->validate();
 
@@ -100,7 +101,7 @@ class StockCategoryService
         return $this->stockCategoryUpdate($validatedData, $stockCategoryId);
       }
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
+      // Log::error($e->getMessage());
       abort(500, 'エラーが発生しました');
     }
   }
@@ -109,10 +110,6 @@ class StockCategoryService
   {
     try {
       $stockCategory = StockCategory::find($stockCategoryId);
-
-      if (empty($stockCategory)) {
-        abort(404, '在庫カテゴリデータが見つかりません');
-      }
 
       $stockCategory->delete();
     } catch (\Exception $e) {

@@ -3,14 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Course;
 use App\Models\Owner;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\CourseService;
-use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CoursesController extends BaseController
 {
@@ -45,14 +43,16 @@ class CoursesController extends BaseController
                     'courses' => $courses
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "コースの取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
-
 
     public function store(Request $request)
     {
@@ -70,12 +70,14 @@ class CoursesController extends BaseController
             return $this->responseMan([
                 'course' => $course
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "コースの作成に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -97,12 +99,14 @@ class CoursesController extends BaseController
             return $this->responseMan([
                 'course' => $course,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "コースの更新に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -123,12 +127,14 @@ class CoursesController extends BaseController
             return $this->responseMan([
                 'deleteId' => $request->id,
             ]);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "コースの削除に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 }

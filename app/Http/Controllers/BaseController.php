@@ -12,4 +12,8 @@ abstract class BaseController extends Controller
     {
         return response()->json($data, $status, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
     }
+    protected function serverErrorResponseWoman(): JsonResponse
+    {
+        return response()->json(['message' => '内部サーバーエラーが発生しました'], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+    }
 }

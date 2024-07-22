@@ -15,6 +15,7 @@ use App\Services\MiddleTableService;
 use App\Services\OptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 
 class CustomersController extends BaseController
@@ -109,14 +110,16 @@ class CustomersController extends BaseController
                     'customer_users' => $userCustomer,
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => '顧客情報取得時にエラーが発生しました！'
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
-
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -152,12 +155,14 @@ class CustomersController extends BaseController
                     "hairstyle_customers" => $hairstyleCustomer,
                     "customer_users" => $userCustomer,
                 ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => '顧客情報作成時にエラーが発生しました！もう一度お試しください！'
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -196,12 +201,14 @@ class CustomersController extends BaseController
                     "hairstyle_customers" => $hairstyleCustomer,
                     "customer_users" => $userCustomer,
                 ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => '顧客情報更新時にエラーが発生しました！もう一度お試しください！'
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -227,12 +234,14 @@ class CustomersController extends BaseController
             return $this->responseMan([
                 "deleteId"  => $request->id, "message" => "顧客を削除しました！ "
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "顧客情報削除時にエラーが発生しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 }

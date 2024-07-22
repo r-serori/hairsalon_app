@@ -6,7 +6,7 @@ use App\Models\YearlySale;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
-use Carbon\Carbon;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 
 class YearlySaleService
@@ -97,7 +97,7 @@ class YearlySaleService
       ]);
 
       if ($validator->fails()) {
-        abort(400, '入力内容を確認してください！');
+        throw new HttpException(403, '入力内容が正しくありません');
       }
       $validatedDate = $validator->validate();
 
@@ -117,10 +117,6 @@ class YearlySaleService
   {
     try {
       $yearlySale = YearlySale::find($yearlySaleId);
-
-      if (empty($yearlySale)) {
-        abort(404, '年次売上が見つかりません');
-      }
 
       $yearlySale->delete();
     } catch (\Exception $e) {

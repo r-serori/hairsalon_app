@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\MonthlySaleService;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 
 class MonthlySalesController extends BaseController
@@ -46,11 +47,14 @@ class MonthlySalesController extends BaseController
                     'message' => $currentYear . '年の月次売上データです！'
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "月次売上の取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -75,11 +79,14 @@ class MonthlySalesController extends BaseController
                     'message' => $decodedYear . '年の月次売上データです！'
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "月次売上の取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -100,14 +107,17 @@ class MonthlySalesController extends BaseController
             return $this->responseMan([
                 "monthlySale" => $monthly_sale,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return  $this->responseMan([
-                "message" => "月次売上の作成に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function update(Request $request)
     {
@@ -126,14 +136,17 @@ class MonthlySalesController extends BaseController
             return $this->responseMan([
                 "monthlySale" => $monthly_sale,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "月次売上の更新に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function destroy(Request $request)
     {
@@ -151,12 +164,14 @@ class MonthlySalesController extends BaseController
             return $this->responseMan([
                 "deleteId" => $request->id,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "月次売上の削除に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 }

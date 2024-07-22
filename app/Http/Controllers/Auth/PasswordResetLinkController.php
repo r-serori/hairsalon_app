@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -12,9 +12,10 @@ use App\Notifications\ResetPasswordNotification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 
-class PasswordResetLinkController extends Controller
+class PasswordResetLinkController extends BaseController
 {
     /**
      * Handle an incoming password reset link request.
@@ -26,16 +27,14 @@ class PasswordResetLinkController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->all(), [
-                'email' => 'required | email | max:255'
+                'email' => 'required | email | max:200',
             ]);
 
             if ($validator->fails()) {
-                return response()->json(
-                    ['message' => '入力内容が正しくありません。'],
-                    400,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
+                return  $this->responseMan(
+                    ['message' => '入力内容をご確認ください。'],
+                    400
+                );
             }
 
             $validateData = (object)$validator->validate();
@@ -44,9 +43,10 @@ class PasswordResetLinkController extends Controller
             $user = User::where('email', $validateData->email)->first();
 
             if (!$user) {
-                throw ValidationException::withMessages([
-                    'email' => ['指定されたメールアドレスのユーザーは見つかりませんでした。'],
-                ]);
+                return $this->responseMan(
+                    ['message' => 'ユーザーが見つかりません。'],
+                    404
+                );
             }
 
             // パスワードリセットトークンを生成
@@ -67,20 +67,17 @@ class PasswordResetLinkController extends Controller
 
             DB::commit();
 
-            return response()->json(
-                ['message' => 'パスワードリセットのメールを送信しました。'],
-                200,
-                [],
-                JSON_UNESCAPED_UNICODE
-            )->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan(
+                ['message' => 'パスワードリセットメールを送信しました！']
+
+            );
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json(
-                ['message' => 'エラーが発生しました。もう一度お試しください。'],
-                500,
-                [],
-                JSON_UNESCAPED_UNICODE
-            )->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan(
+                ['message' => 'エラーが発生しました。もう一度やり直してください！'],
+                500
+            );
         }
     }
 }

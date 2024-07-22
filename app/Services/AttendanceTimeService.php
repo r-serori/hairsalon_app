@@ -132,7 +132,7 @@ class AttendanceTimeService
         }
       }
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
+      // Log::error($e->getMessage());
       abort(500, 'エラーが発生しました');
     }
   }
@@ -151,7 +151,7 @@ class AttendanceTimeService
       $attendanceTime->save();
       return $attendanceTime;
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
+      // Log::error($e->getMessage());
       abort(500, 'エラーが発生しました');
     }
   }
@@ -173,7 +173,7 @@ class AttendanceTimeService
         return $this->attendanceTimePost($attendanceTime, $data, false);
       }
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
+      // Log::error($e->getMessage());
       abort(500, 'エラーが発生しました');
     }
   }
@@ -198,7 +198,7 @@ class AttendanceTimeService
 
       return $this->attendanceTimePost($attendanceTime, $data, $startOrEnd);
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
+      // Log::error($e->getMessage());
       abort(500, 'エラーが発生しました');
     }
   }
@@ -273,9 +273,7 @@ class AttendanceTimeService
   {
     try {
       $attendanceTime = AttendanceTime::find($attendanceTimeId);
-      if (empty($attendanceTime)) {
-        abort(404, '勤怠時間データが見つかりません');
-      }
+
       $startFilePath = 'public/' . $attendanceTime->start_photo_path;
 
       $endFilePath = 'public/' . $attendanceTime->end_photo_path;

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\MerchandiseService;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 
 class MerchandisesController extends BaseController
@@ -44,14 +45,16 @@ class MerchandisesController extends BaseController
                     'merchandises' => $merchandises
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "物販商品の取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
-
 
     public function store(Request $request)
     {
@@ -70,12 +73,14 @@ class MerchandisesController extends BaseController
             return $this->responseMan([
                 "merchandise" => $merchandise,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "物販商品の作成に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -97,12 +102,14 @@ class MerchandisesController extends BaseController
             return $this->responseMan([
                 "merchandise" => $merchandise
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "物販商品の更新に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -123,12 +130,14 @@ class MerchandisesController extends BaseController
             return $this->responseMan([
                 "deleteId" => $request->id
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "物販商品の削除に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 }

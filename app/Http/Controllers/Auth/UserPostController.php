@@ -16,7 +16,7 @@ use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\OwnerService;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserPostController extends BaseController
 {
@@ -31,7 +31,7 @@ class UserPostController extends BaseController
         $this->ownerService = $ownerService;
     }
 
-    public function ownerStore(Request $request): JsonResponse
+    public function ownerStore(Request $request): JsonResponse //オーナーデータの登録
     {
         DB::beginTransaction();
         try {
@@ -48,16 +48,16 @@ class UserPostController extends BaseController
                     ]);
             } else {
                 DB::rollBack();
-                return $this->responseMan([
-                    'message' => 'オーナー用ユーザー登録に失敗しました！もう一度やり直してください！',
-                ], 500);
+                return $this->serverErrorResponseWoman();
             }
-        } catch (\Exception $e) {
-            DB::rollBack();
+        } catch (HttpException $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                'message' => 'オーナー用ユーザー登録に失敗しました！もう一度やり直してください！',
-            ], 500);
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -68,10 +68,6 @@ class UserPostController extends BaseController
             $user = $this->hasRole->ownerAllow();
 
             $owner = Owner::where('user_id', $user->id)->first();
-
-            if (empty($owner)) {
-                throw new \Exception('オーナー情報が見つかりませんでした！');
-            }
 
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:50',
@@ -119,12 +115,14 @@ class UserPostController extends BaseController
                 'message' => 'スタッフ用ユーザー登録に成功しました!',
                 'responseUser' => $responseUser,
             ]);
-        } catch (\Exception $e) {
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            Log::error($e->getMessage());
-            return $this->responseMan([
-                'message' => 'スタッフ用ユーザー登録に失敗しました！もう一度やり直してください！',
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -143,12 +141,14 @@ class UserPostController extends BaseController
                     'message' => 'オーナー情報の更新に成功しました!',
                     'owner' => $owner,
                 ]);
-        } catch (\Exception $e) {
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            // Log::error($e->getMessage());    
-            return $this->responseMan([
-                'message' => 'オーナー情報の更新に失敗しました！もう一度やり直してください！',
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -159,18 +159,15 @@ class UserPostController extends BaseController
             $user = $this->hasRole->ownerAllow();
             $owner = Owner::where('user_id', $user->id)->first();
 
-            if (empty($owner)) {
-                return $this->responseMan([
-                    'message' => 'オーナー情報が見つかりませんでした！',
-                ], 500);
-            }
             $validator = Validator::make($request->all(), [
                 'id' => 'required|integer|exists:users,id',
                 'role' => 'required|string|max:30',
             ]);
 
             if ($validator->fails()) {
-                abort(400, '入力内容を確認してください！');
+                return $this->responseMan([
+                    'message' => '入力内容を確認してください！',
+                ], 400);
             }
 
             $validateData = (object)$validator->validate();
@@ -197,16 +194,16 @@ class UserPostController extends BaseController
                     ]);
             } else {
                 DB::rollBack();
-                return $this->responseMan([
-                    'message' => '権限の変更に失敗しました！もう一度やり直してください！',
-                ], 500);
+                return $this->serverErrorResponseWoman();
             }
-        } catch (\Exception $e) {
-            DB::rollBack();
+        } catch (HttpException $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                'message' => '権限の変更に失敗しました！もう一度やり直してください！',
-            ], 500);
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 }

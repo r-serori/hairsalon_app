@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\DailySaleService;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class DailySalesController extends BaseController
 {
@@ -46,14 +47,16 @@ class DailySalesController extends BaseController
                     'message' => $currentYear . '年の日次売上データです！'
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "日次売上の取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
-
     public function selectedDailySales($year)
     {
         try {
@@ -77,14 +80,16 @@ class DailySalesController extends BaseController
                     'message' => $decodedYear . '年の日次売上データです！'
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "日次売上の取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
-
 
     public function store(Request $request)
     {
@@ -107,12 +112,14 @@ class DailySalesController extends BaseController
             return $this->responseMan([
                 "dailySale" => $daily_sale,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return  $this->responseMan([
-                "message" => "日次売上の作成に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -138,12 +145,14 @@ class DailySalesController extends BaseController
                 $this->responseMan([
                     "dailySale" => $daily_sale
                 ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "日次売上の更新に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -164,12 +173,14 @@ class DailySalesController extends BaseController
             return $this->responseMan([
                 "deleteId" => $request->id,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "日次売上の削除に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 }

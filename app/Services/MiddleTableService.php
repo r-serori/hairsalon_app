@@ -83,54 +83,58 @@ class MiddleTableService
     Customer $customer,
     array $data
   ): void {
-    $courseIds = $data['course_id'] ?? [];
-    $optionIds = $data['option_id'] ?? [];
-    $merchandiseIds = $data['merchandise_id'] ?? [];
-    $hairstyleIds = $data['hairstyle_id'] ?? [];
-    $userIds = $data['user_id'];
+    try {
+      $courseIds = $data['course_id'] ?? [];
+      $optionIds = $data['option_id'] ?? [];
+      $merchandiseIds = $data['merchandise_id'] ?? [];
+      $hairstyleIds = $data['hairstyle_id'] ?? [];
+      $userIds = $data['user_id'];
 
-    $pivotData = [];
-    if (!empty($courseIds)) {
-      foreach ($courseIds as $courseId) {
-        $pivotData[$courseId] = ['owner_id' => $ownerId];
+      $pivotData = [];
+      if (!empty($courseIds)) {
+        foreach ($courseIds as $courseId) {
+          $pivotData[$courseId] = ['owner_id' => $ownerId];
+        }
       }
-    }
 
-    // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
-    $customer->courses()->sync($pivotData);
+      // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
+      $customer->courses()->sync($pivotData);
 
-    $pivotData = [];
-    if (!empty($optionIds)) {
-      foreach ($optionIds as $optionId) {
-        $pivotData[$optionId] = ['owner_id' => $ownerId];
+      $pivotData = [];
+      if (!empty($optionIds)) {
+        foreach ($optionIds as $optionId) {
+          $pivotData[$optionId] = ['owner_id' => $ownerId];
+        }
       }
-    }
 
-    $customer->options()->sync($pivotData);
+      $customer->options()->sync($pivotData);
 
-    $pivotData = [];
-    if (!empty($merchandiseIds)) {
-      foreach ($merchandiseIds as $merchandiseId) {
-        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+      $pivotData = [];
+      if (!empty($merchandiseIds)) {
+        foreach ($merchandiseIds as $merchandiseId) {
+          $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
+        }
       }
-    }
 
-    $customer->merchandises()->sync($pivotData);
+      $customer->merchandises()->sync($pivotData);
 
-    $pivotData = [];
-    if (!empty($hairstyleIds)) {
-      foreach ($hairstyleIds as $hairstyleId) {
-        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+      $pivotData = [];
+      if (!empty($hairstyleIds)) {
+        foreach ($hairstyleIds as $hairstyleId) {
+          $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
+        }
       }
+
+      $customer->hairstyles()->sync($pivotData);
+
+
+      $pivotData = [];
+      foreach ($userIds as $userId) {
+        $pivotData[$userId] = ['owner_id' => $ownerId];
+      }
+      $customer->users()->sync($pivotData);
+    } catch (\Exception $e) {
+      abort(500, 'エラーが発生しました');
     }
-
-    $customer->hairstyles()->sync($pivotData);
-
-
-    $pivotData = [];
-    foreach ($userIds as $userId) {
-      $pivotData[$userId] = ['owner_id' => $ownerId];
-    }
-    $customer->users()->sync($pivotData);
   }
 }

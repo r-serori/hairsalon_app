@@ -6,6 +6,7 @@ use App\Models\Hairstyle;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class HairstyleService
 {
@@ -26,7 +27,7 @@ class HairstyleService
             $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
             $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                return  Hairstyle::where('owner_id', $ownerId)->get();
+                return  Hairstyle::where('owner_id', $ownerId)->orderBy('hairstyle_name', 'asc')->get();
             });
 
             return $hairstyles;
@@ -84,7 +85,7 @@ class HairstyleService
             ]);
 
             if ($validator->fails()) {
-                abort(400, '入力内容を確認してください！');
+                throw new HttpException(403, '入力内容が正しくありません');
             }
             $validatedData = $validator->validate();
 
@@ -104,10 +105,6 @@ class HairstyleService
     {
         try {
             $hairstyle = Hairstyle::find($hairstyleId);
-
-            if (empty($hairstyle)) {
-                abort(404, '髪型データが見つかりません');
-            }
 
             $hairstyle->delete();
         } catch (\Exception $e) {

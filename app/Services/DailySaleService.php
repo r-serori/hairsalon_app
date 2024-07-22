@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
 use Carbon\Carbon;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class DailySaleService
 {
@@ -107,7 +108,7 @@ class DailySaleService
       ]);
 
       if ($validator->fails()) {
-        abort(400, '入力内容を確認してください！');
+        throw new HttpException(403, '入力内容が正しくありません');
       }
       $validatedDate = $validator->validate();
 
@@ -127,10 +128,6 @@ class DailySaleService
   {
     try {
       $dailySale = DailySale::find($dailySaleId);
-
-      if (empty($dailySale)) {
-        abort(404, '日次売上が見つかりません');
-      }
 
       $dailySale->delete();
     } catch (\Exception $e) {

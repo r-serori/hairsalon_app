@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\Owner;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OwnerService
 {
@@ -14,7 +14,7 @@ class OwnerService
   {
   }
 
-  private function ownerPost(array $data, Owner $owner, int $user_id): Owner
+  private function ownerPost(array $data, Owner $owner, int $user_id): Owner //オーナーデータの新規作成、更新
   {
     try {
       $owner->store_name = $data['store_name'];
@@ -33,7 +33,7 @@ class OwnerService
     }
   }
 
-  private function ownerStore(array $data, int $user_id): Owner
+  private function ownerStore(array $data, int $user_id): Owner //オーナーデータの新規作成
   {
     try {
       $owner = new Owner();
@@ -44,7 +44,7 @@ class OwnerService
     }
   }
 
-  private function ownerUpdate(array $data, int $user_id): Owner
+  private function ownerUpdate(array $data, int $user_id): Owner //オーナーデータの更新
   {
     try {
       $owner = Owner::where('user_id', $user_id)->first();
@@ -56,7 +56,7 @@ class OwnerService
   }
 
   public function ownerValidateAndCreateOrUpdate(array $data, int $user_id, bool $createOrUpdate): Owner
-  // request->all()を受け取り、バリデーションを行い、createOrUpdateがtrueの場合はowner_idを受け取り、新規作成、falseの場合はowner_idを受け取り、更新を行う
+  // request->all()を受け取り、バリデーションを行う。$createOrUpdateがtrueの場合は新規作成、falseの場合は更新
   {
     try {
       $validator = Validator::make($data, [
@@ -70,7 +70,7 @@ class OwnerService
       ]);
 
       if ($validator->fails()) {
-        abort(400, '入力内容を確認してください！');
+        throw new HttpException(403, '権限がありません');
       }
 
       $validatedData = $validator->validate();
@@ -91,7 +91,7 @@ class OwnerService
       $owner = Owner::find($ownerId);
 
       if (empty($owner)) {
-        abort(404, 'コースが見つかりません');
+        throw new HttpException(404, 'オーナーが見つかりません');
       }
 
       $owner->delete();

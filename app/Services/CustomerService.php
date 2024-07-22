@@ -8,6 +8,8 @@ use App\Models\Customer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CustomerService
 {
@@ -31,7 +33,7 @@ class CustomerService
       $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
       $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($ownerId) {
-        return  Customer::where('owner_id', $ownerId)->get();
+        return  Customer::where('owner_id', $ownerId)->orderBy('customer_name', 'asc')->get();
       });
 
       return $customers;
@@ -109,7 +111,8 @@ class CustomerService
       ]);
 
       if ($validator->fails()) {
-        abort(400, '入力内容を確認してください！');
+        // Log::error($validator->errors());
+        throw new HttpException(403, '入力内容が正しくありません');
       }
 
       $validatedData = $validator->validate();
@@ -124,6 +127,7 @@ class CustomerService
         return $customer;
       }
     } catch (\Exception $e) {
+      // Log::error($e->getMessage());
       abort(500, 'エラーが発生しました');
     }
   }
@@ -132,10 +136,6 @@ class CustomerService
   {
     try {
       $customer = Customer::find($customerId);
-
-      if (empty($customer)) {
-        abort(404, 'コースが見つかりません');
-      }
 
       $customer->delete();
     } catch (\Exception $e) {

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\HairstyleService;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class HairstylesController extends BaseController
 {
@@ -42,11 +43,14 @@ class HairstylesController extends BaseController
                     'hairstyles' => $hairstyles
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "ヘアスタイルの取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -65,14 +69,17 @@ class HairstylesController extends BaseController
             return $this->responseMan([
                 "hairstyle" => $hairstyle,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "ヘアスタイルの作成に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function update(Request $request)
     {
@@ -89,14 +96,17 @@ class HairstylesController extends BaseController
             return $this->responseMan([
                 "hairstyle" => $hairstyle,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "ヘアスタイルの更新に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function destroy(Request $request)
     {
@@ -114,12 +124,14 @@ class HairstylesController extends BaseController
             return $this->responseMan([
                 "deleteId" => $request->id,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "ヘアスタイルの削除に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 }

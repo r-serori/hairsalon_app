@@ -6,6 +6,7 @@ use App\Models\Merchandise;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MerchandiseService
 {
@@ -27,7 +28,7 @@ class MerchandiseService
             $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
             $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                return  Merchandise::where('owner_id', $ownerId)->get();
+                return  Merchandise::where('owner_id', $ownerId)->orderBy('merchandise_name', 'asc')->get();
             });
 
             return $merchandises;
@@ -88,7 +89,7 @@ class MerchandiseService
             ]);
 
             if ($validator->fails()) {
-                abort(400, '入力内容を確認してください！');
+                throw new HttpException(403, '入力内容が正しくありません');
             }
             $validatedData = $validator->validate();
             if ($createOrUpdate) {
@@ -107,10 +108,6 @@ class MerchandiseService
     {
         try {
             $merchandise = Merchandise::find($merchandiseId);
-
-            if (empty($merchandise)) {
-                abort(404, '物販データが見つかりません');
-            }
 
             $merchandise->delete();
         } catch (\Exception $e) {

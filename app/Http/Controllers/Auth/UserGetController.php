@@ -7,6 +7,7 @@ use App\Http\Controllers\BaseController;
 use App\Models\Owner;
 use App\Services\GetImportantIdService;
 use App\Services\HasRole;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserGetController extends BaseController
 {
@@ -19,7 +20,8 @@ class UserGetController extends BaseController
         $this->getImportantIdService = $getImportantIdService;
     }
 
-    public function getUsers(): JsonResponse
+
+    public function getUsers(): JsonResponse //userデータを取得
     {
         try {
             $user = $this->hasRole->allAllow();
@@ -28,15 +30,16 @@ class UserGetController extends BaseController
             return $this->responseMan(
                 $response
             );
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                'message' => 'エラーが発生しました。もう一度やり直してください！',
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
-    public function show(): JsonResponse
+    public function show(): JsonResponse //単一のuserデータを取得
     {
         try {
             $user = $this->hasRole->allAllow();
@@ -58,15 +61,16 @@ class UserGetController extends BaseController
                     'message' => 'ユーザー情報がありません！',
                 ], 404);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
-            return $this->responseMan([
-                'message' => 'エラーが発生しました。もう一度やり直してください！',
-            ], 500);
+            // Log::error($e->getMessage());
+            return $this->serverErrorResponseWoman();
         }
     }
 
-
-    public function getOwner(): JsonResponse
+    public function getOwner(): JsonResponse //単一のオーナー情報を取得
     {
         try {
             $user = $this->hasRole->ownerAllow();
@@ -77,10 +81,12 @@ class UserGetController extends BaseController
                 'message' => 'オーナー情報を取得しました!',
                 'owner' => $owner,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
-            return $this->responseMan([
-                'message' => 'エラーが発生しました。もう一度やり直してください！',
-            ], 500);
+            // Log::error($e->getMessage());
+            return $this->serverErrorResponseWoman();
         }
     }
 }

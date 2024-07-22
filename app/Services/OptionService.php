@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OptionService
 {
@@ -27,12 +28,12 @@ class OptionService
             $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
             $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                return  Option::where('owner_id', $ownerId)->get();
+                return  Option::where('owner_id', $ownerId)->orderBy('option_name', 'asc')->get();
             });
 
             return $options;
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
+            // Log::error($e->getMessage());
             abort(500, 'エラーが発生しました');
         }
     }
@@ -89,7 +90,7 @@ class OptionService
             ]);
 
             if ($validator->fails()) {
-                abort(400, '入力内容を確認してください！');
+                throw new HttpException(403, '入力内容が正しくありません');
             }
             $validatedData = $validator->validate();
 
@@ -109,10 +110,6 @@ class OptionService
     {
         try {
             $option = Option::find($optionId);
-
-            if (empty($option)) {
-                abort(404, 'オプションデータが見つかりません');
-            }
 
             $option->delete();
         } catch (\Exception $e) {

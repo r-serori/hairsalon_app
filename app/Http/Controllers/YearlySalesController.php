@@ -3,20 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\YearlySale;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Enums\Roles;
-use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
-use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\YearlySaleService;
-use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class YearlySalesController extends BaseController
 {
@@ -51,11 +43,14 @@ class YearlySalesController extends BaseController
                     'yearlySales' => $yearly_sale,
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                "message" => "年次売上の取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -76,14 +71,17 @@ class YearlySalesController extends BaseController
             return $this->responseMan([
                 "yearlySale" => $yearly_sale,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "年次売上の作成に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function update(Request $request)
     {
@@ -102,21 +100,24 @@ class YearlySalesController extends BaseController
             return $this->responseMan([
                 "yearlySale" => $yearly_sale,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "年次売上の更新に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function destroy(Request $request)
     {
         DB::beginTransaction();
         try {
             $user = $this->hasRole->ownerAllow();
-            $yearly_sale = $this->yearlySaleService->yearlySaleDelete($request->id);
+            $this->yearlySaleService->yearlySaleDelete($request->id);
 
             $ownerId = Owner::where('user_id', $user->id)->value('id');
 
@@ -126,12 +127,14 @@ class YearlySalesController extends BaseController
             return $this->responseMan([
                 "deleteId" => $request->id,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return  $this->responseMan([
-                "message" => "年次売上の削除に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 }

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ScheduleService
 {
@@ -72,11 +73,11 @@ class ScheduleService
       $schedule->customer_id = $data['customer_id'] ?? null;
       $schedule->owner_id = $ownerId;
       $schedule->save();
-      Log::info('スケジュール作成成功', ['schedule' => $schedule]);
+      // Log::info('スケジュール作成成功', ['schedule' => $schedule]);
 
       return $schedule;
     } catch (\Exception $e) {
-      Log::error('スケジュール作成失敗', [$e->getMessage()]);
+      // Log::error('スケジュール作成失敗', [$e->getMessage()]);
       abort(500, 'エラーが発生しました');
     }
   }
@@ -92,12 +93,12 @@ class ScheduleService
       $schedule->customer_id = $data['customer_id'] ?? null;
       $schedule->save();
 
-      Log::info('スケジュール更新成功', ['schedule' => $schedule]);
+      // Log::info('スケジュール更新成功', ['schedule' => $schedule]);
 
       return $schedule;
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
-      Log::error('スケジュール更新失敗', [$e->getMessage()]);
+      // Log::error($e->getMessage());
+      // Log::error('スケジュール更新失敗', [$e->getMessage()]);
       abort(500, 'エラーが発生しました');
     }
   }
@@ -113,7 +114,7 @@ class ScheduleService
   {
     try {
       if ($isCustomer) {
-        Log::info('スケジュールバリデーション開始isCustomer', ['schedule' => $data]);
+        // Log::info('スケジュールバリデーション開始isCustomer', ['schedule' => $data]);
 
         $validator = Validator::make($data, [
           'title' => 'nullable',
@@ -123,7 +124,7 @@ class ScheduleService
           'customer_id' => 'required',
         ]);
       } else {
-        Log::info('スケジュールバリデーション開始', ['schedule' => $data]);
+        // Log::info('スケジュールバリデーション開始', ['schedule' => $data]);
 
         $validator = Validator::make($data, [
           'title' => 'required|string',
@@ -134,24 +135,24 @@ class ScheduleService
       }
 
       if ($validator->fails()) {
-        Log::error('スケジュール更新失敗バリデーションエラー', ['schedule' => $data]);
-        abort(400, '入力内容を確認してください！');
+        // Log::error('スケジュール更新失敗バリデーションエラー', ['schedule' => $data]);
+        throw new HttpException(403, '入力内容が正しくありません');
       }
 
       $validatedData = $validator->validate();
-      Log::info('スケジュールバリデーション成功', ['schedule' => $validatedData]);
+      // Log::info('スケジュールバリデーション成功', ['schedule' => $validatedData]);
 
       if ($createOrUpdate) {
         $schedule = $this->scheduleStore($validatedData, $ownerId);
-        Log::info('スケジュール新規作成成功', ['schedule' => $schedule]);
+        // Log::info('スケジュール新規作成成功', ['schedule' => $schedule]);
         return $schedule;
       } else {
         $schedule = $this->scheduleUpdate($validatedData, $scheduleId);
-        Log::info('スケジュール更新成功', ['schedule' => $schedule]);
+        // Log::info('スケジュール更新成功', ['schedule' => $schedule]);
         return $schedule;
       }
     } catch (\Exception $e) {
-      Log::error($e->getMessage());
+      // Log::error($e->getMessage());
       abort(500, 'エラーが発生しました');
     }
   }
@@ -160,10 +161,6 @@ class ScheduleService
   {
     try {
       $schedule = Schedule::find($scheduleId);
-
-      if (empty($schedule)) {
-        abort(404, '予約データが見つかりません');
-      }
 
       $schedule->delete();
     } catch (\Exception $e) {

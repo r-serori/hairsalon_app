@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use \Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class CourseService
 {
@@ -28,7 +29,7 @@ class CourseService
             $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
 
             $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                return  Course::where('owner_id', $ownerId)->get();
+                return  Course::where('owner_id', $ownerId)->orderBy('course_name', 'asc')->get();
             });
 
             return $courses;
@@ -108,10 +109,6 @@ class CourseService
     {
         try {
             $course = Course::find($courseId);
-
-            if (empty($course)) {
-                abort(404, 'コースが見つかりません');
-            }
 
             $course->delete();
         } catch (\Exception $e) {

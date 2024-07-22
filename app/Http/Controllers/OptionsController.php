@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\OptionService;
-use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OptionsController extends BaseController
 {
@@ -42,11 +42,14 @@ class OptionsController extends BaseController
                     'options' => $options
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return  $this->responseMan([
-                "message" => "オプションの取得に失敗しました！もう一度お試しください！"
-            ], 500);
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -70,11 +73,14 @@ class OptionsController extends BaseController
             return  $this->responseMan([
                 "option" => $option,
             ]);
-        } catch (\Exception $e) {
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return  $this->responseMan([
-                "message" => "オプションの作成に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -99,12 +105,14 @@ class OptionsController extends BaseController
             return $this->responseMan([
                 "option" => $option,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "オプションの更新に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -124,12 +132,14 @@ class OptionsController extends BaseController
             return $this->responseMan([
                 "deleteId" => $request->id,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                "message" => "オプションの削除に失敗しました！もう一度お試しください！"
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
 }

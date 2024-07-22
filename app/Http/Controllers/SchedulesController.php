@@ -18,6 +18,7 @@ use App\Services\MerchandiseService;
 use App\Services\HairstyleService;
 use App\Services\ScheduleService;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SchedulesController extends BaseController
 {
@@ -149,11 +150,14 @@ class SchedulesController extends BaseController
                     'customer_users' => $userCustomer,
                 ]);
             }
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return $this->responseMan([
-                'message' => 'スケジュールが見つかりません！もう一度お試しください！'
-            ], 500);
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -236,13 +240,16 @@ class SchedulesController extends BaseController
                 'hairstyle_customers' => $hairstyleCustomer,
                 'customer_users' => $userCustomer,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
-            return $this->responseMan([
-                'message' => 'スケジュールが見つかりません！もう一度お試しください！'
-            ], 500);
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
-
     public function store(Request $request)
     {
         DB::beginTransaction();
@@ -260,11 +267,14 @@ class SchedulesController extends BaseController
             return $this->responseMan([
                 'schedule' => $schedule,
             ], 200);
-        } catch (\Exception $e) {
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                'message' => 'スケジュールの作成に失敗しました！もう一度お試しください！'
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -285,11 +295,14 @@ class SchedulesController extends BaseController
             return $this->responseMan([
                 'schedule' => $schedule,
             ], 200);
-        } catch (\Exception $e) {
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                'message' => 'スケジュールの更新に失敗しました！もう一度お試しください！'
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -310,11 +323,14 @@ class SchedulesController extends BaseController
             return $this->responseMan([
                 "deleteId" => $request->id
             ], 200);
-        } catch (\Exception $e) {
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                'message' => 'スケジュールの削除に失敗しました！もう一度お試しください！'
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 
@@ -378,14 +394,17 @@ class SchedulesController extends BaseController
                 "hairstyle_customers" => $hairstyleCustomer,
                 "customer_users" => $userCustomer,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                'message' => 'スケジュールの作成に失敗しました！もう一度お試しください！'
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function doubleUpdate(Request $request)
     {
@@ -447,14 +466,17 @@ class SchedulesController extends BaseController
                 "hairstyle_customers" => $hairstyleCustomer,
                 "customer_users" => $userCustomer,
             ]);
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                'message' => 'スケジュールと顧客の更新に失敗しました！もう一度お試しください！'
-            ], 500);
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
 
     public function customerOnlyUpdate(Request $request)
@@ -521,14 +543,17 @@ class SchedulesController extends BaseController
                 "hairstyle_customers" => $hairstyleCustomer,
                 "customer_users" => $userCustomer,
             ]);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                'message' => 'スケジュールと顧客の更新に失敗しました！もう一度お試しください！'
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
+
 
     public function  customerCreateAndScheduleUpdate(Request $request)
     {
@@ -591,12 +616,14 @@ class SchedulesController extends BaseController
                 "hairstyle_customers" => $hairstyleCustomer,
                 "customer_users" => $userCustomer,
             ]);
-        } catch (\Exception $e) {
-            Log::error($e->getMessage());
+        } catch (HttpException $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return $this->responseMan([
-                'message' => 'スケジュールと顧客の更新に失敗しました！もう一度お試しください！'
-            ], 500);
+            return $this->responseMan(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->serverErrorResponseWoman();
         }
     }
 }
