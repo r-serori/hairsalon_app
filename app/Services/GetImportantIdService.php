@@ -64,13 +64,14 @@ class GetImportantIdService
         $staffs = Staff::where('owner_id', $owner->id)->get();
 
         if ($staffs->isEmpty()) {
-            $responseUsers = $user->only([
-                'id',
-                'name',
-                'phone_number',
-                'role' => $user->role === Roles::$OWNER ? 'オーナー' : 'マネージャー',
-                'isAttendance',
-            ]);
+            $responseUsers = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'phone_number' => $user->phone_number,
+                'role' => $user->role === Roles::$OWNER ? 'オーナー' : ($user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
+                'isAttendance' => $user->isAttendance,
+            ];
+
             return [
                 'message' => 'スタッフ情報がありません!登録してください！',
                 'responseUsers' => $responseUsers,

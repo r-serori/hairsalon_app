@@ -42,30 +42,6 @@ Route::middleware('api')->group(
 
             return response()->json($response->json());
         });
-        Route::middleware('guest')->group(
-            function () {
-                //購入者ownerがuser登録するときの処理
-                Route::post('/register', [RegisteredUserController::class, 'store']);
-
-                //ログイン処理
-                Route::post('/login', [AuthenticatedSessionController::class, 'store']);
-
-                Route::post('/forgotPassword', [PasswordResetLinkController::class, 'store']);
-
-
-                //パスワードリセット　Gate,ALL
-                Route::post('/resetPassword', [ResetUserPassword::class, 'resetPassword'])
-                    ->name('password.reset');
-
-                Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
-                    ->middleware('signed')->name('verification.verifyEmail');
-
-                Route::get('/updateInfo/{id}/{hash}', [UpdateUserInfoController::class, 'updateInfoVerifyEmail'])
-                    ->middleware('signed')->name('verification.updateInfo');
-            }
-        );
-
-
 
         Route::middleware('auth:sanctum')->group(function () {
 
@@ -100,7 +76,6 @@ Route::middleware('api')->group(
                 }
             });
 
-            Route::get('/getKey', [getKeyController::class, 'getKey']);
 
             Route::get('/check-session', function () {
                 try {
@@ -128,15 +103,6 @@ Route::middleware('api')->group(
 
                 //購入者ownerが店の情報を更新
                 Route::post('/updateOwner', [UserPostController::class, 'ownerUpdate']);
-
-                //ログアウト処理 Gate,ALL
-                Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
-
-                //ユーザーが自分の個人情報を変更 Gate,ALL
-                Route::post('/updateUser', [UpdateUserProfileInformation::class, 'updateUser']);
-
-                //ユーザーが自分のパスワードを変更 Gate,ALL
-                Route::post('/updateUserPassword', [UpdateUserPassword::class, 'updateFromRequest']);
 
                 //各スタッフが自分の情報を取得 Gate,ALL
                 Route::get('/getOwner', [UserGetController::class, 'getOwner']);

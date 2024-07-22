@@ -2,7 +2,6 @@
 
 
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomersController;
 use App\Http\Controllers\HairstylesController;
@@ -10,24 +9,21 @@ use App\Http\Controllers\OptionsController;
 use App\Http\Controllers\SchedulesController;
 use App\Http\Controllers\DailySalesController;
 use App\Http\Controllers\CoursesController;
-use App\Http\Controllers\CourseCustomersController;
-use App\Http\Controllers\AttendancesController;
 use App\Http\Controllers\AttendanceTimesController;
-use App\Http\Controllers\MerchandiseCustomersController;
 use App\Http\Controllers\MerchandisesController;
 use App\Http\Controllers\MonthlySalesController;
 use App\Http\Controllers\StockCategoriesController;
 use App\Http\Controllers\StocksController;
 use App\Http\Controllers\YearlySalesController;
-use App\Http\Controllers\AttendanceAttendanceTimesController;
-use App\Http\Controllers\CustomerSchedulesController;
-use App\Http\Controllers\CustomerAttendancesController;
-use App\Http\Controllers\HairstyleCustomersController;
-use App\Http\Controllers\OptionCustomersController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\UserPostController;
+use Laravel\Fortify\Http\Controllers\RegisteredUserController;
+use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Actions\Fortify\ResetUserPassword;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
+use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Actions\Fortify\UpdateUserPassword;
+use App\Http\Controllers\Auth\UpdateUserInfoController;
+use App\Http\Controllers\Auth\getKeyController;
 // imgタグのsrc属性に画像を表示するためのルーティング　startは出勤時の写真、endは退勤時の写真
 // Route::get("/storage/attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
 
@@ -36,7 +32,25 @@ use App\Http\Controllers\Auth\UserPostController;
 
 Route::middleware('web')->group(function () {
 
+    Route::middleware('guest')->group(function () {
+        Route::post('/register', [RegisteredUserController::class, 'store']);
+        Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+        Route::post('/forgotPassword', [PasswordResetLinkController::class, 'store']);
+        Route::post('/resetPassword', [ResetUserPassword::class, 'resetPassword'])->name('password.reset');
+        Route::get('/verify-email/{id}/{hash}', [VerifyEmailController::class, '__invoke'])
+            ->middleware('signed')->name('verification.verifyEmail');
+        Route::get('/updateInfo/{id}/{hash}', [UpdateUserInfoController::class, 'updateInfoVerifyEmail'])
+            ->middleware('signed')->name('verification.updateInfo');
+    });
+
     Route::middleware('auth:sanctum')->group(function () {
+        // Define routes that require authentication and session management here
+        Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
+        Route::post('/updateUser', [UpdateUserProfileInformation::class, 'updateUser']);
+        Route::post('/updateUserPassword', [UpdateUserPassword::class, 'updateFromRequest']);
+
+
+        Route::get('/getKey', [getKeyController::class, 'getKey']);
 
         //userの勤怠時間のコントローラー
         //勤怠時間の取得userのidと年月を受け取る。yearMonthが"無し"の場合は当月の勤怠時間を取得　Gate,OWNER
@@ -92,6 +106,7 @@ Route::middleware('web')->group(function () {
         Route::post('/schedules/customers/double', [SchedulesController::class, 'double']);
         Route::post('/schedules/customers/doubleUpdate', [SchedulesController::class, 'doubleUpdate']);
         Route::post('/schedules/customers/customerOnlyUpdate', [SchedulesController::class, 'customerOnlyUpdate']);
+        Route::post('/schedules/customers/customerCreateScheduleUpdate', [SchedulesController::class, 'customerCreateAndScheduleUpdate']);
         Route::get('/schedules/all', [SchedulesController::class, 'index']);
         Route::post('/schedules/store', [SchedulesController::class, 'store']);
 

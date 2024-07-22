@@ -18,8 +18,6 @@ class getKeyController extends BaseController
   public function getKey()
   {
     try {
-      $this->hasRole->allAllow();
-
       return $this->responseMan([
         'roleKey' => env('REACT_APP_ENCRYPTION_KEY'),
       ]);

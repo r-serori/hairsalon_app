@@ -76,7 +76,7 @@ class ScheduleService
 
       return $schedule;
     } catch (\Exception $e) {
-      Log::error('スケジュール作成失敗', $e->getMessage());
+      Log::error('スケジュール作成失敗', [$e->getMessage()]);
       abort(500, 'エラーが発生しました');
     }
   }
@@ -97,7 +97,7 @@ class ScheduleService
       return $schedule;
     } catch (\Exception $e) {
       Log::error($e->getMessage());
-      Log::error('スケジュール更新失敗', $e->getMessage());
+      Log::error('スケジュール更新失敗', [$e->getMessage()]);
       abort(500, 'エラーが発生しました');
     }
   }

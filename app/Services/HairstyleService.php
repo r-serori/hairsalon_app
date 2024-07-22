@@ -89,7 +89,7 @@ class HairstyleService
             $validatedData = $validator->validate();
 
             if ($createOrUpdate) {
-                $$ownerId = $hairstyleIdOrOwnerId;
+                $ownerId = $hairstyleIdOrOwnerId;
                 return $this->hairstyleStore($validatedData, $ownerId);
             } else {
                 $hairstyleId = $hairstyleIdOrOwnerId;

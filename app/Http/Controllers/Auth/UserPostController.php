@@ -16,6 +16,7 @@ use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\OwnerService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class UserPostController extends BaseController
 {

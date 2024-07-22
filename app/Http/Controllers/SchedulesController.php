@@ -41,7 +41,6 @@ class SchedulesController extends BaseController
         OptionService $optionService,
         MerchandiseService $merchandiseService,
         HairstyleService $hairstyleService
-
     ) {
         $this->getImportantIdService = $getImportantIdService;
         $this->hasRole = $hasRole;
@@ -68,20 +67,6 @@ class SchedulesController extends BaseController
             $schedules = $this->scheduleService->rememberCache($ownerId);
 
             $responseUsers = $this->getImportantIdService->getResponseUser($ownerId);
-
-            if ($customers->isEmpty() && $schedules->isEmpty()) {
-                return $this->responseMan([
-                    "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                    'responseUsers' => $responseUsers,
-                ]);
-            } else if ($customers->isEmpty() && $schedules->isNotEmpty()) {
-                return $this->responseMan([
-                    "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                    'schedules' => $schedules,
-                    'responseUsers' => $responseUsers,
-                ]);
-            }
-
             $courses = $this->courseService->rememberCache($ownerId);
 
             $options = $this->optionService->rememberCache($ownerId);
@@ -96,6 +81,41 @@ class SchedulesController extends BaseController
             $hairstyleCustomer = $this->middleTableService->rememberCache($ownerId, 'hairstyle_customers');
 
             $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
+
+
+            if ($customers->isEmpty() && $schedules->isEmpty()) {
+                return $this->responseMan([
+                    "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    'schedules' => $schedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'responseUsers' => $responseUsers,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_users' => $userCustomer,
+                ]);
+            } else if ($customers->isEmpty() && $schedules->isNotEmpty()) {
+                return $this->responseMan([
+                    "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    'schedules' => $schedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'responseUsers' => $responseUsers,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_users' => $userCustomer,
+                ]);
+            }
 
             if ($schedules->isEmpty()) {
                 return $this->responseMan([
@@ -151,20 +171,6 @@ class SchedulesController extends BaseController
                 ->where('owner_id', $ownerId)
                 ->get();
 
-            $responseUsers = $this->getImportantIdService->getResponseUser($ownerId);
-
-            if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
-                return $this->responseMan([
-                    "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                ]);
-            } else if ($customers->isEmpty() && $selectSchedules->isNotEmpty()) {
-                return $this->responseMan([
-                    "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                    'schedules' => $selectSchedules,
-                    'responseUsers' => $responseUsers,
-                ]);
-            }
-
             $courses = $this->courseService->rememberCache($ownerId);
 
             $options = $this->optionService->rememberCache($ownerId);
@@ -178,6 +184,44 @@ class SchedulesController extends BaseController
             $merchandiseCustomer = $this->middleTableService->rememberCache($ownerId, 'merchandise_customers');
             $hairstyleCustomer = $this->middleTableService->rememberCache($ownerId, 'hairstyle_customers');
             $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
+
+            $responseUsers = $this->getImportantIdService->getResponseUser($ownerId);
+
+            if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
+                return $this->responseMan([
+                    "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    'schedules' => $selectSchedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'responseUsers' => $responseUsers,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_users' => $userCustomer,
+                ]);
+            } else if ($customers->isEmpty() && $selectSchedules->isNotEmpty()) {
+                return $this->responseMan([
+                    "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    'schedules' => $selectSchedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'responseUsers' => $responseUsers,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_users' => $userCustomer,
+                ]);
+            }
+
+
             return $this->responseMan([
                 'schedules' => $selectSchedules,
                 'customers' => $customers,
@@ -257,7 +301,7 @@ class SchedulesController extends BaseController
 
             $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-            $this->scheduleService->scheduleDelete($request->id);
+            $this->scheduleService->scheduleDelete(intval($request->id));
 
             $this->scheduleService->forgetCache($ownerId);
 
@@ -450,6 +494,76 @@ class SchedulesController extends BaseController
             $schedule = $this->scheduleService->scheduleValidateAndCreateOrUpdate($scheduleData, $ownerId, null, true, true);
             Log::info('schedule成功', ['schedule' => $schedule]);
 
+            $this->scheduleService->forgetCache($ownerId);
+
+            $this->customerService->forgetCache($ownerId);
+
+            $this->middleTableService->flushCache($ownerId);
+
+            $courseCustomer = $this->middleTableService->rememberCache($ownerId, 'course_customers');
+
+            $optionCustomer = $this->middleTableService->rememberCache($ownerId, 'option_customers');
+
+            $merchandiseCustomer = $this->middleTableService->rememberCache($ownerId, 'merchandise_customers');
+
+            $hairstyleCustomer = $this->middleTableService->rememberCache($ownerId, 'hairstyle_customers');
+
+            $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
+
+            DB::commit();
+
+            return $this->responseMan([
+                "customer" => $customer,
+                "schedule" => $schedule,
+                "course_customers" => $courseCustomer,
+                "option_customers" => $optionCustomer,
+                "merchandise_customers" => $merchandiseCustomer,
+                "hairstyle_customers" => $hairstyleCustomer,
+                "customer_users" => $userCustomer,
+            ]);
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            DB::rollBack();
+            return $this->responseMan([
+                'message' => 'スケジュールと顧客の更新に失敗しました！もう一度お試しください！'
+            ], 500);
+        }
+    }
+
+    public function  customerCreateAndScheduleUpdate(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            Log::info('customerOnlyUpdate', ['request' => $request->all()]);
+            $user = $this->hasRole->managerAllow();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
+
+            $data = $request->all();
+
+            $customerData = [
+                'customer_name' => $data['customer_name'],
+                'phone_number' => $data['phone_number'],
+                'remarks' => $data['remarks'],
+                'course_id' => $data['course_id'],
+                'option_id' => $data['option_id'],
+                'merchandise_id' => $data['merchandise_id'],
+                'hairstyle_id' => $data['hairstyle_id'],
+                'user_id' => $data['user_id'],
+            ];
+
+            $customer = $this->customerService->customerValidateAndCreateOrUpdate($customerData, $ownerId, null, true);
+            Log::info('customer成功', ['customer' => $customer]);
+
+            $scheduleData = [
+                'title' => $data['title'] ?? null,
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'allDay' => $data['allDay'],
+                'customer_id' => $customer->id
+            ];
+
+            $schedule = $this->scheduleService->scheduleValidateAndCreateOrUpdate($scheduleData, $ownerId, intval($data['id']), false, true);
+            Log::info('schedule成功', ['schedule' => $schedule]);
             $this->scheduleService->forgetCache($ownerId);
 
             $this->customerService->forgetCache($ownerId);

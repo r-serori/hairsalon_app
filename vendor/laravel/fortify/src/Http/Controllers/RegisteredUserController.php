@@ -71,8 +71,6 @@ class RegisteredUserController extends Controller
 
             $user->notify(new VerifyEmailNotification($user));
 
-            $this->guard->login($user);
-
             $responseUser =
                 [
                     'id' => $user->id,

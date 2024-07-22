@@ -31,9 +31,9 @@ class UpdateUserProfileInformation
             if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
                 Validator::make($request->all(), [
-                    'name' => ['required', 'string', 'max:255'],
-                    'email' => ['required', 'email', 'max:255'],
-                    'phone_number' => ['required', 'string', 'max:20'],
+                    'name' => 'required | string | max:50',
+                    'email' => 'required | email | max:200',
+                    'phone_number' => 'required | string | max:20',
                 ])->validateWithBag('updateProfileInformation');
 
                 if (
@@ -53,6 +53,8 @@ class UpdateUserProfileInformation
                     return response()->json(
                         [
                             'message' => 'プロフィール情報の更新に成功しました!もう一度ログインしてください！',
+                            'redirect' => true,
+
                         ],
                         200,
                         [],
@@ -68,17 +70,13 @@ class UpdateUserProfileInformation
                         'phone_number' => $request['phone_number'],
                     ])->save();
 
-                    Auth::guard('web')->logout();
-                    if ($request->hasSession()) {
-                        $request->session()->invalidate();
-                        $request->session()->regenerateToken();
-                    };
 
                     DB::commit();
 
                     return response()->json(
                         [
                             'message' => 'プロフィール情報の更新に成功しました!',
+                            'redirect' => false,
                         ],
                         200,
                         [],

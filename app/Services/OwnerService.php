@@ -66,7 +66,7 @@ class OwnerService
         'city' => 'required | string | max:100',
         'addressLine1' => 'required | string | max:200',
         'addressLine2' => 'nullable | string | max:200',
-        'phone_number' => 'required | string | max:20',
+        'phone_number' => 'required | string | max:20 '
       ]);
 
       if ($validator->fails()) {
