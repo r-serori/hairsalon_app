@@ -4,8 +4,6 @@ namespace Laravel\Fortify\Http\Controllers;
 
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
 use Illuminate\Routing\Controller;
 use Illuminate\Routing\Pipeline;
 use Laravel\Fortify\Actions\AttemptToAuthenticate;
@@ -13,16 +11,11 @@ use Laravel\Fortify\Actions\CanonicalizeUsername;
 use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
-use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LoginViewResponse;
-use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
-use App\Models\Owner;
-use App\Models\Staff;
-use Illuminate\Support\Facades\Log;
 
 class AuthenticatedSessionController extends Controller
 {

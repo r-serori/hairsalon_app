@@ -1,393 +1,201 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Schedule;
-use App\Models\Customer;
-use App\Models\Course;
-use App\Models\Option;
-use App\Models\Merchandise;
-use App\Models\Hairstyle;
-use App\Models\Staff;
-use App\Models\Owner;
-use App\Models\User;
-use App\Models\CourseCustomer;
-use App\Models\OptionCustomer;
-use App\Models\MerchandiseCustomer;
-use App\Models\HairstyleCustomer;
 use App\Models\CustomerUser;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use App\Enums\Roles;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Services\HasRole;
+use App\Services\GetImportantIdService;
+use App\Services\MiddleTableService;
+use App\Services\CustomerService;
+use App\Services\CourseService;
+use App\Services\OptionService;
+use App\Services\MerchandiseService;
+use App\Services\HairstyleService;
+use App\Services\ScheduleService;
+use Illuminate\Support\Facades\Log;
 
-class SchedulesController extends Controller
+class SchedulesController extends BaseController
 {
+    protected $getImportantIdService;
+    protected $hasRole;
+    protected $middleTableService;
+    protected $scheduleService;
+    protected $customerService;
+    protected $courseService;
+    protected $optionService;
+    protected $merchandiseService;
+    protected $hairstyleService;
+
+    public function __construct(
+        GetImportantIdService $getImportantIdService,
+        HasRole $hasRole,
+        MiddleTableService $middleTableService,
+        ScheduleService $scheduleService,
+        CustomerService $customerService,
+        CourseService $courseService,
+        OptionService $optionService,
+        MerchandiseService $merchandiseService,
+        HairstyleService $hairstyleService
+
+    ) {
+        $this->getImportantIdService = $getImportantIdService;
+        $this->hasRole = $hasRole;
+        $this->middleTableService = $middleTableService;
+        $this->scheduleService = $scheduleService;
+        $this->customerService = $customerService;
+        $this->courseService = $courseService;
+        $this->optionService = $optionService;
+        $this->merchandiseService = $merchandiseService;
+        $this->hairstyleService = $hairstyleService;
+    }
+
     //owner_idを受け取り、スケジュールを取得
     public function index()
 
     {
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+            $user = $this->hasRole->allAllow();
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $customers = $this->customerService->rememberCache($ownerId);
 
-                $customersCacheKey = 'owner_' . $ownerId . 'customers';
+            $schedules = $this->scheduleService->rememberCache($ownerId);
 
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+            $responseUsers = $this->getImportantIdService->getResponseUser($ownerId);
 
-                $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Customer::where('owner_id', $ownerId)->get();
-                });
+            if ($customers->isEmpty() && $schedules->isEmpty()) {
+                return $this->responseMan([
+                    "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    'responseUsers' => $responseUsers,
+                ]);
+            } else if ($customers->isEmpty() && $schedules->isNotEmpty()) {
+                return $this->responseMan([
+                    "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                    'schedules' => $schedules,
+                    'responseUsers' => $responseUsers,
+                ]);
+            }
 
-                $currentYear = Carbon::now()->year;
+            $courses = $this->courseService->rememberCache($ownerId);
 
-                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
+            $options = $this->optionService->rememberCache($ownerId);
 
-                $selectSchedules = Cache::remember($schedulesCacheKey, $expirationInSeconds, function () use ($ownerId, $currentYear) {
+            $merchandises = $this->merchandiseService->rememberCache($ownerId);
 
-                    $currentYearStart = Carbon::create($currentYear, 1, 1);
-                    $nextYearEnd = Carbon::create($currentYear + 1, 12, 31); // 次の年の最終日
+            $hairstyles = $this->hairstyleService->rememberCache($ownerId);
 
-                    return Schedule::where('owner_id', $ownerId)
-                        ->whereBetween('start_time', [$currentYearStart, $nextYearEnd])
-                        ->get();
-                });
+            $courseCustomer = $this->middleTableService->rememberCache($ownerId, 'course_customers');
+            $optionCustomer = $this->middleTableService->rememberCache($ownerId, 'option_customers');
+            $merchandiseCustomer = $this->middleTableService->rememberCache($ownerId, 'merchandise_customers');
+            $hairstyleCustomer = $this->middleTableService->rememberCache($ownerId, 'hairstyle_customers');
 
-                $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
-                // Log::info('staff', $staff->toArray());
+            $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
-                if ($staffs->isEmpty()) {
-                    $owner = Owner::find($ownerId);
-                    $resUser = User::find($owner->user_id);
-                    $responseUsers = ['id' => $resUser->id, 'name' => $resUser->name];
-                } else {
-                    $owner = Owner::find($ownerId);
-                    // Log::info('owner', $owner->toArray());
-                    $OwnersUser = User::find($owner->user_id);
-                    // Log::info('user', $user->toArray());
-                    $staffs->push($OwnersUser->id);
-                    // Log::info('staff', $staff->toArray());
-                    $users = User::whereIn('id', $staffs)->get();
-                    // Log::info('users', $users->toArray());
-                    $responseUsers = $users->map(function ($user) {
-                        return ['id' => $user->id, 'name' => $user->name];
-                    });
-                }
-
-                if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
-                    return response()->json([
-                        "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                        'responseUsers' => $responseUsers,
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } elseif ($customers->isEmpty() && $selectSchedules->isNotEmpty()) {
-
-                    return response()->json([
-                        "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                        'schedules' => $selectSchedules,
-                        'responseUsers' => $responseUsers,
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-
-
-                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
-
-
-                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Course::where('owner_id', $ownerId)->get();
-                });
-
-                $optionsCacheKey = 'owner_' . $ownerId . 'options';
-
-                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Option::where('owner_id', $ownerId)->get();
-                });
-
-                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
-
-                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Merchandise::where('owner_id', $ownerId)->get();
-                });
-
-                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
-
-                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Hairstyle::where('owner_id', $ownerId)->get();
-                });
-
-                $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
-                // Log::info('staff', $staff->toArray());
-
-                if ($staffs->isEmpty()) {
-                    $owner = Owner::find($ownerId);
-                    $resUser = User::find($owner->user_id);
-                    $responseUsers = ['id' => $resUser->id, 'name' => $resUser->name];
-                } else {
-                    $owner = Owner::find($ownerId);
-                    // Log::info('owner', $owner->toArray());
-                    $OwnersUser = User::find($owner->user_id);
-                    // Log::info('user', $user->toArray());
-                    $staffs->push($OwnersUser->id);
-                    // Log::info('staff', $staff->toArray());
-                    $users = User::whereIn('id', $staffs)->get();
-                    // Log::info('users', $users->toArray());
-                    $responseUsers = $users->map(function ($user) {
-                        return ['id' => $user->id, 'name' => $user->name];
-                    });
-                }
-
-
-                $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
-
-                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  CourseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $optionCustomersCache = 'owner_' . $ownerId . 'option_customers';
-
-                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  OptionCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $merchandiseCustomersCache = 'owner_' . $ownerId . 'merchandise_customers';
-
-                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  MerchandiseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $hairstyleCustomersCache = 'owner_' . $ownerId . 'hairstyle_customers';
-
-                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  HairstyleCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
-
-                if ($selectSchedules->isEmpty()) {
-                    return response()->json([
-                        'message' =>
-                        '初めまして！新規作成ボタンからスケジュールを作成しましょう！',
-                        'schedules' => $selectSchedules,
-                        'customers' => $customers,
-                        'courses' => $courses,
-                        'options' => $options,
-                        'merchandises' => $merchandises,
-                        'hairstyles' => $hairstyles,
-                        'responseUsers' => $responseUsers,
-                        'course_customers' => $courseCustomer,
-                        'option_customers' => $optionCustomer,
-                        'merchandise_customers' => $merchandiseCustomer,
-                        'hairstyle_customers' => $hairstyleCustomer,
-                        'customer_users' => $userCustomer,
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-
-                    return response()->json([
-                        'schedules' => $selectSchedules,
-                        'customers' => $customers,
-                        'courses' => $courses,
-                        'options' => $options,
-                        'merchandises' => $merchandises,
-                        'hairstyles' => $hairstyles,
-                        'responseUsers'
-                        => $responseUsers,
-                        'course_customers' => $courseCustomer,
-                        'option_customers' => $optionCustomer,
-                        'merchandise_customers' => $merchandiseCustomer,
-                        'hairstyle_customers' => $hairstyleCustomer,
-                        'customer_users' => $userCustomer,
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            if ($schedules->isEmpty()) {
+                return $this->responseMan([
+                    'message' => '初めまして！新規作成ボタンからスケジュールを作成しましょう！',
+                    'schedules' => $schedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'responseUsers' => $responseUsers,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_users' => $userCustomer,
+                ]);
             } else {
-                return response()->json([
-                    'message' =>
-                    'あなたには権限がありません！'
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                return $this->responseMan([
+                    'schedules' => $schedules,
+                    'customers' => $customers,
+                    'courses' => $courses,
+                    'options' => $options,
+                    'merchandises' => $merchandises,
+                    'hairstyles' => $hairstyles,
+                    'responseUsers' => $responseUsers,
+                    'course_customers' => $courseCustomer,
+                    'option_customers' => $optionCustomer,
+                    'merchandise_customers' => $merchandiseCustomer,
+                    'hairstyle_customers' => $hairstyleCustomer,
+                    'customer_users' => $userCustomer,
+                ]);
             }
         } catch (\Exception $e) {
-            Log::error($e);
-            return response()->json([
-                'message' =>
-                'スケジュールが見つかりません!もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            // Log::error($e->getMessage());
+            return $this->responseMan([
+                'message' => 'スケジュールが見つかりません！もう一度お試しください！'
+            ], 500);
         }
     }
 
     public function selectGetYear($year)
     {
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+            $user = $this->hasRole->allAllow();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $decodeYear = urldecode($year);
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $customers = $this->customerService->rememberCache($ownerId);
 
-                $decodeYear = urldecode($year);
+            $selectSchedules = Schedule::whereDate('start_time', $decodeYear)
+                ->where('owner_id', $ownerId)
+                ->get();
 
-                $customersCacheKey = 'owner_' . $ownerId . 'customers';
+            $responseUsers = $this->getImportantIdService->getResponseUser($ownerId);
 
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-
-                $customers = Cache::remember($customersCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Customer::where('owner_id', $ownerId)->get();
-                });
-
-                $selectGetYear = $decodeYear;
-
-                $selectSchedules
-                    = Schedule::whereDate('start_time', $selectGetYear)
-                    ->where('owner_id', $ownerId)
-                    ->get();
-
-                if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
-                    return response()->json([
-                        "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } elseif ($customers->isEmpty() && $selectSchedules->isNotEmpty()) {
-                    $staffs = Staff::where('owner_id', $ownerId)->pluck('user_id');
-                    // Log::info('staff', $staff->toArray());
-
-                    if ($staffs->isEmpty()) {
-                        $owner = Owner::find($ownerId);
-                        $resUser = User::find($owner->user_id);
-                        $responseUsers = ['id' => $resUser->id, 'name' => $resUser->name];
-                    } else {
-                        $owner = Owner::find($ownerId);
-                        // Log::info('owner', $owner->toArray());
-                        $OwnersUser = User::find($owner->user_id);
-                        // Log::info('user', $user->toArray());
-                        $staffs->push($OwnersUser->id);
-                        // Log::info('staff', $staff->toArray());
-                        $users = User::whereIn('id', $staffs)->get();
-                        // Log::info('users', $users->toArray());
-                        $responseUsers = $users->map(function ($user) {
-                            return ['id' => $user->id, 'name' => $user->name];
-                        });
-                    }
-                    return response()->json([
-                        "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
-                        'schedules' => $selectSchedules,
-                        'responseUsers' => $responseUsers,
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-
-
-                $coursesCacheKey = 'owner_' . $ownerId . 'courses';
-
-
-                $courses = Cache::remember($coursesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Course::where('owner_id', $ownerId)->get();
-                });
-
-                $optionsCacheKey = 'owner_' . $ownerId . 'options';
-
-                $options = Cache::remember($optionsCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Option::where('owner_id', $ownerId)->get();
-                });
-
-                $merchandisesCacheKey = 'owner_' . $ownerId . 'merchandises';
-
-                $merchandises = Cache::remember($merchandisesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Merchandise::where('owner_id', $ownerId)->get();
-                });
-
-                $hairstylesCacheKey = 'owner_' . $ownerId . 'hairstyles';
-
-                $hairstyles = Cache::remember($hairstylesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return  Hairstyle::where('owner_id', $ownerId)->get();
-                });
-
-                $staff = Staff::where('owner_id', $ownerId)->pluck('user_id');
-                Log::info('staff', $staff->toArray());
-
-                if ($staff->isEmpty()) {
-                    $owner = Owner::where('user_id', $ownerId)->first();
-                    $users = User::find($owner->user_id);
-                } else {
-                    $owner = Owner::where('user_id', $ownerId)->first();
-                    Log::info('owner', $owner->toArray());
-                    $user = User::find($owner->user_id);
-                    Log::info('user', $user->toArray());
-                    $staff->push($user->id); // Eloquentコレクションに要素を追加
-                    Log::info('staff', $staff->toArray());
-                    $users = User::whereIn('id', $staff)->get();
-                    Log::info('users', $users->toArray());
-                }
-
-
-                $responseUsers = $users->map(function ($user) {
-                    return ['id' => $user->id, 'name' => $user->name];
-                });
-
-                $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
-
-                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  CourseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $optionCustomersCache = 'owner_' . $ownerId . 'option_customers';
-
-                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  OptionCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $merchandiseCustomersCache = 'owner_' . $ownerId . 'merchandise_customers';
-
-                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  MerchandiseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $hairstyleCustomersCache = 'owner_' . $ownerId . 'hairstyle_customers';
-
-                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  HairstyleCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
-
-                return response()->json([
+            if ($customers->isEmpty() && $selectSchedules->isEmpty()) {
+                return $this->responseMan([
+                    "message" => "初めまして！顧客画面の新規作成ボタンから顧客を作成しましょう！",
+                ]);
+            } else if ($customers->isEmpty() && $selectSchedules->isNotEmpty()) {
+                return $this->responseMan([
+                    "message" => "顧客画面の新規作成ボタンから顧客を作成しましょう！",
                     'schedules' => $selectSchedules,
-                    'customers' => $customers,
-                    'courses' => $courses,
-                    'options' => $options,
-                    'merchandises' => $merchandises,
-                    'hairstyles' => $hairstyles,
-                    'responseUsers'
-                    => $responseUsers,
-                    'course_customers' => $courseCustomer,
-                    'option_customers' => $optionCustomer,
-                    'merchandise_customers' => $merchandiseCustomer,
-                    'hairstyle_customers' => $hairstyleCustomer,
-                    'customer_users' => $userCustomer,
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    'message' =>
-                    'あなたには権限がありません！'
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    'responseUsers' => $responseUsers,
+                ]);
             }
+
+            $courses = $this->courseService->rememberCache($ownerId);
+
+            $options = $this->optionService->rememberCache($ownerId);
+
+            $merchandises = $this->merchandiseService->rememberCache($ownerId);
+
+            $hairstyles = $this->hairstyleService->rememberCache($ownerId);
+
+            $courseCustomer = $this->middleTableService->rememberCache($ownerId, 'course_customers');
+            $optionCustomer = $this->middleTableService->rememberCache($ownerId, 'option_customers');
+            $merchandiseCustomer = $this->middleTableService->rememberCache($ownerId, 'merchandise_customers');
+            $hairstyleCustomer = $this->middleTableService->rememberCache($ownerId, 'hairstyle_customers');
+            $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
+            return $this->responseMan([
+                'schedules' => $selectSchedules,
+                'customers' => $customers,
+                'courses' => $courses,
+                'options' => $options,
+                'merchandises' => $merchandises,
+                'hairstyles' => $hairstyles,
+                'responseUsers' => $responseUsers,
+                'course_customers' => $courseCustomer,
+                'option_customers' => $optionCustomer,
+                'merchandise_customers' => $merchandiseCustomer,
+                'hairstyle_customers' => $hairstyleCustomer,
+                'customer_users' => $userCustomer,
+            ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' =>
-                'スケジュールが見つかりません！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                'message' => 'スケジュールが見つかりません！もう一度お試しください！'
+            ], 500);
         }
     }
 
@@ -395,138 +203,49 @@ class SchedulesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'title' => 'required|string',
-                    'start_time' => 'required|date_format:Y-m-d H:i:s',
-                    'end_time' => 'required|date_format:Y-m-d H:i:s',
-                    'allDay' => 'required|boolean',
-                ]);
+            $user = $this->hasRole->managerAllow();
 
-                if ($validator->fails()) {
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => 'スケジュールの作成に失敗しました！入力ミスがあります！'
-                    ], 400);
-                }
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-                $validatedData = $validator->validate();
+            $schedule = $this->scheduleService->scheduleValidateAndCreateOrUpdate($request->all(), $ownerId, null, true, false);
 
+            $this->scheduleService->forgetCache($ownerId);
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            DB::commit();
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-
-                $schedule = Schedule::create([
-                    'title' => $validatedData['title'],
-                    'start_time' => $validatedData['start_time'],
-                    'end_time' => $validatedData['end_time'],
-                    'allDay' => $validatedData['allDay'],
-                    'owner_id' => $ownerId,
-                ]);
-
-                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
-
-                Cache::forget($schedulesCacheKey);
-
-
-                DB::commit();
-
-                return response()->json([
-                    'schedule' => $schedule,
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    'message' =>
-                    'あなたには権限がありません！'
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                'schedule' => $schedule,
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' =>
-                'スケジュールの作成に失敗しました！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                'message' => 'スケジュールの作成に失敗しました！もう一度お試しください！'
+            ], 500);
         }
     }
-
-
 
     public function update(Request $request)
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'id' => 'required|integer|exists:schedules,id',
-                    'title' => 'required|string',
-                    'start_time' => 'required|date_format:Y-m-d H:i:s',
-                    'end_time' => 'required|date_format:Y-m-d H:i:s',
-                    'allDay' => 'required|boolean',
-                ]);
+            $user = $this->hasRole->managerAllow();
 
-                if ($validator->fails()) {
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => 'スケジュールの更新に失敗しました！入力ミスがあります！'
-                    ], 400);
-                }
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-                $validatedData = $validator->validate();
+            $schedule = $this->scheduleService->scheduleValidateAndCreateOrUpdate($request->all(), $ownerId, $request->id, false, false);
 
-                $schedule = Schedule::find($validatedData['id']);
-                // $schedule = Schedule::find($id);
+            $this->scheduleService->forgetCache($ownerId);
 
-                $schedule->title = $validatedData['title'];
-                $schedule->start_time = $validatedData['start_time'];
-                $schedule->end_time = $validatedData['end_time'];
-                $schedule->allDay = $validatedData['allDay'];
+            DB::commit();
 
-                $schedule->save();
-
-                $staff = Staff::where('user_id', $user->id)->first();
-
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-
-                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
-
-                Cache::forget($schedulesCacheKey);
-
-                DB::commit();
-
-                return response()->json(
-                    [
-                        "schedule" => $schedule,
-                        'message' => 'スケジュールの更新に成功しました！'
-                    ],
-                    200,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    'message' =>
-                    'あなたには権限がありません！'
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                'schedule' => $schedule,
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' =>
-                'スケジュールが見つかりません！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                'message' => 'スケジュールの更新に失敗しました！もう一度お試しください！'
+            ], 500);
         }
     }
 
@@ -534,49 +253,24 @@ class SchedulesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $schedule = Schedule::find($request->id);
-                if (!$schedule) {
-                    return response()->json([
-                        'message' =>
-                        'スケジュールが見つかりません！
-                        もう一度お試しください！'
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $user = $this->hasRole->ownerAllow();
 
-                $schedule->delete();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $this->scheduleService->scheduleDelete($request->id);
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $this->scheduleService->forgetCache($ownerId);
 
-                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
+            DB::commit();
 
-                Cache::forget($schedulesCacheKey);
-
-                DB::commit();
-
-                return response()->json([
-                    "deleteId" => $request->id
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    'message' =>
-                    'あなたには権限がありません！'
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                "deleteId" => $request->id
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' =>
-                'スケジュールの削除に失敗しました！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                'message' => 'スケジュールの削除に失敗しました！もう一度お試しください！'
+            ], 500);
         }
     }
 
@@ -584,392 +278,137 @@ class SchedulesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'customer_name' => 'required|string',
-                    'phone_number' => 'nullable|string',
-                    'remarks' => 'nullable|string',
-                    'course_id' => 'nullable|array',
-                    'course_id.*' => 'nullable|integer|exists:courses,id',
-                    'option_id' => 'nullable|array',
-                    'option_id.*' => 'nullable|integer|exists:options,id',
-                    'merchandise_id' => 'nullable|array',
-                    'merchandise_id.*' => 'nullable|integer|exists:merchandises,id',
-                    'hairstyle_id' => 'nullable|array',
-                    'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
-                    'user_id' => 'required|array',
-                    'user_id.*' => 'required|integer|exists:users,id',
-                    'title' => 'nullable',
-                    'start_time' => 'required|date_format:Y-m-d H:i:s',
-                    'end_time' => 'required|date_format:Y-m-d H:i:s',
-                    'allDay' => 'required|boolean',
-                ]);
+            $user = $this->hasRole->managerAllow();
 
-                if ($validator->fails()) {
-                    Log::info($validator->errors());
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => '顧客とスケジュールの作成に失敗しました！入力ミスがあります！'
-                    ], 400);
-                }
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-                $validatedData = $validator->validate();
+            $data = $request->all();
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $customerData = [
+                'customer_name' => $data['customer_name'],
+                'phone_number' => $data['phone_number'],
+                'remarks' => $data['remarks'],
+                'course_id' => $data['course_id'],
+                'option_id' => $data['option_id'],
+                'merchandise_id' => $data['merchandise_id'],
+                'hairstyle_id' => $data['hairstyle_id'],
+                'user_id' => $data['user_id'],
+            ];
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $customer = $this->customerService->customerValidateAndCreateOrUpdate($customerData, $ownerId, null, true);
 
+            $scheduleData = [
+                'title' => $data['title'] ?? null,
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'allDay' => $data['allDay'],
+                'customer_id' => $customer->id,
+            ];
 
+            $schedule = $this->scheduleService->scheduleValidateAndCreateOrUpdate($scheduleData, $ownerId, null, true, true);
 
-                // 顧客を作成
-                $customer = Customer::create([
-                    'customer_name' => $validatedData['customer_name'],
-                    'phone_number' => $validatedData['phone_number'],
-                    'remarks' => $validatedData['remarks'],
-                    'owner_id' => $ownerId,
-                ]);
+            $this->customerService->forgetCache($ownerId);
 
+            $this->middleTableService->flushCache($ownerId);
 
-                $customersCacheKey = 'owner_' . $ownerId . 'customers';
+            $courseCustomer = $this->middleTableService->rememberCache($ownerId, 'course_customers');
 
-                Cache::forget($customersCacheKey);
+            $optionCustomer = $this->middleTableService->rememberCache($ownerId, 'option_customers');
 
+            $merchandiseCustomer = $this->middleTableService->rememberCache($ownerId, 'merchandise_customers');
 
-                // 中間テーブルにデータを挿入
-                // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'] ?? [];
-                $optionIds = $validatedData['option_id'] ?? [];
-                $merchandiseIds = $validatedData['merchandise_id'] ?? [];
-                $hairstyleIds = $validatedData['hairstyle_id'] ?? [];
-                $userIds = $validatedData['user_id'];
+            $hairstyleCustomer = $this->middleTableService->rememberCache($ownerId, 'hairstyle_customers');
 
-                $pivotData = [];
-                if (!empty($courseIds)) {
-                    foreach ($courseIds as $courseId) {
-                        $pivotData[$courseId] = ['owner_id' => $ownerId];
-                    }
-                }
+            $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
-                // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
-                $customer->courses()->sync($pivotData);
+            $this->scheduleService->forgetCache($ownerId);
 
-                $pivotData = [];
-                if (!empty($optionIds)) {
-                    foreach ($optionIds as $optionId) {
-                        $pivotData[$optionId] = ['owner_id' => $ownerId];
-                    }
-                }
+            DB::commit();
 
-                $customer->options()->sync($pivotData);
-
-                $pivotData = [];
-                if (!empty($merchandiseIds)) {
-                    foreach ($merchandiseIds as $merchandiseId) {
-                        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                $customer->merchandises()->sync($pivotData);
-
-                $pivotData = [];
-                if (!empty($hairstyleIds)) {
-                    foreach ($hairstyleIds as $hairstyleId) {
-                        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                $customer->hairstyles()->sync($pivotData);
-
-                $pivotData = [];
-                foreach ($userIds as $userId) {
-                    $pivotData[$userId] = ['owner_id' => $ownerId];
-                }
-                $customer->users()->sync($pivotData);
-
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-
-                $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
-
-                Cache::forget($courseCustomersCache);
-
-                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  CourseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $optionCustomersCache = 'owner_' . $ownerId . 'option_customers';
-
-                Cache::forget($optionCustomersCache);
-
-                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  OptionCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $merchandiseCustomersCache = 'owner_' . $ownerId . 'merchandise_customers';
-
-                Cache::forget($merchandiseCustomersCache);
-
-                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  MerchandiseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $hairstyleCustomersCache = 'owner_' . $ownerId . 'hairstyle_customers';
-
-                Cache::forget($hairstyleCustomersCache);
-
-                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  HairstyleCustomer::where('owner_id', $ownerId)->get();
-                });
-                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
-
-
-                $schedule = Schedule::create([
-                    'title' => $validatedData['title'],
-                    'start_time' => $validatedData['start_time'],
-                    'end_time' => $validatedData['end_time'],
-                    'allDay' => $validatedData['allDay'],
-                    'customer_id' => $customer->id,
-                    'owner_id' => $ownerId,
-                ]);
-
-                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
-
-                Cache::forget($schedulesCacheKey);
-
-                DB::commit();
-
-                return response()->json(
-                    [
-                        "customer" => $customer,
-                        "schedule" => $schedule,
-                        "course_customers" => $courseCustomer,
-                        "option_customers" => $optionCustomer,
-                        "merchandise_customers" => $merchandiseCustomer,
-                        "hairstyle_customers" => $hairstyleCustomer,
-                        "customer_users" => $userCustomer,
-                    ],
-                    200,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    'message' =>
-                    'あなたには権限がありません！'
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                "customer" => $customer,
+                "schedule" => $schedule,
+                "course_customers" => $courseCustomer,
+                "option_customers" => $optionCustomer,
+                "merchandise_customers" => $merchandiseCustomer,
+                "hairstyle_customers" => $hairstyleCustomer,
+                "customer_users" => $userCustomer,
+            ]);
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                'message' =>
-                'スケジュールの作成に失敗しました！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                'message' => 'スケジュールの作成に失敗しました！もう一度お試しください！'
+            ], 500);
         }
     }
-
-
 
     public function doubleUpdate(Request $request)
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'id' => 'required|integer|exists:schedules,id',
-                    'customer_name' => 'required|string',
-                    'phone_number' => 'nullable',
-                    'remarks' => 'nullable',
-                    'course_id' => 'nullable|array',
-                    'course_id.*' => 'nullable|integer|exists:courses,id',
-                    'option_id' => 'nullable|array',
-                    'option_id.*' => 'nullable|integer|exists:options,id',
-                    'merchandise_id' => 'nullable|array',
-                    'merchandise_id.*' => 'nullable|integer|exists:merchandises,id',
-                    'hairstyle_id' => 'nullable|array',
-                    'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
-                    'user_id' => 'required|array',
-                    'user_id.*' => 'required|integer|exists:users,id',
-                    'title' => 'nullable',
-                    'start_time' => 'required|date_format:Y-m-d H:i:s',
-                    'end_time' => 'required|date_format:Y-m-d H:i:s',
-                    'allDay' => 'required|boolean',
-                    'customer_id' => 'required',
-                ]);
+            $user = $this->hasRole->managerAllow();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-                if ($validator->fails()) {
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => '顧客とスケジュールの更新に失敗しました！入力ミスがあります！'
-                    ], 400);
-                }
+            $data = $request->all();
 
-                $validatedData = $validator->validate();
+            $customerData = [
+                'customer_name' => $data['customer_name'],
+                'phone_number' => $data['phone_number'],
+                'remarks' => $data['remarks'],
+                'course_id' => $data['course_id'],
+                'option_id' => $data['option_id'],
+                'merchandise_id' => $data['merchandise_id'],
+                'hairstyle_id' => $data['hairstyle_id'],
+                'user_id' => $data['user_id'],
+            ];
 
+            $customer = $this->customerService->customerValidateAndCreateOrUpdate($customerData, $ownerId, intval($data['customer_id']), false);
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $scheduleData = [
+                'title' => $data['title'] ?? null,
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'allDay' => $data['allDay'],
+                'customer_id' =>
+                $data['customer_id'],
+            ];
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $schedule = $this->scheduleService->scheduleValidateAndCreateOrUpdate($scheduleData, $ownerId, intval($data['id']), false, true);
 
+            $this->customerService->forgetCache($ownerId);
 
-                $customerId = $validatedData['customer_id'];
+            $this->middleTableService->flushCache($ownerId);
 
-                $customer = Customer::find($customerId);
+            $courseCustomer = $this->middleTableService->rememberCache($ownerId, 'course_customers');
 
-                $customer->customer_name = $validatedData['customer_name'];
-                $customer->phone_number = $validatedData['phone_number'];
-                $customer->remarks = $validatedData['remarks'];
+            $optionCustomer = $this->middleTableService->rememberCache($ownerId, 'option_customers');
 
-                $customer->save();
+            $merchandiseCustomer = $this->middleTableService->rememberCache($ownerId, 'merchandise_customers');
 
-                $customersCacheKey = 'owner_' . $ownerId . 'customers';
+            $hairstyleCustomer = $this->middleTableService->rememberCache($ownerId, 'hairstyle_customers');
 
-                Cache::forget($customersCacheKey);
+            $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
+            $this->scheduleService->forgetCache($ownerId);
 
-                // 中間テーブルにデータを挿入
-                // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'] ?? [];
-                $optionIds = $validatedData['option_id'] ?? [];
-                $merchandiseIds = $validatedData['merchandise_id'] ?? [];
-                $hairstyleIds = $validatedData['hairstyle_id'] ?? [];
-                $userIds = $validatedData['user_id'];
+            DB::commit();
 
-                $pivotData = [];
-                if (!empty($courseIds)) {
-                    foreach ($courseIds as $courseId) {
-                        $pivotData[$courseId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
-                $customer->courses()->sync($pivotData);
-
-                $pivotData = [];
-                if (!empty($optionIds)) {
-                    foreach ($optionIds as $optionId) {
-                        $pivotData[$optionId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                $customer->options()->sync($pivotData);
-
-                $pivotData = [];
-                if (!empty($merchandiseIds)) {
-                    foreach ($merchandiseIds as $merchandiseId) {
-                        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                $customer->merchandises()->sync($pivotData);
-
-                $pivotData = [];
-                if (!empty($hairstyleIds)) {
-                    foreach ($hairstyleIds as $hairstyleId) {
-                        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                $customer->hairstyles()->sync($pivotData);
-
-
-                $pivotData = [];
-                foreach ($userIds as $userId) {
-                    $pivotData[$userId] = ['owner_id' => $ownerId];
-                }
-                $customer->users()->sync($pivotData);
-
-
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-
-                $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
-
-                Cache::forget($courseCustomersCache);
-
-                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  CourseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $optionCustomersCache = 'owner_' . $ownerId . 'option_customers';
-
-                Cache::forget($optionCustomersCache);
-
-                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  OptionCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $merchandiseCustomersCache = 'owner_' . $ownerId . 'merchandise_customers';
-
-                Cache::forget($merchandiseCustomersCache);
-
-                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  MerchandiseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $hairstyleCustomersCache = 'owner_' . $ownerId . 'hairstyle_customers';
-
-                Cache::forget($hairstyleCustomersCache);
-
-                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  HairstyleCustomer::where('owner_id', $ownerId)->get();
-                });
-                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
-
-                $schedule = Schedule::find($validatedData['id']);
-
-                $schedule->title = $validatedData['title'];
-                $schedule->start_time = $validatedData['start_time'];
-                $schedule->end_time = $validatedData['end_time'];
-                $schedule->allDay = $validatedData['allDay'];
-                $schedule->customer_id = $customerId;
-
-
-                $schedule->save();
-
-                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
-
-                Cache::forget($schedulesCacheKey);
-
-                DB::commit();
-
-
-                return response()->json(
-                    [
-                        "customer" => $customer,
-                        "schedule" => $schedule,
-                        "course_customers" => $courseCustomer,
-                        "option_customers" => $optionCustomer,
-                        "merchandise_customers" => $merchandiseCustomer,
-                        "hairstyle_customers" => $hairstyleCustomer,
-                        "customer_users" => $userCustomer,
-                    ],
-                    200,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    'message' =>
-                    'あなたには権限がありません！'
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                "customer" => $customer,
+                "schedule" => $schedule,
+                "course_customers" => $courseCustomer,
+                "option_customers" => $optionCustomer,
+                "merchandise_customers" => $merchandiseCustomer,
+                "hairstyle_customers" => $hairstyleCustomer,
+                "customer_users" => $userCustomer,
+            ]);
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                'message' =>
-                'スケジュールの更新に失敗しました！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                'message' => 'スケジュールと顧客の更新に失敗しました！もう一度お試しください！'
+            ], 500);
         }
     }
 
@@ -978,199 +417,72 @@ class SchedulesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                $validator = Validator::make($request->all(), [
-                    'customer_name' => 'required|string',
-                    'phone_number' => 'nullable',
-                    'remarks' => 'nullable',
-                    'course_id' => 'nullable|array',
-                    'course_id.*' => 'nullable|integer|exists:courses,id',
-                    'option_id' => 'nullable|array',
-                    'option_id.*' => 'nullable|integer|exists:options,id',
-                    'merchandise_id' => 'nullable|array',
-                    'merchandise_id.*' => 'nullable|integer|exists:merchandises,id',
-                    'hairstyle_id' => 'nullable|array',
-                    'hairstyle_id.*' => 'nullable|integer|exists:hairstyles,id',
-                    'user_id' => 'nullable|array',
-                    'user_id.*' => 'required|integer|exists:users,id',
-                    'title' => 'nullable',
-                    'start_time' => 'required|date_format:Y-m-d H:i:s',
-                    'end_time' => 'required|date_format:Y-m-d H:i:s',
-                    'allDay' => 'required|boolean',
-                    'customer_id' => 'required',
-                ]);
+            Log::info('customerOnlyUpdate', ['request' => $request->all()]);
+            $user = $this->hasRole->managerAllow();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
+            $data = $request->all();
 
-                if ($validator->fails()) {
-                    Log::info($validator->errors());
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => '顧客の更新ととスケジュールの作成に失敗しました！入力ミスがあります！'
-                    ], 400);
-                }
+            $customerId = intval($data['customer_id']);
 
-                $validatedData = $validator->validate();
+            $customerData = [
+                'customer_name' => $data['customer_name'],
+                'phone_number' => $data['phone_number'],
+                'remarks' => $data['remarks'],
+                'course_id' => $data['course_id'],
+                'option_id' => $data['option_id'],
+                'merchandise_id' => $data['merchandise_id'],
+                'hairstyle_id' => $data['hairstyle_id'],
+                'user_id' => $data['user_id'],
+            ];
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $customer = $this->customerService->customerValidateAndCreateOrUpdate($customerData, $ownerId, $customerId, false);
+            Log::info('customer成功', ['customer' => $customer]);
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $scheduleData = [
+                'title' => $data['title'] ?? null,
+                'start_time' => $data['start_time'],
+                'end_time' => $data['end_time'],
+                'allDay' => $data['allDay'],
+                'customer_id' => $customerId
+            ];
 
-                $customerId = $validatedData['customer_id'];
+            $schedule = $this->scheduleService->scheduleValidateAndCreateOrUpdate($scheduleData, $ownerId, null, true, true);
+            Log::info('schedule成功', ['schedule' => $schedule]);
 
-                $customer = Customer::find($customerId);
+            $this->scheduleService->forgetCache($ownerId);
 
-                $customer->customer_name = $validatedData['customer_name'];
-                $customer->phone_number = $validatedData['phone_number'];
-                $customer->remarks = $validatedData['remarks'];
+            $this->customerService->forgetCache($ownerId);
 
+            $this->middleTableService->flushCache($ownerId);
 
-                $customer->save();
+            $courseCustomer = $this->middleTableService->rememberCache($ownerId, 'course_customers');
 
-                $customersCacheKey = 'owner_' . $ownerId . 'customers';
+            $optionCustomer = $this->middleTableService->rememberCache($ownerId, 'option_customers');
 
-                Cache::forget($customersCacheKey);
+            $merchandiseCustomer = $this->middleTableService->rememberCache($ownerId, 'merchandise_customers');
 
+            $hairstyleCustomer = $this->middleTableService->rememberCache($ownerId, 'hairstyle_customers');
 
-                // 中間テーブルにデータを挿入
-                // 中間テーブルにデータを挿入
-                $courseIds = $validatedData['course_id'] ?? [];
-                $optionIds = $validatedData['option_id'] ?? [];
-                $merchandiseIds = $validatedData['merchandise_id'] ?? [];
-                $hairstyleIds = $validatedData['hairstyle_id'] ?? [];
-                $userIds = $validatedData['user_id'];
+            $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
 
-                $pivotData = [];
-                if (!empty($courseIds)) {
-                    foreach ($courseIds as $courseId) {
-                        $pivotData[$courseId] = ['owner_id' => $ownerId];
-                    }
-                }
+            DB::commit();
 
-                // `course_id`がnullまたは空の場合、`sync`メソッドは空の配列を渡します。
-                $customer->courses()->sync($pivotData);
-
-                $pivotData = [];
-                if (!empty($optionIds)) {
-                    foreach ($optionIds as $optionId) {
-                        $pivotData[$optionId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                $customer->options()->sync($pivotData);
-
-                $pivotData = [];
-                if (!empty($merchandiseIds)) {
-                    foreach ($merchandiseIds as $merchandiseId) {
-                        $pivotData[$merchandiseId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                $customer->merchandises()->sync($pivotData);
-
-                $pivotData = [];
-                if (!empty($hairstyleIds)) {
-                    foreach ($hairstyleIds as $hairstyleId) {
-                        $pivotData[$hairstyleId] = ['owner_id' => $ownerId];
-                    }
-                }
-
-                $customer->hairstyles()->sync($pivotData);
-
-
-                $pivotData = [];
-                foreach ($userIds as $userId) {
-                    $pivotData[$userId] = ['owner_id' => $ownerId];
-                }
-                $customer->users()->sync($pivotData);
-
-
-
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-
-                $courseCustomersCache = 'owner_' . $ownerId . 'course_customers';
-
-                Cache::forget($courseCustomersCache);
-
-                $courseCustomer = Cache::remember($courseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  CourseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $optionCustomersCache = 'owner_' . $ownerId . 'option_customers';
-
-                Cache::forget($optionCustomersCache);
-
-                $optionCustomer = Cache::remember($optionCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  OptionCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $merchandiseCustomersCache = 'owner_' . $ownerId . 'merchandise_customers';
-
-                Cache::forget($merchandiseCustomersCache);
-
-                $merchandiseCustomer = Cache::remember($merchandiseCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  MerchandiseCustomer::where('owner_id', $ownerId)->get();
-                });
-
-                $hairstyleCustomersCache = 'owner_' . $ownerId . 'hairstyle_customers';
-
-                Cache::forget($hairstyleCustomersCache);
-
-                $hairstyleCustomer = Cache::remember($hairstyleCustomersCache, $expirationInSeconds, function () use ($ownerId) {
-                    return  HairstyleCustomer::where('owner_id', $ownerId)->get();
-                });
-                $userCustomer = CustomerUser::where('owner_id', $ownerId)->get();
-
-
-                $schedule = Schedule::create([
-                    'title' => $validatedData['title'],
-                    'start_time' => $validatedData['start_time'],
-                    'end_time' => $validatedData['end_time'],
-                    'allDay' => $validatedData['allDay'],
-                    'customer_id' => $customerId,
-                    'owner_id' => $ownerId,
-                ]);
-
-
-                $schedulesCacheKey = 'owner_' . $ownerId . 'schedules';
-
-                Cache::forget($schedulesCacheKey);
-
-                DB::commit();
-
-
-                return response()->json(
-                    [
-                        "customer" => $customer,
-                        "schedule" => $schedule,
-                        "course_customers" => $courseCustomer,
-                        "option_customers" => $optionCustomer,
-                        "merchandise_customers" => $merchandiseCustomer,
-                        "hairstyle_customers" => $hairstyleCustomer,
-                        "customer_users" => $userCustomer,
-                    ],
-                    200,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    'message' =>
-                    'あなたには権限がありません！'
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            return $this->responseMan([
+                "customer" => $customer,
+                "schedule" => $schedule,
+                "course_customers" => $courseCustomer,
+                "option_customers" => $optionCustomer,
+                "merchandise_customers" => $merchandiseCustomer,
+                "hairstyle_customers" => $hairstyleCustomer,
+                "customer_users" => $userCustomer,
+            ]);
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                'message' =>
-                'スケジュールの更新に失敗しました！
-                もう一度お試しください！
-                '
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                'message' => 'スケジュールと顧客の更新に失敗しました！もう一度お試しください！'
+            ], 500);
         }
     }
 }

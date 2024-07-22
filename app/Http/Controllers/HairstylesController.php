@@ -3,25 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Hairstyle;
-
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Enums\Roles;
-use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
-use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\HairstyleService;
-use Illuminate\Support\Facades\Log;
 
-class HairstylesController extends Controller
+class HairstylesController extends BaseController
 {
     protected $getImportantIdService;
     protected $hairstyleService;
@@ -37,10 +26,9 @@ class HairstylesController extends Controller
     public function index(): JsonResponse
     {
         try {
+            $user =  $this->hasRole->allAllow();
 
-            $user =  $this->hasRole->AllAllow();
-
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
             $hairstyles = $this->hairstyleService->rememberCache($ownerId);
 
@@ -62,22 +50,15 @@ class HairstylesController extends Controller
         }
     }
 
-
     public function store(Request $request)
     {
         DB::beginTransaction();
         try {
+            $user = $this->hasRole->managerAllow();
 
-            $user = $this->hasRole->ManagerAllow();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-            $validatedData = $this->hairstyleService->HairstyleValidate($request->all());
-
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
-
-            $hairstyle = Hairstyle::create([
-                'hairstyle_name' => $validatedData['hairstyle_name'],
-                'owner_id' => $ownerId
-            ]);
+            $hairstyle = $this->hairstyleService->hairstyleValidateAndCreateOrUpdate($request->all(), $ownerId, true);
 
             $this->hairstyleService->forgetCache($ownerId);
             DB::commit();
@@ -93,23 +74,15 @@ class HairstylesController extends Controller
         }
     }
 
-
-
-
     public function update(Request $request)
     {
         DB::beginTransaction();
         try {
-            $user = $this->hasRole->ManagerAllow();
+            $user = $this->hasRole->managerAllow();
 
-            $validatedData = $this->hairstyleService->HairstyleValidate($request->all());
+            $hairstyle = $this->hairstyleService->hairstyleValidateAndCreateOrUpdate($request->all(), $request->id, false);
 
-            $hairstyle = Hairstyle::find($request->id);
-            $hairstyle->hairstyle_name = $validatedData['hairstyle_name'];
-
-            $hairstyle->save();
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
-
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
             $this->hairstyleService->forgetCache($ownerId);
             DB::commit();
@@ -129,9 +102,9 @@ class HairstylesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = $this->hasRole->OwnerAllow();
+            $user = $this->hasRole->ownerAllow();
 
-            $this->hairstyleService->HairstyleDelete($request->id);
+            $this->hairstyleService->hairstyleDelete($request->id);
 
             $ownerId = Owner::where('user_id', $user->id)->value('id');
 

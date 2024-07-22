@@ -2,118 +2,86 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DailySale;
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Enums\Roles;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
-use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
+use App\Services\HasRole;
+use App\Services\GetImportantIdService;
+use App\Services\DailySaleService;
 
-class DailySalesController extends Controller
+class DailySalesController extends BaseController
 {
+
+    protected $getImportantIdService;
+    protected $dailySaleService;
+    protected $hasRole;
+
+    public function __construct(GetImportantIdService $getImportantIdService, DailySaleService $dailySaleService, HasRole $hasRole)
+    {
+        $this->getImportantIdService = $getImportantIdService;
+        $this->dailySaleService = $dailySaleService;
+        $this->hasRole = $hasRole;
+    }
 
     public function index()
     {
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
+            $user =  $this->hasRole->ownerAllow();
 
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
+            $ownerId = Owner::where('user_id', $user->id)->value('id');
 
-                $currentYear = Carbon::now()->year;
+            $currentYear = Carbon::now()->year;
 
-                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
+            $daily_sales = $this->dailySaleService->rememberCache($ownerId, $currentYear);
 
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-
-                $daily_sales = Cache::remember($dailySalesCacheKey, $expirationInSeconds, function () use ($ownerId, $currentYear) {
-
-                    $currentYearStart = Carbon::create($currentYear, 1, 1);
-                    $currentYearEnd = Carbon::create($currentYear, 12, 31); // 次の年の最終日
-
-                    return DailySale::where('owner_id', $ownerId)
-                        ->whereBetween('date', [$currentYearStart, $currentYearEnd])->oldest('date')->get();
-                });
-
-                if ($daily_sales->isEmpty()) {
-                    return response()->json([
-                        "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
-                        'dailySales' => $daily_sales
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-                    return response()->json([
-                        'massage' => $currentYear . '年の日次売上データです！',
-                        'dailySales' => $daily_sales
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            if ($daily_sales->isEmpty()) {
+                return $this->responseMan([
+                    "message" => "初めまして！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
+                    'dailySales' => []
+                ]);
             } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                return $this->responseMan([
+                    'dailySales' => $daily_sales,
+                    'message' => $currentYear . '年の日次売上データです！'
+                ]);
             }
         } catch (\Exception $e) {
-            return response()->json(
-                [
-                    'message' =>
-                    '日次売上が見つかりません！もう一度お試しください！'
-                ],
-                500,
-                [],
-                JSON_UNESCAPED_UNICODE
-            )->header('Content-Type', 'application/json; charset=UTF-8');
+            // Log::error($e->getMessage());
+            return $this->responseMan([
+                "message" => "日次売上の取得に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
     public function selectedDailySales($year)
     {
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
 
-                $decodedYear = urldecode($year);
+            $user =  $this->hasRole->ownerAllow();
 
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
+            $decodedYear = urldecode($year);
 
-                $decodeYearStart = Carbon::create($decodedYear, 1, 1);
-                $decodeYearEnd = Carbon::create($decodedYear, 12, 31); // 次の年の最終日
+            $ownerId = Owner::where('user_id', $user->id)->value('id');
 
-                $daily_sales = DailySale::where('owner_id', $ownerId)
-                    ->whereBetween('date', [$decodeYearStart, $decodeYearEnd])->oldest('date')
-                    ->get();
+            $daily_sales = $this->dailySaleService->getDailySales($ownerId, $decodedYear);
 
-                if ($daily_sales->isEmpty()) {
-                    return response()->json([
-                        "message" => "選択した売上データがありません！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
-                        'dailySales' => $daily_sales
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-                    return response()->json([
-                        'massage' => $decodedYear . '年の日次売上データです！',
-                        'dailySales' => $daily_sales
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            if ($daily_sales->isEmpty()) {
+                return $this->responseMan([
+                    "message" => "選択した売上データがありません！予約表画面の日次売上作成ボタンから日次売上を作成しましょう！",
+                    'dailySales' => $daily_sales
+                ]);
             } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                return $this->responseMan([
+                    'dailySales' => $daily_sales,
+                    'message' => $decodedYear . '年の日次売上データです！'
+                ]);
             }
         } catch (\Exception $e) {
-            return response()->json(
-                [
-                    'message' =>
-                    '日次売上が見つかりません！
-                    もう一度お試しください！'
-                ],
-                500,
-                [],
-                JSON_UNESCAPED_UNICODE
-            )->header('Content-Type', 'application/json; charset=UTF-8');
+            // Log::error($e->getMessage());
+            return $this->responseMan([
+                "message" => "日次売上の取得に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -122,63 +90,29 @@ class DailySalesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
-                $validator = Validator::make($request->all(), [
-                    'date' => 'required|date_format:Y-m-d',
-                    'daily_sales' => 'required|integer',
-                ]);
 
-                if ($validator->fails()) {
-                    return response()->json([
-                        "message" => "日次売上の作成に失敗しました！
-                        もう一度お試しください！"
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $user = $this->hasRole->ownerAllow();
 
-                $validatedData = $validator->validate();
+            $ownerId = Owner::where('user_id', $user->id)->value('id');
 
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
+            $daily_sale = $this->dailySaleService->dailySaleValidateAndCreateOrUpdate(
+                $request->all(),
+                $ownerId,
+                true
+            );
 
-                $existDailySale = DailySale::whereDate('date', $validatedData['date'])->where('owner_id', $ownerId)->first();
+            $this->dailySaleService->forgetCache($ownerId);
 
-                if ($existDailySale) {
-                    return response()->json([
-                        "message" => "その日の日次売上は既に存在しています！日次売上画面から編集をして数値を変更するか、削除してもう一度この画面から更新してください！"
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-
-                $daily_sales =
-                    DailySale::create([
-                        'date' => $validatedData['date'],
-                        'daily_sales' => $validatedData['daily_sales'],
-                        'owner_id' => $ownerId
-                    ]);
-
-
-                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
-
-                Cache::forget($dailySalesCacheKey);
-
-                DB::commit();
-
-
-                return response()->json([
-                    "dailySale" => $daily_sales,
-                    "message" => "日次売上を作成しました！",
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            DB::commit();
+            return $this->responseMan([
+                "dailySale" => $daily_sale,
+            ]);
         } catch (\Exception $e) {
-            Log::error($e);
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                "message" => "日次売上の作成に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return  $this->responseMan([
+                "message" => "日次売上の作成に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -186,55 +120,30 @@ class DailySalesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
-                $validator = Validator::make($request->all(), [
-                    'date' => 'required | date_format:Y-m-d',
-                    'daily_sales' => 'required',
+            $user = $this->hasRole->ownerAllow();
+
+            $daily_sale = $this->dailySaleService->dailySaleValidateAndCreateOrUpdate(
+                $request->all(),
+                $request->id,
+                false
+            );
+
+            $ownerId = Owner::where('user_id', $user->id)->value('id');
+
+            $this->dailySaleService->forgetCache($ownerId);
+
+            DB::commit();
+
+            return
+                $this->responseMan([
+                    "dailySale" => $daily_sale
                 ]);
-
-                if ($validator->fails()) {
-                    return response()->json([
-                        "message" => "入力内容を確認してください！"
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-
-                $validatedData = $validator->validate();
-
-                $daily_sale = DailySale::find($request->id);
-
-                $daily_sale->date = $validatedData['date'];
-                $daily_sale->daily_sales = $validatedData['daily_sales'];
-                $daily_sale->save();
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
-
-
-                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
-
-                Cache::forget($dailySalesCacheKey);
-
-                DB::commit();
-
-                return response()->json(
-                    [
-                        "dailySale" => $daily_sale,
-                        "message" => "日次売上を更新しました！",
-                    ],
-                    200,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                "message" => "日次売上の更新に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "日次売上の更新に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -242,40 +151,25 @@ class DailySalesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
-                $daily_sale = DailySale::find($request->id);
-                if (!$daily_sale) {
-                    return response()->json([
-                        'message' =>
-                        '日次売上が見つかりません！もう一度お試しください！'
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-                $daily_sale->delete();
 
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
+            $user = $this->hasRole->ownerAllow();
 
-                $dailySalesCacheKey = 'owner_' . $ownerId . 'dailySales';
+            $this->dailySaleService->dailySaleDelete($request->id);
 
-                Cache::forget($dailySalesCacheKey);
+            $ownerId = Owner::where('user_id', $user->id)->value('id');
 
-                DB::commit();
-                return response()->json([
-                    "deleteId" => $request->id,
-                    'message' => "日次売上を削除しました！"
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            $this->dailySaleService->forgetCache($ownerId);
+
+            DB::commit();
+            return $this->responseMan([
+                "deleteId" => $request->id,
+            ]);
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                'message' =>
-                '日次売上の削除に失敗しました！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "日次売上の削除に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 }

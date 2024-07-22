@@ -29,9 +29,9 @@ class CoursesController extends BaseController
     {
         try {
 
-            $user =  $this->hasRole->AllAllow();
+            $user =  $this->hasRole->allAllow();
 
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
             $courses = $this->courseService->rememberCache($ownerId);
 
@@ -58,17 +58,10 @@ class CoursesController extends BaseController
     {
         DB::beginTransaction();
         try {
-            $user = $this->hasRole->ManagerAllow();
+            $user = $this->hasRole->managerAllow();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-            $validatedData = $this->courseService->CourseValidate($request->all());
-
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
-
-            $course = Course::create([
-                'course_name' => $validatedData['course_name'],
-                'price' => $validatedData['price'],
-                'owner_id' => $ownerId
-            ]);
+            $course = $this->courseService->courseValidateAndCreateOrUpdate($request->all(), $ownerId, true);
 
             $this->courseService->forgetCache($ownerId);
 
@@ -91,18 +84,11 @@ class CoursesController extends BaseController
     {
         DB::beginTransaction();
         try {
-            $user = $this->hasRole->ManagerAllow();
+            $user = $this->hasRole->managerAllow();
 
-            $validatedData = $this->courseService->CourseValidate($request->all());
+            $course = $this->courseService->courseValidateAndCreateOrUpdate($request->all(), $request->id, false);
 
-            $course = Course::find($request->id);
-
-            $course->course_name = $validatedData['course_name'];
-            $course->price = $validatedData['price'];
-
-            $course->save();
-
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
             $this->courseService->forgetCache($ownerId);
 
@@ -124,9 +110,9 @@ class CoursesController extends BaseController
     {
         DB::beginTransaction();
         try {
-            $user = $this->hasRole->OwnerAllow();
+            $user = $this->hasRole->ownerAllow();
 
-            $this->courseService->CourseDelete($request->id);
+            $this->courseService->courseDelete($request->id);
 
             $ownerId = Owner::where('user_id', $user->id)->value('id');
 

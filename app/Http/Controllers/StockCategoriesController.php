@@ -4,62 +4,60 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\StockCategory;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Enums\Roles;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
-use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
+use App\Services\HasRole;
+use App\Services\GetImportantIdService;
+use App\Services\StockCategoryService;
+use Illuminate\Support\Facades\Log;
 
-class StockCategoriesController extends Controller
+class StockCategoriesController extends BaseController
 {
+
+    protected $getImportantIdService;
+    protected $stockCategoryService;
+    protected $hasRole;
+
+    public function __construct(GetImportantIdService $getImportantIdService, StockCategoryService $stockCategoryService, HasRole $hasRole)
+    {
+        $this->getImportantIdService = $getImportantIdService;
+        $this->stockCategoryService = $stockCategoryService;
+        $this->hasRole = $hasRole;
+    }
+
     public function index()
     {
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            $user =  $this->hasRole->allAllow();
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-                $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
+            $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
 
-                $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
-                // カテゴリ一覧を取得
+            $expirationInSeconds = 60 * 60 * 24; // 1日（秒数で指定）
+            // カテゴリ一覧を取得
 
-                $stock_categories = Cache::remember($stockCategoriesCacheKey, $expirationInSeconds, function () use ($ownerId) {
-                    return StockCategory::where('owner_id', $ownerId)->get();
-                });
+            $stock_categories = Cache::remember($stockCategoriesCacheKey, $expirationInSeconds, function () use ($ownerId) {
+                return StockCategory::where('owner_id', $ownerId)->get();
+            });
 
-                if ($stock_categories->isEmpty()) {
-                    return response()->json([
-                        "message" => "初めまして！新規作成ボタンから在庫カテゴリを作成しましょう！",
-                        'stockCategories' => $stock_categories
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-                    return response()->json([
-                        'stockCategories' => $stock_categories
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            if ($stock_categories->isEmpty()) {
+                return $this->responseMan([
+                    "message" => "初めまして！新規作成ボタンから在庫カテゴリを作成しましょう！",
+                    'stockCategories' => []
+                ]);
             } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                return $this->responseMan([
+                    'stockCategories' => $stock_categories
+                ]);
             }
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => '在庫カテゴリが見つかりません！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            // Log::error($e->getMessage());
+            return $this->responseMan([
+                "message" => "在庫カテゴリの取得に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -67,58 +65,27 @@ class StockCategoriesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                // バリデーションルールを定義する
-                $validator = Validator::make($request->all(), [
-                    'category' => 'required|string',
-                ]);
+            $user = $this->hasRole->managerAllow();
 
-                if ($validator->fails()) {
-                    return response()->json([
-                        'message' => '在庫カテゴリの作成に失敗しました！入力内容を確認してください！'
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
+            // 在庫モデルを作成して保存する
+            $stock_category = $this->stockCategoryService->stockCategoryValidateAndCreateOrUpdate($request->all(), $ownerId, true);
 
-                $validatedData = $validator->validate();
+            $this->stockCategoryService->forgetCache($ownerId);
 
-                $staff = Staff::where('user_id', $user->id)->first();
+            DB::commit();
 
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-
-                // 在庫モデルを作成して保存する
-                $stock_category = StockCategory::create([
-                    'category' => $validatedData['category'],
-                    'owner_id' => $ownerId
-                ]);
-
-                $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
-
-                Cache::forget($stockCategoriesCacheKey);
-
-                DB::commit();
-
-                // 成功したらリダイレクト
-                return response()->json([
-                    "stockCategory" => $stock_category,
-                    "message" => "在庫カテゴリを作成しました！"
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            // 成功したらリダイレクト
+            return $this->responseMan([
+                "stockCategory" => $stock_category,
+            ]);
         } catch (\Exception $e) {
+            Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                "message" => "在庫カテゴリの作成に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "在庫カテゴリの作成に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -127,61 +94,26 @@ class StockCategoriesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                // バリデーションルールを定義する
-                $validator = Validator::make($request->all(), [
-                    'category' => 'required|string',
-                ]);
+            $user = $this->hasRole->managerAllow();
 
-                if ($validator->fails()) {
-                    return response()->json([
-                        'message' => '在庫カテゴリの更新に失敗しました！入力内容を確認してください！'
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
+            $stock_category = $this->stockCategoryService->stockCategoryValidateAndCreateOrUpdate($request->all(), $request->id, false);
 
-                $validatedData = $validator->validate();
+            $this->stockCategoryService->forgetCache($ownerId);
 
-                // 在庫を取得する
-                $stock_category = StockCategory::find($request->id);
+            DB::commit();
 
-                // 在庫の属性を更新する
-                $stock_category->category = $validatedData['category'];
-
-
-                // 在庫を保存する
-                $stock_category->save();
-
-                $staff = Staff::where('user_id', $user->id)->first();
-
-                if (empty($staff)) {
-                    $ownerId = Owner::where('user_id', $user->id)->value('id');
-                } else {
-                    $ownerId = $staff->owner_id;
-                }
-
-                $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
-
-                Cache::forget($stockCategoriesCacheKey);
-
-                DB::commit();
-
-                // 成功したらリダイレクト
-                return response()->json([
-                    "stockCategory" => $stock_category
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            // 成功したらリダイレクト
+            return $this->responseMan([
+                "stockCategory" => $stock_category,
+            ]);
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            return response()->json([
-                "message" => "在庫カテゴリの更新に失敗しました！
-                もう一度お試しください！"
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "在庫カテゴリの更新に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 
@@ -189,46 +121,24 @@ class StockCategoriesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER)) {
-                // 指定されたIDの在庫カテゴリを取得
-                $stock_category = StockCategory::find($request->id);
+            $user = $this->hasRole->ownerAllow();
+            // 指定されたIDの在庫カテゴリを取得
+            $this->stockCategoryService->stockCategoryDelete($request->id);
 
-                // 在庫カテゴリが見つからない場合は404エラーを返す
-                if (!$stock_category) {
-                    return response()->json([
-                        'message' =>
-                        '在庫カテゴリが見つかりません！もう一度お試しください！'
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            $ownerId = Owner::where('user_id', $user->id)->value('id');
 
-                // 在庫カテゴリを削除する
-                $stock_category->delete();
+            $this->stockCategoryService->forgetCache($ownerId);
 
-                $ownerId = Owner::where('user_id', $user->id)->value('id');
-
-                $stockCategoriesCacheKey = 'owner_' . $ownerId . 'stockCategories';
-
-                Cache::forget($stockCategoriesCacheKey);
-
-                DB::commit();
-                return response()->json([
-                    "deleteId" => $request->id,
-                    "message" => "在庫カテゴリを削除しました！"
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                return response()->json([
-                    "message" => "あなたには権限がありません！"
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            DB::commit();
+            return $this->responseMan([
+                "deleteId" => $request->id,
+            ]);
         } catch (\Exception $e) {
+            // Log::error($e->getMessage());
             DB::rollBack();
-            // エラーが発生した場合は500エラーを返す
-            return response()->json([
-                'message' =>
-                '在庫カテゴリの削除に失敗しました！
-                もう一度お試しください！'
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            return $this->responseMan([
+                "message" => "在庫カテゴリの削除に失敗しました！もう一度お試しください！"
+            ], 500);
         }
     }
 }

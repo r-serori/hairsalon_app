@@ -3,19 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Option;
-use App\Models\User;
-use App\Enums\Roles;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
-use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\OptionService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class OptionsController extends BaseController
@@ -34,9 +26,9 @@ class OptionsController extends BaseController
     public function index()
     {
         try {
-            $user =  $this->hasRole->AllAllow();
+            $user =  $this->hasRole->allAllow();
 
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
             $options = $this->optionService->rememberCache($ownerId);
 
@@ -62,18 +54,15 @@ class OptionsController extends BaseController
     {
         DB::beginTransaction();
         try {
-            $user = $this->hasRole->ManagerAllow();
+            $user = $this->hasRole->managerAllow();
 
-            $validatedData = $this->optionService->OptionValidate($request->all());
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
-
-            $option =
-                Option::create([
-                    'option_name' => $validatedData['option_name'],
-                    'price' => $validatedData['price'],
-                    'owner_id' => $ownerId
-                ]);
+            $option = $this->optionService->optionValidateAndCreateOrUpdate(
+                $request->all(),
+                $ownerId,
+                true
+            );
 
             $this->optionService->forgetCache($ownerId);
 
@@ -94,16 +83,15 @@ class OptionsController extends BaseController
         DB::beginTransaction();
 
         try {
-            $user = $this->hasRole->ManagerAllow();
+            $user = $this->hasRole->managerAllow();
 
-            $validatedData = $this->optionService->OptionValidate($request->all());
+            $option = $this->optionService->optionValidateAndCreateOrUpdate(
+                $request->all(),
+                $request->id,
+                false
+            );
 
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
-
-            $option = Option::find($request->id);
-            $option->option_name = $validatedData['option_name'];
-            $option->price = $validatedData['price'];
-            $option->save();
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
             $this->optionService->forgetCache($ownerId);
 
@@ -124,9 +112,9 @@ class OptionsController extends BaseController
     {
         DB::beginTransaction();
         try {
-            $user = $this->hasRole->OwnerAllow();
+            $user = $this->hasRole->ownerAllow();
 
-            $this->optionService->OptionDelete($request->id);
+            $this->optionService->optionDelete($request->id);
 
             $ownerId = Owner::where('user_id', $user->id)->value('id');
 

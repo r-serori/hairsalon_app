@@ -2,101 +2,61 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use App\Models\Owner;
 use App\Models\Staff;
 use App\Enums\Roles;
-use Illuminate\Http\JsonResponse as HttpJsonResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\BaseController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use App\Services\HasRole;
+use App\Services\GetImportantIdService;
+use App\Services\OwnerService;
+use Illuminate\Support\Facades\Log;
 
-
-class UserPostController extends Controller
+class UserPostController extends BaseController
 {
+    protected $hasRole;
+    protected $getImportantIdService;
+    protected $ownerService;
 
-
+    public function __construct(HasRole $hasRole, GetImportantIdService $getImportantIdService, OwnerService $ownerService)
+    {
+        $this->hasRole = $hasRole;
+        $this->getImportantIdService = $getImportantIdService;
+        $this->ownerService = $ownerService;
+    }
 
     public function ownerStore(Request $request): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $validator = Validator::make($request->all(), [
-                'store_name' => 'required | string | max:100',
-                'postal_code' => 'required | integer',
-                'prefecture' => 'required | string | max:100',
-                'city' => 'required | string | max:100',
-                'addressLine1' => 'required | string | max:200',
-                'addressLine2' => 'nullable | string | max:200',
-                'phone_number' => 'required | string | max:20',
-                'user_id' => 'required | integer | exists:users,id',
-            ]);
+            $user = $this->hasRole->ownerAllow();
 
-            if ($validator->fails()) {
-                return response()->json(
-                    ['message' => '入力内容が正しくありません。'],
-                    400,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+            $owner = $this->ownerService->ownerValidateAndCreateOrUpdate($request->all(), $user->id, true);
 
-            $validateData = (object)$validator->validate();
-
-            $user = User::where('id', $validateData->user_id)->first();
-
-            if (!empty($user)) {
-                $owner = Owner::create([
-                    'store_name' => $validateData->store_name,
-                    'postal_code' => $validateData->postal_code,
-                    'prefecture' => $validateData->prefecture,
-                    'city' => $validateData->city,
-                    'addressLine1' => $validateData->addressLine1,
-                    'addressLine2' => $validateData->addressLine2 ? $validateData->addressLine2 : '',
-                    'phone_number' => $validateData->phone_number,
-                    'user_id' => $validateData->user_id,
-                ]);
-
+            if (!empty($owner)) {
                 DB::commit();
-
-                return response()->json(
-                    [
+                return
+                    $this->responseMan([
                         'message' => 'オーナー用ユーザー登録に成功しました!',
                         'owner' => $owner,
-                    ],
-                    200,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
+                    ]);
             } else {
-
                 DB::rollBack();
-                return response()->json(
-                    [
-                        "message" => "オーナー用ユーザー登録に失敗しました！もう一度最初からやり直してください！",
-                    ],
-                    400,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
+                return $this->responseMan([
+                    'message' => 'オーナー用ユーザー登録に失敗しました！もう一度やり直してください！',
+                ], 500);
             }
         } catch (\Exception $e) {
-
             DB::rollBack();
-            Log::error($e->getMessage());
-            return response()->json(
-                [
-                    "message" => "オーナー用ユーザー登録に失敗しました！もう一度やり直してください！",
-                ],
-                500,
-                [],
-                JSON_UNESCAPED_UNICODE
-            )->header('Content-Type', 'application/json; charset=UTF-8');
+            // Log::error($e->getMessage());
+            return $this->responseMan([
+                'message' => 'オーナー用ユーザー登録に失敗しました！もう一度やり直してください！',
+            ], 500);
         }
     }
 
@@ -104,99 +64,66 @@ class UserPostController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
+            $user = $this->hasRole->ownerAllow();
 
-                $owner = Owner::where('user_id', $user->id)->first();
+            $owner = Owner::where('user_id', $user->id)->first();
 
-                if (empty($owner)) {
-                    throw new \Exception('オーナー情報が見つかりませんでした！');
-                }
-
-                $validator = Validator::make($request->all(), [
-
-                    'name' => 'required|string|max:50',
-                    'email' => ' required|string|email|max:200|unique:users',
-                    'phone_number' => 'required|string|max:20',
-                    'password' =>  $this->passwordRules(),
-                    'role' => 'required|string|max:30',
-                    'isAttendance' => 'required|boolean',
-                    'user_id' => 'required|integer|exists:users,id',
-                ]);
-
-                if ($validator->fails()) {
-                    return response()->json(
-                        ['message' => '入力内容が正しくありません。'],
-                        400,
-                        [],
-                        JSON_UNESCAPED_UNICODE
-                    )->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-
-                $validateData = (object)$validator->validate();
-
-                $userId = User::where('email', $validateData->email)->first();
-
-
-                if ($userId) {
-                    return
-                        response()->json([
-                            'message' => 'メールアドレスが既に存在しています！
-                            他のメールアドレスを入力してください！',
-                        ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-                    $user = User::create([
-                        'name' => $validateData->name,
-                        'email' => $validateData->email,
-                        'phone_number' => $validateData->phone_number,
-                        'password' => Hash::make($validateData->password),
-                        'role' => $validateData->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF,
-                        'isAttendance' => $validateData->isAttendance,
-                        'user_id' => $owner->id,
-                    ]);
-
-                    // event(new Registered($user));
-
-                    // Auth::login($user);
-
-                    $staff = staff::create([
-                        'user_id' => $user->id,
-                        'owner_id' => $owner->id,
-                    ]);
-
-                    $responseUser = [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'email' => $user->email,
-                        'phone_number' => $user->phone_number,
-                        'role' => $user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
-                        'isAttendance' => $user->isAttendance,
-                    ];
-
-                    DB::commit();
-                    return response()->json(
-                        [
-                            'message' => 'スタッフ用ユーザー登録に成功しました!',
-                            'responseUser' => $responseUser,
-                        ],
-                        200,
-                        [],
-                        JSON_UNESCAPED_UNICODE
-                    )->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-            } else {
-                DB::rollBack();
-                return response()->json([
-                    'message' => 'あなたには権限がありません！',
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            if (empty($owner)) {
+                throw new \Exception('オーナー情報が見つかりませんでした！');
             }
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:50',
+                'email' => ' required|string|email|max:200|unique:users',
+                'phone_number' => 'required|string|max:20|unique:users',
+                'password' => 'required|string|max:100',
+                'role' => 'required|string|max:30',
+                'isAttendance' => 'required|boolean',
+            ]);
+
+            if ($validator->fails()) {
+                return $this->responseMan([
+                    'message' => '入力内容を確認してください！メールアドレスと電話番号が既に使用されている可能性があります！',
+                ], 400);
+            }
+
+            $validateData = (object)$validator->validate();
+
+            $user = User::create([
+                'name' => $validateData->name,
+                'email' => $validateData->email,
+                'phone_number' => $validateData->phone_number,
+                'password' => Hash::make($validateData->password),
+                'role' => $validateData->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF,
+                'isAttendance' => $validateData->isAttendance,
+                'user_id' => $owner->id,
+            ]);
+
+            Staff::create([
+                'user_id' => $user->id,
+                'owner_id' => $owner->id,
+            ]);
+
+            $responseUser = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone_number' => $user->phone_number,
+                'role' => $user->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
+                'isAttendance' => $user->isAttendance,
+            ];
+
+            DB::commit();
+            return $this->responseMan([
+                'message' => 'スタッフ用ユーザー登録に成功しました!',
+                'responseUser' => $responseUser,
+            ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            // Log::error('ユーザー登録処理中にエラーが発生しました。');
-            // Log::error('エラー内容: ' . $e);
-            return response()->json([
-                'message' => 'ユーザー登録に失敗しました！もう一度最初からやり直してください！',
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            Log::error($e->getMessage());
+            return $this->responseMan([
+                'message' => 'スタッフ用ユーザー登録に失敗しました！もう一度やり直してください！',
+            ], 500);
         }
     }
 
@@ -204,60 +131,23 @@ class UserPostController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
+            $user = $this->hasRole->ownerAllow();
 
-                $owner = Owner::where('user_id', $user->id)->first();
+            $owner = $this->ownerService->ownerValidateAndCreateOrUpdate($request->all(), $user->id, false);
 
-                if (empty($owner)) {
-                    throw new \Exception('オーナー情報が見つかりませんでした！');
-                }
+            DB::commit();
 
-                $validator = Validator::make($request->all(), [
-
-                    'store_name' => 'required|string|max:100',
-                    'postal_code' => 'required|integer',
-                    'prefecture' => 'required|string|max:100',
-                    'city' => 'required|string|max:100',
-                    'addressLine1' => 'required|string|max:200',
-                    'addressLine2' => 'nullable|string|max:200',
-                    'phone_number' => 'required|string|max:20',
-                ]);
-
-                if ($validator->fails()) {
-                    return response()->json([
-                        'message' => '入力内容が正しくありません。',
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-
-                $validateData = (object)$validator->validate();
-
-                $owner->store_name = $validateData->store_name;
-                $owner->postal_code = $validateData->postal_code;
-                $owner->prefecture = $validateData->prefecture;
-                $owner->city = $validateData->city;
-                $owner->addressLine1 = $validateData->addressLine1;
-                $owner->addressLine2 = $validateData->addressLine2 ? $validateData->addressLine2 : '';
-                $owner->phone_number = $validateData->phone_number;
-                $owner->save();
-
-                DB::commit();
-
-                return response()->json([
-                    'message' => 'オーナー情報の更新に成功しました！',
+            return
+                $this->responseMan([
+                    'message' => 'オーナー情報の更新に成功しました!',
                     'owner' => $owner,
-                ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            } else {
-                DB::rollBack();
-                return response()->json([
-                    'message' => 'あなたには権限がありません！',
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-            }
+                ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'エラーが発生しました！もう一度やり直してください！',
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            // Log::error($e->getMessage());    
+            return $this->responseMan([
+                'message' => 'オーナー情報の更新に失敗しました！もう一度やり直してください！',
+            ], 500);
         }
     }
 
@@ -265,67 +155,57 @@ class UserPostController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = User::find(Auth::id());
-            if ($user && $user->hasRole(Roles::$OWNER)) {
+            $user = $this->hasRole->ownerAllow();
+            $owner = Owner::where('user_id', $user->id)->first();
 
-                $owner = Owner::find(Auth::id());
+            if (empty($owner)) {
+                return $this->responseMan([
+                    'message' => 'オーナー情報が見つかりませんでした！',
+                ], 500);
+            }
+            $validator = Validator::make($request->all(), [
+                'id' => 'required|integer|exists:users,id',
+                'role' => 'required|string|max:30',
+            ]);
 
-                if (empty($owner)) {
-                    return response()->json([
-                            'message' => 'オーナー情報が見つかりませんでした！',
-                        ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            if ($validator->fails()) {
+                abort(400, '入力内容を確認してください！');
+            }
 
-                $validator = Validator::make($request->all(), [
-                    'id' => 'required|integer|exists:users,id',
-                    'role' => 'required|string|max:30',
-                ]);
+            $validateData = (object)$validator->validate();
+            $updateUser = User::find($validateData->id);
 
-                if ($validator->fails()) {
-                    return response()->json([
-                        'message' => '入力内容が正しくありません！',
-                    ], 400, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+            if (!empty($user)) {
+                $updateUser->role = $validateData->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF;
+                $updateUser->save();
 
-                $validateData = (object)$validator->validate();
+                $responseUser = [
+                    'id' => $updateUser->id,
+                    'name' => $updateUser->name,
+                    'phone_number' => $updateUser->phone_number,
+                    'role' => $updateUser->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
+                    'isAttendance' => $updateUser->isAttendance,
+                ];
 
-                $updateUser = User::where('id', $validateData->id)->first();
+                DB::commit();
 
-                if (!empty($user)) {
-                    $updateUser->role = $validateData->role === 'マネージャー' ? Roles::$MANAGER : Roles::$STAFF;
-                    $updateUser->save();
-
-                    $responseUser = [
-                        'id' => $updateUser->id,
-                        'name' => $updateUser->name,
-                        'phone_number' => $updateUser->phone_number,
-                        'role' => $updateUser->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ',
-                        'isAttendance' => $updateUser->isAttendance,
-                    ];
-
-                    DB::commit();
-
-                    return response()->json([
+                return
+                    $this->responseMan([
                         'message' => '権限の変更に成功しました！',
                         'responseUser' => $responseUser,
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => 'スタッフ情報が見つかりませんでした！',
-                    ], 404, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
+                    ]);
             } else {
                 DB::rollBack();
-                return response()->json([
-                    'message' => 'あなたには権限がありません！',
-                ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                return $this->responseMan([
+                    'message' => '権限の変更に失敗しました！もう一度やり直してください！',
+                ], 500);
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'エラーが発生しました！もう一度やり直してください！',
-            ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            // Log::error($e->getMessage());
+            return $this->responseMan([
+                'message' => '権限の変更に失敗しました！もう一度やり直してください！',
+            ], 500);
         }
     }
 }

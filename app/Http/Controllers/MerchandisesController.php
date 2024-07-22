@@ -4,24 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Merchandise;
-use Illuminate\Support\Facades\Gate;
-use App\Enums\Permissions;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Enums\Roles;
-use Illuminate\Support\Facades\Cache;
 use App\Models\Owner;
-use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use App\Services\HasRole;
 use App\Services\GetImportantIdService;
 use App\Services\MerchandiseService;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 
 
-class MerchandisesController extends Controller
+class MerchandisesController extends BaseController
 {
     protected $getImportantIdService;
     protected $merchandiseService;
@@ -37,10 +27,10 @@ class MerchandisesController extends Controller
     public function index()
     {
         try {
-            $user =  $this->hasRole->AllAllow();
+            $user =  $this->hasRole->allAllow();
 
 
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
             $merchandises = $this->merchandiseService->rememberCache($ownerId);
 
@@ -67,18 +57,11 @@ class MerchandisesController extends Controller
     {
         DB::beginTransaction();
         try {
-            $user = $this->hasRole->ManagerAllow();
+            $user = $this->hasRole->managerAllow();
 
-            $validatedData = $this->merchandiseService->MerchandiseValidate($request->all());
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
-
-            $merchandise = Merchandise::create([
-                'merchandise_name' => $validatedData['merchandise_name'],
-                'price' => $validatedData['price'],
-                'owner_id' => $ownerId
-
-            ]);
+            $merchandise = $this->merchandiseService->merchandiseValidateAndCreateOrUpdate($request->all(), $ownerId, true);
 
             $this->merchandiseService->forgetCache($ownerId);
 
@@ -101,16 +84,11 @@ class MerchandisesController extends Controller
         DB::beginTransaction();
         try {
 
-            $user = $this->hasRole->ManagerAllow();
+            $user = $this->hasRole->managerAllow();
 
-            $validatedData = $this->merchandiseService->MerchandiseValidate($request->all());
+            $merchandise = $this->merchandiseService->merchandiseValidateAndCreateOrUpdate($request->all(), $request->id, false);
 
-            $merchandise = Merchandise::find($request->id);
-            $merchandise->merchandise_name = $validatedData['merchandise_name'];
-            $merchandise->price = $validatedData['price'];
-            $merchandise->save();
-
-            $ownerId = $this->getImportantIdService->GetOwnerId($user->id);
+            $ownerId = $this->getImportantIdService->getOwnerId($user->id);
 
             $this->merchandiseService->forgetCache($ownerId);
 
@@ -133,9 +111,9 @@ class MerchandisesController extends Controller
         DB::beginTransaction();
         try {
 
-            $user = $this->hasRole->OwnerAllow();
+            $user = $this->hasRole->ownerAllow();
 
-            $this->merchandiseService->MerchandiseDelete($request->id);
+            $this->merchandiseService->merchandiseDelete($request->id);
 
             $ownerId = Owner::where('user_id', $user->id)->value('id');
 

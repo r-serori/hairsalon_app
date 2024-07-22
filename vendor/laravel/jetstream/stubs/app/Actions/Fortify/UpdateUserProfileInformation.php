@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use App\Notifications\UpdateProfileNotification;
 use Illuminate\Support\Facades\DB;
 
+
 class UpdateUserProfileInformation
 {
     public function update($user, array $input): void
@@ -36,8 +37,10 @@ class UpdateUserProfileInformation
                     'phone_number' => ['required', 'string', 'max:20'],
                 ])->validateWithBag('updateProfileInformation');
 
+
+
                 if (
-                    isset($request['email']) && $user->email !== $request['email']
+                    isset($request->email) && $user->email !== $request->email
                 ) {
                     $this->updateVerifiedUserInfo($user, $request);
 
@@ -53,6 +56,7 @@ class UpdateUserProfileInformation
                     return response()->json(
                         [
                             'message' => 'プロフィール情報の更新に成功しました!もう一度ログインしてください！',
+                            'redirect' => true
                         ],
                         200,
                         [],
@@ -68,17 +72,10 @@ class UpdateUserProfileInformation
                         'phone_number' => $request['phone_number'],
                     ])->save();
 
-                    Auth::guard('web')->logout();
-                    if ($request->hasSession()) {
-                        $request->session()->invalidate();
-                        $request->session()->regenerateToken();
-                    };
-
-                    DB::commit();
-
                     return response()->json(
                         [
                             'message' => 'プロフィール情報の更新に成功しました!',
+                            'redirect' => false
                         ],
                         200,
                         [],
@@ -118,10 +115,6 @@ class UpdateUserProfileInformation
         }
     }
 
-
-    protected function updateVerifiedUser($user, Request $request)
-    {
-    }
 
     protected function updateVerifiedUserInfo($user, Request $request)
     {

@@ -102,8 +102,6 @@ Route::middleware('api')->group(
 
             Route::get('/getKey', [getKeyController::class, 'getKey']);
 
-
-
             Route::get('/check-session', function () {
                 try {
                     $user = User::find(Auth::id());
@@ -122,8 +120,6 @@ Route::middleware('api')->group(
                     ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
                 }
             });
-
-
 
             Route::prefix('/user')->group(function () {
 
