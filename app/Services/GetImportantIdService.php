@@ -44,7 +44,10 @@ class GetImportantIdService
                 $owner = Owner::find($ownerId);
                 $owUser = User::find($owner->user_id);
                 $responseUsers =
-                    ['id' => $owUser->id, 'name' => $owUser->name];
+                    [
+                        'id' => $owUser->id, 'name' => $owUser->name,
+                        'isAttendance' =>  $owUser->isAttendance
+                    ];
             } else {
                 $owner = Owner::find($ownerId);
                 $OwnersUser = User::find($owner->user_id);
@@ -52,7 +55,10 @@ class GetImportantIdService
                 $users = User::whereIn('id', $userIds)->get();
                 $responseUsers =
                     $users->map(function ($user) {
-                        return ['id' => $user->id, 'name' => $user->name];
+                        return [
+                            'id' => $user->id, 'name' => $user->name,
+                            'isAttendance' =>  $user->isAttendance
+                        ];
                     });
             }
             return $responseUsers;
