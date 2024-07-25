@@ -11,6 +11,8 @@ return [
         'resetPassword',
         'verify-email/*',
         'updateInfo/*',
+        'vio-role',
+        'check-session',
         'logout',
         'getKey',
         'csrf-token',

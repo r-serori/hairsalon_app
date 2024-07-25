@@ -25,8 +25,6 @@ use App\Http\Controllers\Auth\getKeyController;
 
 Route::middleware('api')->group(
     function () {
-
-
         Route::get('/search/{zipCode}', function ($code) {
 
             $decodedCode = urldecode($code);
@@ -39,57 +37,6 @@ Route::middleware('api')->group(
         });
 
         Route::middleware('auth:sanctum')->group(function () {
-
-            Route::get('/vio-role', function () {
-                try {
-                    $user = User::find(Auth::id());
-                    if ($user && $user->hasRole(Roles::$OWNER)) {
-
-                        return response()->json([
-                            'myRole' => 'オーナー'
-                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    } else if ($user && $user->hasRole(Roles::$MANAGER)) {
-
-                        return response()->json([
-                            'myRole' => 'マネージャー'
-                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    } else if ($user && $user->hasRole(Roles::$STAFF)) {
-
-                        return response()->json([
-                            'myRole' => 'スタッフ'
-                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    } else {
-                        return response()->json([
-                            'message' => '権限がありません。'
-                        ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    }
-                } catch (\Exception $e) {
-                    Log::error($e->getMessage());
-                    return response()->json([
-                        'message' => 'エラーが発生しました。もう一度やり直してください！',
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-            });
-
-
-            Route::get('/check-session', function () {
-                try {
-                    $user = User::find(Auth::id());
-                    if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
-
-                        return response()->json(['status' => 'authenticated'], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    } else {
-                        return response()->json([
-                            'status' => 'unauthenticated',
-                        ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    }
-                } catch (\Exception $e) {
-                    // Log::error($e->getMessage());
-                    return response()->json([
-                        'status' => 'unauthenticated',
-                    ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                }
-            });
 
             Route::prefix('/user')->group(function () {
 

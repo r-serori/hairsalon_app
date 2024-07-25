@@ -26,6 +26,9 @@ use App\Http\Controllers\Auth\UpdateUserInfoController;
 use App\Http\Controllers\Auth\getKeyController;
 use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\Roles;
 
 // imgタグのsrc属性に画像を表示するためのルーティング　startは出勤時の写真、endは退勤時の写真
 // Route::get("/storage/attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
@@ -34,9 +37,6 @@ use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
 
 Route::middleware('web')->group(function () {
-
-
-
 
     Route::middleware('guest')->group(function () {
         Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
@@ -58,6 +58,58 @@ Route::middleware('web')->group(function () {
 
 
         Route::get('/getKey', [getKeyController::class, 'getKey']);
+
+        Route::get('/vio-role', function () {
+            try {
+                $user = User::find(Auth::id());
+                if ($user && $user->hasRole(Roles::$OWNER)) {
+
+                    return response()->json([
+                        'myRole' => 'オーナー'
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else if ($user && $user->hasRole(Roles::$MANAGER)) {
+
+                    return response()->json([
+                        'myRole' => 'マネージャー'
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else if ($user && $user->hasRole(Roles::$STAFF)) {
+
+                    return response()->json([
+                        'myRole' => 'スタッフ'
+                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else {
+                    return response()->json([
+                        'message' => '権限がありません。'
+                    ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+            } catch (\Exception $e) {
+                Log::error($e->getMessage());
+                return response()->json([
+                    'message' => 'エラーが発生しました。もう一度やり直してください！',
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
+        });
+
+
+        Route::get('/check-session', function () {
+            try {
+                $user = User::find(Auth::id());
+                if ($user && $user->hasRole(Roles::$OWNER) || $user->hasRole(Roles::$MANAGER) || $user->hasRole(Roles::$STAFF)) {
+
+                    return response()->json(['status' => 'authenticated'], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                } else {
+                    return response()->json([
+                        'status' => 'unauthenticated',
+                    ], 403, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                }
+            } catch (\Exception $e) {
+                // Log::error($e->getMessage());
+                return response()->json([
+                    'status' => 'unauthenticated',
+                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            }
+        });
+
 
         //userの勤怠時間のコントローラー
         //勤怠時間の取得userのidと年月を受け取る。yearMonthが"無し"の場合は当月の勤怠時間を取得　Gate,OWNER
