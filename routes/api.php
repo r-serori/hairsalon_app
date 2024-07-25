@@ -25,12 +25,7 @@ use App\Http\Controllers\Auth\getKeyController;
 
 Route::middleware('api')->group(
     function () {
-        Route::get('/sanctum/csrf-cookie', function (Request $request) {
-            Log::info('CSRF token has been set successfully.');
-            return response()->json([
-                'message' => 'CSRF token has been set successfully.',
-            ]);
-        });
+
 
         Route::get('/search/{zipCode}', function ($code) {
 

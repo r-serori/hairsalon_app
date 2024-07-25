@@ -24,6 +24,7 @@ use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Http\Controllers\Auth\UpdateUserInfoController;
 use App\Http\Controllers\Auth\getKeyController;
+use Illuminate\Support\Facades\Log;
 // imgタグのsrc属性に画像を表示するためのルーティング　startは出勤時の写真、endは退勤時の写真
 // Route::get("/storage/attendance_times/images/startPhotos/{fileName}", [AttendanceTimesController::class, 'startPhotos'])->where('fileName', '.*');
 
@@ -31,6 +32,13 @@ use App\Http\Controllers\Auth\getKeyController;
 
 
 Route::middleware('web')->group(function () {
+
+    Route::get('/sanctum/csrf-cookie', function () {
+        Log::info('CSRF token has been set successfully.');
+        return response()->json([
+            'message' => 'CSRF token has been set successfully.',
+        ]);
+    });
 
     Route::middleware('guest')->group(function () {
         Route::post('/register', [RegisteredUserController::class, 'store']);
