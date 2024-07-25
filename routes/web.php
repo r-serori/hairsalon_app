@@ -39,7 +39,6 @@ use App\Enums\Roles;
 Route::middleware('web')->group(function () {
 
     Route::middleware('guest')->group(function () {
-        Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
         Route::post('/register', [RegisteredUserController::class, 'store']);
         Route::post('/login', [AuthenticatedSessionController::class, 'store']);
         Route::post('/forgotPassword', [PasswordResetLinkController::class, 'store']);
@@ -62,6 +61,7 @@ Route::middleware('web')->group(function () {
         Route::get('/vio-role', function () {
             try {
                 $user = User::find(Auth::id());
+                Log::info($user);
                 if ($user && $user->hasRole(Roles::$OWNER)) {
 
                     return response()->json([
@@ -84,9 +84,14 @@ Route::middleware('web')->group(function () {
                 }
             } catch (\Exception $e) {
                 Log::error($e->getMessage());
-                return response()->json([
-                    'message' => 'エラーが発生しました。もう一度やり直してください！',
-                ], 500, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                return response()->json(
+                    [
+                        'message' => 'エラーが発生しました。もう一度やり直してください！',
+                    ],
+                    500,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                )->header('Content-Type', 'application/json; charset=UTF-8');
             }
         });
 
