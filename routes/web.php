@@ -35,10 +35,11 @@ use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
 Route::middleware('web')->group(function () {
 
-    Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
+
 
 
     Route::middleware('guest')->group(function () {
+        Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
         Route::post('/register', [RegisteredUserController::class, 'store']);
         Route::post('/login', [AuthenticatedSessionController::class, 'store']);
         Route::post('/forgotPassword', [PasswordResetLinkController::class, 'store']);
