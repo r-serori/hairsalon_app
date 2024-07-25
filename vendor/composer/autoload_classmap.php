@@ -16,6 +16,7 @@ return array(
     'App\\Enums\\Roles' => $baseDir . '/app/Enums/Roles.php',
     'App\\Exceptions\\Handler' => $baseDir . '/app/Exceptions/Handler.php',
     'App\\Http\\Controllers\\AttendanceTimesController' => $baseDir . '/app/Http/Controllers/AttendanceTimesController.php',
+    'App\\Http\\Controllers\\Auth\\AuthenticatedSessionController' => $baseDir . '/app/Http/Controllers/Auth/AuthenticatedSessionController.php',
     'App\\Http\\Controllers\\Auth\\PasswordController' => $baseDir . '/app/Http/Controllers/Auth/PasswordController.php',
     'App\\Http\\Controllers\\Auth\\PasswordResetLinkController' => $baseDir . '/app/Http/Controllers/Auth/PasswordResetLinkController.php',
     'App\\Http\\Controllers\\Auth\\UpdateUserInfoController' => $baseDir . '/app/Http/Controllers/Auth/UpdateUserInfoController.php',
