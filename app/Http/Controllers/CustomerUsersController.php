@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CustomerUser;
 
-class CustomerAttendancesController extends Controller
+class CustomerUsersController extends Controller
 {
   public function index()
   {

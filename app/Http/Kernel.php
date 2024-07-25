@@ -37,7 +37,6 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         //フロントエンドとのCORS設定を行うためのミドルウェア
         //FruitCakeライブラリを使用して、CORS設定を行う
-        \Fruitcake\Cors\HandleCors::class,
     ];
 
     protected $middlewareGroups = [
