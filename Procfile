@@ -1,1 +1,1 @@
-web: vendor/bin/heroku-php-apache2 public/
+web: rm -rf vendor && composer install && heroku config:unset BUILDPACK_CLEAR_CACHE
