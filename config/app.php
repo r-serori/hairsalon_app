@@ -162,6 +162,10 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
         Laravel\Sanctum\SanctumServiceProvider::class,
+        Laravel\Fortify\FortifyServiceProvider::class,
+        Laravel\Jetstream\JetstreamServiceProvider::class,
+
+
 
 
         /*
