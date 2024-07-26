@@ -23,7 +23,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Http\Controllers\Auth\UpdateUserInfoController;
-use App\Http\Controllers\Auth\getKeyController;
+use App\Http\Controllers\Auth\GetKeyController;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;

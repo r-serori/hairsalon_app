@@ -13,9 +13,10 @@ use Laravel\Fortify\Fortify;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Enums\Roles;
+use App\Http\Controllers\BaseController;
 use App\Notifications\VerifyEmailNotification;
 
-class RegisteredUserController extends Controller
+class RegisteredUserController extends BaseController
 {
   /**
    * The guard implementation.
@@ -82,24 +83,25 @@ class RegisteredUserController extends Controller
 
       DB::commit();
 
-      return response()->json([
+      return $this->responseMan([
         'message' => 'ユーザー仮登録に成功しました！オーナー登録をしてください！',
         'responseUser' => $responseUser
-      ], 200);
+      ]);
     } catch (\Exception $e) {
       DB::rollBack();
-      Log::error($e->getMessage());
+      // Log::error($e->getMessage());
+
       if (strpos($e->getMessage(), 'メールアドレスの値は既に存在') !== false) {
-        return response()->json([
+        return $this->responseMan([
           'message' => 'メールアドレスが既に存在しています！他のメールアドレスを入力してください！'
         ], 400);
       } elseif (strpos($e->getMessage(), 'users_phone_number_unique') !== false) {
-        return response()->json([
+        return $this->responseMan([
           'message' => '電話番号が既に存在しています！他の電話番号を入力してください！'
         ], 400);
       } else {
         // その他のエラー処理
-        return response()->json([
+        return $this->responseMan([
           'message' => '何らかのエラーが発生しました。もう一度最初からやり直してください！'
         ], 500);
       }

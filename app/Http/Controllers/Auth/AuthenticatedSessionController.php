@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\BaseController;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -16,25 +17,14 @@ use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
-class AuthenticatedSessionController extends Controller
+class AuthenticatedSessionController extends BaseController
 {
-    /**
-     * The guard implementation.
-     *
-     * @var \Illuminate\Contracts\Auth\StatefulGuard
-     */
-    protected $guard;
 
-    /**
-     * Create a new controller instance.
-     *
-     * @param  \Illuminate\Contracts\Auth\StatefulGuard  $guard
-     * @return void
-     */
-    public function __construct(StatefulGuard $guard)
+
+    public function __construct()
     {
-        $this->guard = $guard;
     }
 
     /**
@@ -59,27 +49,22 @@ class AuthenticatedSessionController extends Controller
         return $this->loginPipeline($request)->then(function ($request) {
             try {
                 if (!empty($existOwner)) {
-                    return response()->json([
+                    $this->responseMan([
                         'message' => 'オーナー用ユーザーとしてログインしました!',
                         'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number',  'isAttendance'),
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    ]);
                 } else {
-                    return response()->json([
+                    return $this->responseMan([
                         'message' => 'スタッフ用ユーザーとしてログインしました!',
                         'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number',  'isAttendance'),
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+                    ]);
                 }
             } catch (\Exception $e) {
                 // Log::error($e->getMessage());
-                return response()->json(
-                    [
-                        'message' =>
-                        'ログインに失敗しました。もう一度やり直してください。',
-                    ],
-                    500,
-                    [],
-                    JSON_UNESCAPED_UNICODE
-                )->header('Content-Type', 'application/json; charset=UTF-8');
+                return $this->responseMan([
+                    'message' =>
+                    'ログインに失敗しました。もう一度やり直してください。',
+                ], 500);
             }
         });
     }
@@ -123,19 +108,20 @@ class AuthenticatedSessionController extends Controller
     {
         try {
 
-            $this->guard->logout();
+            // ユーザーをログアウトさせる
+            Auth::guard('web')->logout();
 
             if ($request->hasSession()) {
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
             }
 
-            return response()->json([
+            return $this->responseMan([
                 'message' => 'ログアウトしました!'
-            ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
+            ]);
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            return response()->json([
+            return $this->responseMan([
                 'message' => 'ログアウトに失敗しました。もう一度やり直してください。',
             ], 500);
         }
