@@ -24,6 +24,9 @@ use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Http\Controllers\Auth\UpdateUserInfoController;
 use App\Http\Controllers\Auth\GetKeyController;
+use App\Http\Controllers\Auth\UserGetController;
+use App\Http\Controllers\Auth\UserPostController;
+use App\Actions\Jetstream\DeleteUserMain;
 use Illuminate\Support\Facades\Log;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -53,9 +56,31 @@ Route::middleware('web')->group(function () {
         Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
         Route::post('/updateUser', [UpdateUserProfileInformation::class, 'updateUser']);
         Route::post('/updateUserPassword', [UpdateUserPassword::class, 'updateFromRequest']);
+        //購入者ownerが店の情報を登録
+        Route::post('/ownerRegister', [UserPostController::class, 'ownerStore']);
+
+        //購入者ownerが店の情報を更新
+        Route::post('/updateOwner', [UserPostController::class, 'ownerUpdate']);
+
+        //各スタッフが自分の情報を取得 Gate,ALL
+        Route::get('/getOwner', [UserGetController::class, 'getOwner']);
+
+        //各スタッフが自分の情報を取得 Gate,ALL
+        Route::get('/showUser', [UserGetController::class, 'show']);
+
+        //オーナーがスタッフの情報を取得 Gate,OWNER
+        Route::get('/getUsers', [UserGetController::class, 'getUsers']);
+        //オーナーがスタッフの権限を変更 Gate,OWNER
+        Route::post('/updatePermission', [UserPostController::class, 'updatePermission']);
+
+        //オーナーがスタッフを登録 Gate,OWNER
+        Route::post('/staffRegister', [UserPostController::class, 'staffStore']);
+
+        //オーナーがスタッフの情報を削除 Gate,OWNER
+        Route::post('/deleteUser', [DeleteUserMain::class, 'deleteUser']);
 
 
-        Route::get('/getKey', [getKeyController::class, 'getKey']);
+        Route::get('/getKey', [GetKeyController::class, 'getKey']);
 
         Route::get('/vio-role', function () {
             try {
