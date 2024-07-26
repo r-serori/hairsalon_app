@@ -46,6 +46,7 @@ class AuthenticatedSessionController extends BaseController
      */
     public function store(LoginRequest $request): JsonResponse
     {
+
         return $this->loginPipeline($request)->then(function ($request) {
             try {
                 if (!empty($existOwner)) {

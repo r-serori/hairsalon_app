@@ -34,18 +34,6 @@ class FortifyServiceProvider extends ServiceProvider
         // registerと一緒
         Fortify::createUsersUsing(CreateNewUser::class);
 
-
-        // 認証の処理
-        //class AuthenticatedSessionControllerの AttemptToAuthenticate::classを上書き
-        Fortify::authenticateUsing(function (LoginRequest $request) {
-
-            $user = User::where('email', $request->email)->first();
-
-            if ($user && Hash::check($request->password, $user->password)) {
-                return $user;
-            }
-        });
-
         //プロフィール更新
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         //パスワード更新

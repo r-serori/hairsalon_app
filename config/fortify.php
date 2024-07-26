@@ -117,7 +117,7 @@ return [
 
     'limiters' => [
         'login' => 'login',
-        'two-factor' => 'two-factor',
+        // 'two-factor' => 'two-factor',
     ],
 
     /*
@@ -157,9 +157,9 @@ return [
         // ]),
     ],
 
-    'redirects' => [
-        'login' => '/dashboard',
-        'register' => '/registration-successful', // 登録成功時のリダイレクト先
-    ],
+    // 'redirects' => [
+    //     'login' => '/dashboard',
+    //     'register' => '/registration-successful', // 登録成功時のリダイレクト先
+    // ],
 
 ];
