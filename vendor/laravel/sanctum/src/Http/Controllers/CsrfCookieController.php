@@ -17,9 +17,9 @@ class CsrfCookieController
     public function show(Request $request)
     {
         if ($request->expectsJson()) {
-            return response()->json(null, 204);
+            return new JsonResponse(status: 204);
         }
 
-        return new Response('', 204);
+        return new Response(status: 204);
     }
 }

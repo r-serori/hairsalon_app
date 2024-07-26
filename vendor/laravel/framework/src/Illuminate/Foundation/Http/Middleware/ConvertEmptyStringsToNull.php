@@ -14,15 +14,6 @@ class ConvertEmptyStringsToNull extends TransformsRequest
     protected static $skipCallbacks = [];
 
     /**
-     * The names of the attributes that should not be nullified.
-     *
-     * @var array
-     */
-    protected $except = [
-        'password',
-    ];
-
-    /**
      * Handle an incoming request.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -49,9 +40,7 @@ class ConvertEmptyStringsToNull extends TransformsRequest
      */
     protected function transform($key, $value)
     {
-        return is_string($value) && $value === '' && !in_array($key, $this->except)
-            ? null
-            : $value;
+        return $value === '' ? null : $value;
     }
 
     /**

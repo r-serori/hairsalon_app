@@ -2,26 +2,23 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
-use App\Models\AttendanceTime;
-use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
+use Laravel\Jetstream\HasTeams;
 use Laravel\Sanctum\HasApiTokens;
-use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements MustVerifyEmailContract
+class User extends Authenticatable
 {
     use HasApiTokens;
     use HasFactory;
     use HasProfilePhoto;
+    use HasTeams;
     use Notifiable;
     use TwoFactorAuthenticatable;
-    use HasRoles;
-    use MustVerifyEmail;
 
     /**
      * The attributes that are mass assignable.
@@ -29,15 +26,8 @@ class User extends Authenticatable implements MustVerifyEmailContract
      * @var array<int, string>
      */
     protected $fillable = [
-        "name",
-        "email",
-        'phone_number',
-        "password",
-        "role",
-        "isAttendance"
+        'name', 'email', 'password',
     ];
-
-
 
     /**
      * The attributes that should be hidden for serialization.
@@ -51,9 +41,12 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'two_factor_secret',
     ];
 
-    // 型キャストの設定
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
-        'isAttendance' => 'boolean',
         'email_verified_at' => 'datetime',
     ];
 
@@ -65,52 +58,4 @@ class User extends Authenticatable implements MustVerifyEmailContract
     protected $appends = [
         'profile_photo_url',
     ];
-
-
-
-
-    public function attendance_times()
-    {
-        return $this->hasMany(AttendanceTime::class);
-    }
-
-
-    public function customers()
-    {
-        return $this->belongsToMany(Customer::class, 'customer_users', 'user_id', 'customer_id');
-    }
-
-    public function ownedTeams()
-    {
-        return $this->teams()->where('user_id', $this->id)->orderBy('id', 'desc');
-    }
-
-    public function teams()
-    {
-        return $this->belongsToMany(Team::class)->withPivot('role')->withTimestamps();
-    }
-
-
-    public function getKey()
-    {
-        return $this->id; // 例えば、プライマリーキーが 'id' の場合
-    }
-
-    public function getEmailForVerification()
-    {
-        return $this->email; // ユーザーのメールアドレスを返す例
-    }
-
-
-
-    /**
-     * Check if the user has the specified role.
-     *
-     * @param string $role
-     * @return bool
-     */
-    public function hasRole(string $role): bool
-    {
-        return $this->role === $role;
-    }
 }

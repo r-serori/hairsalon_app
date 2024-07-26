@@ -49,24 +49,16 @@ class ConfirmablePasswordController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $confirmed = app(ConfirmPassword::class)(
-                $this->guard,
-                $request->user(),
-                $request->input('password')
-            );
+        $confirmed = app(ConfirmPassword::class)(
+            $this->guard, $request->user(), $request->input('password')
+        );
 
-            if ($confirmed) {
-                $request->session()->put('auth.password_confirmed_at', time());
-            }
-
-            return $confirmed
-                ? app(PasswordConfirmedResponse::class)
-                : app(FailedPasswordConfirmationResponse::class);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'パスワードの確認に失敗しました。',
-            ], 422);
+        if ($confirmed) {
+            $request->session()->put('auth.password_confirmed_at', time());
         }
+
+        return $confirmed
+                    ? app(PasswordConfirmedResponse::class)
+                    : app(FailedPasswordConfirmationResponse::class);
     }
 }

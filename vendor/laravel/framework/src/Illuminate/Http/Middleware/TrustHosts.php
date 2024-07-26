@@ -55,8 +55,8 @@ abstract class TrustHosts
      */
     protected function shouldSpecifyTrustedHosts()
     {
-        return !$this->app->environment('local') &&
-            !$this->app->runningUnitTests();
+        return ! $this->app->environment('local') &&
+               ! $this->app->runningUnitTests();
     }
 
     /**
@@ -64,12 +64,10 @@ abstract class TrustHosts
      *
      * @return string|null
      */
-    //app.phpのurl設定に含まれるホスト名とそのサブドメインを返す
-    //ドメインは購入しないと使えない
     protected function allSubdomainsOfApplicationUrl()
     {
         if ($host = parse_url($this->app['config']->get('app.url'), PHP_URL_HOST)) {
-            return '^(.+\.)?' . preg_quote($host) . '$';
+            return '^(.+\.)?'.preg_quote($host).'$';
         }
     }
 }

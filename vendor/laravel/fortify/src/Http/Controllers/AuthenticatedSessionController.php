@@ -11,16 +11,12 @@ use Laravel\Fortify\Actions\CanonicalizeUsername;
 use Laravel\Fortify\Actions\EnsureLoginIsNotThrottled;
 use Laravel\Fortify\Actions\PrepareAuthenticatedSession;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
+use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LoginViewResponse;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest;
-use Illuminate\Http\JsonResponse;
-use App\Models\Owner;
-use App\Enums\Roles;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -57,75 +53,12 @@ class AuthenticatedSessionController extends Controller
      * Attempt to authenticate a new session.
      *
      * @param  \Laravel\Fortify\Http\Requests\LoginRequest  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return mixed
      */
-    public function store(LoginRequest $request): JsonResponse
+    public function store(LoginRequest $request)
     {
-        DB::beginTransaction();
         return $this->loginPipeline($request)->then(function ($request) {
-            try {
-
-                $existOwner = Owner::where('user_id', $request->user()->id)->first();
-
-                $user = User::find(Auth::id());
-
-                if ($user->email_verified_at === null) {
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => 'メール認証が完了していません。メール認証を行ってください。',
-                    ], 433, [], JSON_UNESCAPED_UNICODE)->header(
-                        'Content-Type',
-                        'application/json; charset=UTF-8'
-                    );
-                }
-
-                $responseUser =
-                    [
-                        'id' => $request->user()->id,
-                        'name' => $request->user()->name,
-                        'email' => $request->user()->email,
-                        'phone_number' => $request->user()->phone_number,
-                        'role' => $request->user()->role === Roles::$OWNER ? 'オーナー' : ($request->user()->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
-                        'isAttendance' => $request->user()->isAttendance,
-                    ];
-
-
-                if (!empty($existOwner)) {
-                    DB::commit();
-                    return response()->json([
-                        'ownerRender' => false,
-                        'message' => 'オーナー用ユーザーとしてログインしました!',
-                        'responseUser' => $responseUser,
-                    ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                } else {
-
-
-                    if ($request->user()->role === Roles::$OWNER) {
-                        DB::rollBack();
-                        return response()->json([
-                            'ownerRender' => true,
-                            'message' => 'オーナー用ユーザーとしてログインしました!ただし、店舗登録が完了していません。店舗登録を行ってください。',
-                            'responseUser' => $responseUser,
-                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    } else {
-
-                        DB::commit();
-
-                        return response()->json([
-                            'ownerRender' => false,
-                            'message' => 'スタッフ用ユーザーとしてログインしました!',
-                            'responseUser' => $responseUser
-                        ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-                    }
-                }
-            } catch (\Exception $e) {
-                DB::rollBack();
-                // Log::error($e->getMessage());
-                return response()->json([
-                    'message' =>
-                    'ログインに失敗しました。もう一度やり直してください。',
-                ], 500);
-            }
+            return app(LoginResponse::class);
         });
     }
 
@@ -162,27 +95,17 @@ class AuthenticatedSessionController extends Controller
      * Destroy an authenticated session.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return JsonResponse
+     * @return \Laravel\Fortify\Contracts\LogoutResponse
      */
-    public function destroy(Request $request): JsonResponse
+    public function destroy(Request $request): LogoutResponse
     {
-        try {
+        $this->guard->logout();
 
-            $this->guard->logout();
-
-            if ($request->hasSession()) {
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-            }
-
-            return response()->json([
-                'message' => 'ログアウトしました!'
-            ], 200, [], JSON_UNESCAPED_UNICODE)->header('Content-Type', 'application/json; charset=UTF-8');
-        } catch (\Exception $e) {
-            // Log::error($e->getMessage());
-            return response()->json([
-                'message' => 'ログアウトに失敗しました。もう一度やり直してください。',
-            ], 500);
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
         }
+
+        return app(LogoutResponse::class);
     }
 }

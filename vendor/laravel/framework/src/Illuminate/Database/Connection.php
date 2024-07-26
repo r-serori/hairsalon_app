@@ -27,7 +27,6 @@ use PDO;
 use PDOStatement;
 use RuntimeException;
 
-
 class Connection implements ConnectionInterface
 {
     use DetectsConcurrencyErrors,
@@ -335,9 +334,7 @@ class Connection implements ConnectionInterface
     public function query()
     {
         return new QueryBuilder(
-            $this,
-            $this->getQueryGrammar(),
-            $this->getPostProcessor()
+            $this, $this->getQueryGrammar(), $this->getPostProcessor()
         );
     }
 
@@ -444,11 +441,10 @@ class Connection implements ConnectionInterface
             // mode and prepare the bindings for the query. Once that's done we will be
             // ready to execute the query against the database and return the cursor.
             $statement = $this->prepared($this->getPdoForSelect($useReadPdo)
-                ->prepare($query));
+                              ->prepare($query));
 
             $this->bindValues(
-                $statement,
-                $this->prepareBindings($bindings)
+                $statement, $this->prepareBindings($bindings)
             );
 
             // Next, we'll execute the query against the database and return the statement
@@ -724,10 +720,7 @@ class Connection implements ConnectionInterface
             $result = $this->runQueryCallback($query, $bindings, $callback);
         } catch (QueryException $e) {
             $result = $this->handleQueryException(
-                $e,
-                $query,
-                $bindings,
-                $callback
+                $e, $query, $bindings, $callback
             );
         }
 
@@ -735,9 +728,7 @@ class Connection implements ConnectionInterface
         // then log the query, bindings, and execution time so we will report them on
         // the event that the developer needs them. We'll log time in milliseconds.
         $this->logQuery(
-            $query,
-            $bindings,
-            $this->getElapsedTime($start)
+            $query, $bindings, $this->getElapsedTime($start)
         );
 
         return $result;
@@ -767,9 +758,7 @@ class Connection implements ConnectionInterface
         // lot more helpful to the developer instead of just the database's errors.
         catch (Exception $e) {
             throw new QueryException(
-                $query,
-                $this->prepareBindings($bindings),
-                $e
+                $query, $this->prepareBindings($bindings), $e
             );
         }
     }
@@ -829,7 +818,7 @@ class Connection implements ConnectionInterface
         $key = count($this->queryDurationHandlers) - 1;
 
         $this->listen(function ($event) use ($threshold, $handler, $key) {
-            if (!$this->queryDurationHandlers[$key]['has_run'] && $this->totalQueryDuration() > $threshold) {
+            if (! $this->queryDurationHandlers[$key]['has_run'] && $this->totalQueryDuration() > $threshold) {
                 $handler($this, $event);
 
                 $this->queryDurationHandlers[$key]['has_run'] = true;
@@ -887,10 +876,7 @@ class Connection implements ConnectionInterface
         }
 
         return $this->tryAgainIfCausedByLostConnection(
-            $e,
-            $query,
-            $bindings,
-            $callback
+            $e, $query, $bindings, $callback
         );
     }
 
@@ -1039,7 +1025,7 @@ class Connection implements ConnectionInterface
      */
     public function recordsHaveBeenModified($value = true)
     {
-        if (!$this->recordsModified) {
+        if (! $this->recordsModified) {
             $this->recordsModified = $value;
         }
     }
@@ -1097,7 +1083,7 @@ class Connection implements ConnectionInterface
      */
     public function usingNativeSchemaOperations()
     {
-        return !$this->isDoctrineAvailable() || SchemaBuilder::$alwaysUsesNativeSchemaOperationsIfPossible;
+        return ! $this->isDoctrineAvailable() || SchemaBuilder::$alwaysUsesNativeSchemaOperationsIfPossible;
     }
 
     /**
@@ -1170,13 +1156,13 @@ class Connection implements ConnectionInterface
      */
     public function registerDoctrineType(Type|string $class, string $name, string $type): void
     {
-        if (!$this->isDoctrineAvailable()) {
+        if (! $this->isDoctrineAvailable()) {
             throw new RuntimeException(
                 'Registering a custom Doctrine type requires Doctrine DBAL (doctrine/dbal).'
             );
         }
 
-        if (!Type::hasType($name)) {
+        if (! Type::hasType($name)) {
             Type::getTypeRegistry()
                 ->register($name, is_string($class) ? new $class() : $class);
         }
@@ -1219,10 +1205,8 @@ class Connection implements ConnectionInterface
             return $this->getPdo();
         }
 
-        if (
-            $this->readOnWriteConnection ||
-            ($this->recordsModified && $this->getConfig('sticky'))
-        ) {
+        if ($this->readOnWriteConnection ||
+            ($this->recordsModified && $this->getConfig('sticky'))) {
             return $this->getPdo();
         }
 
@@ -1301,7 +1285,7 @@ class Connection implements ConnectionInterface
      */
     public function getNameWithReadWriteType()
     {
-        return $this->getName() . ($this->readWriteType ? '::' . $this->readWriteType : '');
+        return $this->getName().($this->readWriteType ? '::'.$this->readWriteType : '');
     }
 
     /**

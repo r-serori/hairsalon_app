@@ -6620,7 +6620,7 @@
             },
             "time": "2024-06-28T09:49:33+00:00",
             "type": "library",
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "psr-4": {
                     "Symfony\\Component\\Console\\": ""
@@ -8491,7 +8491,7 @@
             },
             "time": "2024-06-28T09:27:18+00:00",
             "type": "library",
-            "installation-source": "source",
+            "installation-source": "dist",
             "autoload": {
                 "files": [
                     "Resources/functions.php"

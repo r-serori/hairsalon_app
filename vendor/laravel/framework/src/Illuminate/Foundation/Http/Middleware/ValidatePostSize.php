@@ -32,8 +32,6 @@ class ValidatePostSize
      *
      * @return int
      */
-    //post_max_sizeの値を取得
-    //php.iniに設定されているpost_max_sizeの値を取得, K,M,Gを記述している場合は、それに応じて値を返す
     protected function getPostMaxSize()
     {
         if (is_numeric($postMaxSize = ini_get('post_max_size'))) {
