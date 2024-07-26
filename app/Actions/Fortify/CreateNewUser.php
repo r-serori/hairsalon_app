@@ -6,12 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-use Nette\Utils\Json;
-use Laravel\Jetstream\Jetstream;
 use App\Enums\Roles;
 use Illuminate\Support\Facades\DB;
 
@@ -32,11 +27,11 @@ class CreateNewUser implements CreatesNewUsers
         try {
             $validator = Validator::make($input, [
                 'name' => 'required | string | max:100',
-                'email' => 'required | string | email |max:255 | unique:users',
-                'phone_number' => 'required | string | max:255',
+                'email' => 'required | string | email |max:200 | unique:users',
+                'phone_number' => 'required | string | max:20',
                 'password' => $this->passwordRules(),
                 'role' => 'required | string | max:30',
-                'isAttendance' => 'required |boolean'
+                'isAttendance' => 'required|boolean'
             ]);
 
             if ($validator->fails()) {
