@@ -165,6 +165,9 @@ class AuthenticatedSessionController extends BaseController
     {
         try {
             // ユーザーをログアウトさせる
+            $user = User::find($request->id);
+
+            $user->tokens()->delete();
             Auth::guard('web')->logout();
 
             return $this->responseMan([
