@@ -1,2 +1,3 @@
 mkdir -p storage/framework/cache/data
 mkdir -p storage/framework/views
+chmod -R 775 storage
