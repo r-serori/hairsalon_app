@@ -18,6 +18,11 @@ use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\Owner;
+use App\Models\User;
+use App\Enums\Roles;
+
 
 class AuthenticatedSessionController extends BaseController
 {
@@ -48,27 +53,78 @@ class AuthenticatedSessionController extends BaseController
     {
 
         return $this->loginPipeline($request)->then(function ($request) {
-            try {
-                if (!empty($existOwner)) {
-                    $this->responseMan([
-                        'message' => 'オーナー用ユーザーとしてログインしました!',
-                        'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number',  'isAttendance'),
-                    ]);
-                } else {
-                    return $this->responseMan([
-                        'message' => 'スタッフ用ユーザーとしてログインしました!',
-                        'responseUser' => $request->user()->only('id', 'name', 'email', 'phone_number',  'isAttendance'),
-                    ]);
+
+            DB::beginTransaction();
+            return $this->loginPipeline($request)->then(function ($request) {
+                try {
+
+                    $existOwner = Owner::where('user_id', $request->user()->id)->first();
+
+                    $user = User::find(Auth::id());
+
+                    if ($user->email_verified_at === null) {
+                        DB::rollBack();
+                        return response()->json([
+                            'message' => 'メール認証が完了していません。メール認証を行ってください。',
+                        ], 433, [], JSON_UNESCAPED_UNICODE)->header(
+                            'Content-Type',
+                            'application/json; charset=UTF-8'
+                        );
+                    }
+
+                    $responseUser =
+                        [
+                            'id' => $request->user()->id,
+                            'name' => $request->user()->name,
+                            'email' => $request->user()->email,
+                            'phone_number' => $request->user()->phone_number,
+                            'role' => $request->user()->role === Roles::$OWNER ? 'オーナー' : ($request->user()->role === Roles::$MANAGER ? 'マネージャー' : 'スタッフ'),
+                            'isAttendance' => $request->user()->isAttendance,
+                        ];
+
+
+                    if (!empty($existOwner)) {
+                        DB::commit();
+                        return $this->responseMan([
+                            'ownerRender' => false,
+                            'message' => 'オーナー用ユーザーとしてログインしました!',
+                            'responseUser' => $responseUser,
+                        ]);
+                    } else {
+
+
+                        if ($request->user()->role === Roles::$OWNER) {
+                            DB::rollBack();
+                            return $this->responseMan([
+                                'message' => 'オーナー用ユーザーとしてログインしました!ただし、店舗登録が完了していません。店舗登録を行ってください。',
+                                'responseUser' => $responseUser,
+                                'ownerRender' => true,
+                            ]);
+                        } else {
+
+                            DB::commit();
+
+                            return $this->responseMan([
+                                'ownerRender' => false,
+                                'message' => 'スタッフ用ユーザーとしてログインしました!',
+                                'responseUser' => $responseUser,
+                            ]);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    // Log::error($e->getMessage());
+                    return response()->json([
+                        'message' =>
+                        'ログインに失敗しました。もう一度やり直してください。',
+                    ], 500);
                 }
-            } catch (\Exception $e) {
-                // Log::error($e->getMessage());
-                return $this->responseMan([
-                    'message' =>
-                    'ログインに失敗しました。もう一度やり直してください。',
-                ], 500);
-            }
+            });
         });
     }
+
+
+
 
     /**
      * Get the authentication pipeline instance.
@@ -102,20 +158,14 @@ class AuthenticatedSessionController extends BaseController
     /**
      * Destroy an authenticated session.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request  $request {id:id}
      * @return JsonResponse
      */
     public function destroy(Request $request): JsonResponse
     {
         try {
-
             // ユーザーをログアウトさせる
             Auth::guard('web')->logout();
-
-            if ($request->hasSession()) {
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-            }
 
             return $this->responseMan([
                 'message' => 'ログアウトしました!'
