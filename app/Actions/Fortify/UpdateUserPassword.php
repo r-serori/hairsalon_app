@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Enums\Roles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 use Illuminate\Support\Facades\DB;
 
 class UpdateUserPassword implements UpdatesUserPasswords
@@ -46,7 +45,8 @@ class UpdateUserPassword implements UpdatesUserPasswords
                 Validator::make($request->all(), [
                     'current_password' => ['required', 'string', 'current_password:web'],
                     'password' => $this->passwordRules(),
-                    'password_confirmation' => 'required|same:password',
+                    'password' => $this->passwordRules(),
+                    'password_confirmation' => ['required', 'string'],
                 ], [
                     'current_password.current_password' => __('送信されたパスワードが既存のパスワードと一致しません！もう一度試してください！'),
                     'password_confirmation.same' => __('パスワードと確認フィールドが一致していません！'), // エラーメッセージ追加

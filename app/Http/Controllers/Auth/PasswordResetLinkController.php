@@ -27,7 +27,7 @@ class PasswordResetLinkController extends BaseController
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->all(), [
-                'email' => 'required | email | max:200',
+                'email' => 'required | email | max:200| exists:users,email',
             ]);
 
             if ($validator->fails()) {

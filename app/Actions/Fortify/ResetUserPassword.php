@@ -29,16 +29,13 @@ class ResetUserPassword implements ResetsUserPasswords
         DB::beginTransaction();
         try {
             $request->validate([
-                'email' => 'required|email',
-                'token' => 'required',
+                'email' => 'required|email|max:200|exists:users,email',
+                'token' => 'required|string',
                 'password' => $this->passwordRules(),
-                'password_confirmation' => 'required|same:password',
+                'password_confirmation' => ['required', 'string'],
             ], [
                 'password_confirmation.same' => __('パスワードと確認フィールドが一致していません！'), // エラーメッセージ追加
             ]);
-
-
-
 
             $passwordReset = PasswordReset::where('email', $request->email)->where('token', $request->token)->first();
 
