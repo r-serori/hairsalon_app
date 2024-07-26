@@ -17,4 +17,4 @@ yarn-error.log
 /.vscode
 /vendor/
 vendor/
-storage/logs/*.log
+/storage/logs
