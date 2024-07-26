@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\BaseController;
 use App\Services\HasRole;
 
-class getKeyController extends BaseController
+class GetKeyController extends BaseController
 {
   protected $hasRole;
 
