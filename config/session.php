@@ -210,6 +210,6 @@ return [
     */
 
     //クロスサイトリクエスト時のクッキーの挙動を設定
-    'same_site' => 'none',
+    'same_site' => 'lax',
 
 ];
