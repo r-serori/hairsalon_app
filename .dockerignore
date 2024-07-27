@@ -1,0 +1,11 @@
+# ビルドコンテキストから除外するファイルやディレクトリ
+node_modules
+npm-debug.log
+.git
+.gitignore
+vendor
+.env
+*.log
+Dockerfile
+docker-compose.yml
+README.md
