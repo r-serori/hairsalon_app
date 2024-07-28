@@ -4,7 +4,6 @@ npm-debug.log
 .git
 .gitignore
 vendor
-.env
 *.log
 Dockerfile
 docker-compose.yml
